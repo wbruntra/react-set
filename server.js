@@ -1,5 +1,5 @@
 const app = require("./app");
-var debug = require('debug')('socket-set:server');
+var debug = require("debug")("socket-set:server");
 var http = require("http");
 
 /**

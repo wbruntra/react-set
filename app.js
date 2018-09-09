@@ -24,9 +24,16 @@ io.on("connection", function(socket) {
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, 'client', 'build')));
 
-app.use("/", (req, res) => {
-  res.send("OK");
-});
+if (process.env.NODE_ENV === 'production') {
+  app.use('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client','build','index.html'))
+  })
+}
+
+// app.use("/", (req, res) => {
+//   res.send("OK");
+// });
 
 module.exports = app;
