@@ -8,20 +8,21 @@ import {
   removeSelected,
   isSet
 } from '../utils/helpers';
-import socket from '../socket';
+// import socket from '../socket';
+import firestore from '../firestore';
 
 const config = {
-  turnTime: 10000
+  turnTime: 5000
 };
 
-const sendUpdate = (socket, payload) => {
-  socket.emit('host', {
-    type: 'update',
-    payload: {
-      ...payload
-    }
-  });
-};
+// const sendUpdate = (socket, payload) => {
+//   socket.emit('host', {
+//     type: 'update',
+//     payload: {
+//       ...payload
+//     }
+//   });
+// };
 
 class Host extends Component {
   constructor(props) {
@@ -62,42 +63,68 @@ class Host extends Component {
     });
   };
 
-  componentDidMount() {
-    socket.on('host', action => {
-      const timeNow = new Date().getTime();
-      switch (action.type) {
-        case 'join':
-          const newPlayers = {
-            ...this.state.players,
-            [action.payload.name]: 0
-          };
-          this.setState({
-            players: newPlayers
-          });
-          sendUpdate(socket, {
-            players: newPlayers,
-            board: this.state.board,
-            deck: this.state.deck,
-            selected: this.state.selected
-          });
-          break;
-        case 'select':
-          if (
-            action.payload.name === this.state.declarer &&
-            timeNow - this.state.timeDeclared < config.turnTime
-          ) {
-            this.updateSelected(action.payload.selected);
-          } else {
-            console.log('Selection invalid');
-          }
-          break;
-        case 'declare':
-          console.log('SET!', action.payload);
-          this.performDeclare(action.payload.name);
-          break;
-        default:
+  processAction = (action) => {
+    const timeNow = new Date().getTime();
+    const { type, payload } = action;
+    const { players, declarer, timeDeclared, selected } = this.state;
+    switch (type) {
+      case 'join':
+        if (
+          Object.keys(players).includes(payload.name)
+        ) {
           return;
-      }
+        }
+        const newPlayers = {
+          ...players,
+          [payload.name]: 0
+        };
+        this.setAndSendState({ players: newPlayers });
+        break;
+      case 'declare':
+        this.performDeclare(payload.name);
+        break;
+      case 'select':
+        if (
+          payload.name === declarer &&
+          timeNow - timeDeclared < config.turnTime
+        ) {
+          this.updateSelected(payload.selected);
+        } else {
+          console.log('Selection invalid');
+        }
+        break;
+      default:
+        return;
+    }
+  }
+
+  componentDidMount() {
+    const { board, deck } = this.state;
+    this.gameRef = firestore.collection('games').doc('foo');
+    this.gameRef.set({
+      board,
+      deck
+    });
+    this.actionsRef = this.gameRef.collection('actions');
+    this.actionsRef.get().then(snapshot => {
+      snapshot.forEach(doc => {
+        console.log(doc.id, '=>', doc.data());
+      });
+    });
+
+    this.actionsRef.onSnapshot(snapshot => {
+      snapshot.docChanges().forEach(change => {
+        if (change.type === 'added') {
+          const action = change.doc.data();
+          window.created = action.created;
+          console.log(action);
+          this.processAction(action);
+          this.actionsRef.doc(change.doc.id).delete();
+        }
+        if (change.type === 'removed') {
+          console.log('Removed action: ', change.doc.data());
+        }
+      });
     });
   }
 
@@ -112,7 +139,7 @@ class Host extends Component {
       this.undeclareID = setTimeout(() => {
         const nextUpdate = {
           declarer: null,
-          timeDeclare: null,
+          timeDeclared: null,
           selected: []
         };
         this.setAndSendState(nextUpdate);
@@ -122,7 +149,9 @@ class Host extends Component {
 
   setAndSendState = update => {
     this.setState(update);
-    sendUpdate(socket, update);
+    this.gameRef.update({
+      ...update
+    });
   };
 
   updateSelected = newSelected => {

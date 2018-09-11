@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import Board from './Board';
 import { cardToggle } from '../utils/helpers';
-import socket from '../socket';
+// import socket from '../socket';
+import * as firebase from 'firebase';
+import firestore from '../firestore';
 
 class Guest extends Component {
   constructor(props) {
@@ -12,6 +14,7 @@ class Guest extends Component {
       selected: []
     };
     this.state = {
+      syncing: false,
       name: '',
       nameInput: 'guest',
       setFound: false,
@@ -20,12 +23,22 @@ class Guest extends Component {
     };
   }
 
-  componentDidMount() {
-    socket.on('guest', data => {
+  componentDidUpdate(prevProps, prevState) {
+    if (!prevState.declarer && this.state.declarer) {
       this.setState({
-        ...data.payload
+        syncing: false
+      });
+    }
+  }
+
+  componentDidMount() {
+    this.gameRef = firestore.collection('games').doc('foo');
+    this.gameRef.onSnapshot(doc => {
+      this.setState({
+        ...doc.data()
       });
     });
+    this.actionsRef = this.gameRef.collection('actions');
   }
 
   handleNickname = e => {
@@ -33,7 +46,7 @@ class Guest extends Component {
     this.setState({
       name: this.state.nameInput
     });
-    socket.emit('guest', {
+    this.sendAction({
       type: 'join',
       payload: { name: this.state.nameInput }
     });
@@ -41,11 +54,16 @@ class Guest extends Component {
 
   handleCardClick = card => {
     const { declarer, name } = this.state;
+    console.log(declarer, name);
     if (declarer === name) {
       const newSelected = cardToggle(card, this.state.selected);
-      socket.emit('guest', {
+      const action = {
         type: 'select',
         payload: { selected: newSelected, name: this.state.name }
+      };
+      this.sendAction(action);
+      this.setState({
+        selected: newSelected
       });
     } else {
       this.handleDeclare();
@@ -54,9 +72,21 @@ class Guest extends Component {
 
   handleDeclare = () => {
     console.log('SET declared!');
-    socket.emit('guest', {
+    const action = {
       type: 'declare',
       payload: { name: this.state.name }
+    };
+    console.log('Change syncing');
+    this.setState({
+      syncing: true
+    });
+    this.sendAction(action);
+  };
+
+  sendAction = action => {
+    this.actionsRef.add({
+      ...action,
+      created: firebase.firestore.FieldValue.serverTimestamp()
     });
   };
 
@@ -89,6 +119,7 @@ class Guest extends Component {
           players={players}
           setFound={this.state.setFound}
           gameOver={this.state.gameOver}
+          syncing={this.state.syncing}
         />
       </div>
     );

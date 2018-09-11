@@ -131,14 +131,11 @@ export const removeSelected = state => {
     let index = newBoard.indexOf(c);
     newBoard[index] = newCards[i];
   });
-  while (countSets(newBoard) < 3) {
+  while (countSets(newBoard) === 0) {
     ({ deck: newDeck, board: newBoard } = reshuffle({
       board: newBoard,
       deck: newDeck
     }));
-    // newDeck = shuffle(concat(newBoard, newDeck));
-    // newBoard = newDeck.slice(0, 12);
-    // newDeck = newDeck.slice(12);
   }
 
   return {

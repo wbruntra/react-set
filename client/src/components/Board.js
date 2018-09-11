@@ -27,8 +27,10 @@ class Board extends Component {
       declarer,
       players,
       setFound,
-      gameOver
+      gameOver,
+      syncing
     } = this.props;
+    console.log('render', syncing);
     const { sets } = this.state;
     if (gameOver) {
       return <div>GAME OVER!</div>;
@@ -82,6 +84,11 @@ class Board extends Component {
                 </div>
               );
             })}
+            {syncing && (
+              <div className="progress">
+                <div className="indeterminate" style={{ width: '50%' }} />
+              </div>
+            )}
           </div>
           <div className="row">
             {map(players, (score, name) => {
