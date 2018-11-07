@@ -81,7 +81,7 @@ class Host extends Component {
         this.setAndSendState({ players: newPlayers });
         break;
       case 'declare':
-        this.performDeclare(payload.name);
+        this.performDeclare(payload.name, payload.selected);
         break;
       case 'select':
         if (
@@ -119,7 +119,7 @@ class Host extends Component {
           window.created = action.created;
           console.log(action);
           this.processAction(action);
-          this.actionsRef.doc(change.doc.id).delete();
+          // this.actionsRef.doc(change.doc.id).delete();
         }
         if (change.type === 'removed') {
           console.log('Removed action: ', change.doc.data());
@@ -128,11 +128,12 @@ class Host extends Component {
     });
   }
 
-  performDeclare = declarer => {
+  performDeclare = (declarer, selected) => {
     const timeNow = new Date().getTime();
     const update = {
       declarer,
-      timeDeclared: timeNow
+      selected,
+      timeDeclared: timeNow,
     };
     if (!this.state.declarer) {
       this.setAndSendState(update);

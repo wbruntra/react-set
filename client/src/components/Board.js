@@ -30,7 +30,7 @@ class Board extends Component {
       gameOver,
       syncing
     } = this.props;
-    console.log('render', syncing);
+    // console.log('render', syncing);
     const { sets } = this.state;
     if (gameOver) {
       return <div>GAME OVER!</div>;

@@ -11,7 +11,7 @@ class Guest extends Component {
     const initialGameState = {
       deck: [],
       board: [],
-      selected: []
+      selected: [],
     };
     this.state = {
       syncing: false,
@@ -19,23 +19,29 @@ class Guest extends Component {
       nameInput: 'guest',
       setFound: false,
       autoplay: false,
-      ...initialGameState
+      ...initialGameState,
     };
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (!prevState.declarer && this.state.declarer) {
       this.setState({
-        syncing: false
+        syncing: false,
       });
     }
   }
 
   componentDidMount() {
+    // const previousNickname = localStorage.getItem('nickname');
+    // if (previousNickname) {
+    //   this.setState({
+    //     name: previousNickname,
+    //   });
+    // }
     this.gameRef = firestore.collection('games').doc('foo');
     this.gameRef.onSnapshot(doc => {
       this.setState({
-        ...doc.data()
+        ...doc.data(),
       });
     });
     this.actionsRef = this.gameRef.collection('actions');
@@ -43,12 +49,13 @@ class Guest extends Component {
 
   handleNickname = e => {
     e.preventDefault();
+    localStorage.setItem('nickname', this.state.nameInput);
     this.setState({
-      name: this.state.nameInput
+      name: this.state.nameInput,
     });
     this.sendAction({
       type: 'join',
-      payload: { name: this.state.nameInput }
+      payload: { name: this.state.nameInput },
     });
   };
 
@@ -59,26 +66,27 @@ class Guest extends Component {
       const newSelected = cardToggle(card, this.state.selected);
       const action = {
         type: 'select',
-        payload: { selected: newSelected, name: this.state.name }
+        payload: { selected: newSelected, name: this.state.name },
       };
       this.sendAction(action);
       this.setState({
-        selected: newSelected
+        selected: newSelected,
       });
     } else {
-      this.handleDeclare();
+      this.handleDeclare(card);
     }
   };
 
-  handleDeclare = () => {
+  handleDeclare = card => {
     console.log('SET declared!');
     const action = {
       type: 'declare',
-      payload: { name: this.state.name }
+      payload: { selected: [card], name: this.state.name },
     };
+    // console.log(JSON.stringify(action))
     console.log('Change syncing');
     this.setState({
-      syncing: true
+      syncing: true,
     });
     this.sendAction(action);
   };
@@ -86,7 +94,7 @@ class Guest extends Component {
   sendAction = action => {
     this.actionsRef.add({
       ...action,
-      created: firebase.firestore.FieldValue.serverTimestamp()
+      created: firebase.firestore.FieldValue.serverTimestamp(),
     });
   };
 
