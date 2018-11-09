@@ -1,15 +1,28 @@
 import { clone, range, shuffle, concat, includes, without } from 'lodash';
 
-const displaySet = tuple => {
-  const matrix = range(3).map(i => {
-    const row = range(4).map(j => {
-      if (tuple.includes(4 * i + j)) {
-        return 'x';
-      }
-      return 'o';
+const displaySet = (tuple, rowSize = 3) => {
+  let matrix;
+  if (rowSize == 4) {
+    matrix = range(3).map(i => {
+      const row = range(4).map(j => {
+        if (tuple.includes(4 * i + j)) {
+          return 'x';
+        }
+        return 'o';
+      });
+      return row.join('');
     });
-    return row.join('');
-  });
+  } else {
+    matrix = range(4).map(i => {
+      const row = range(3).map(j => {
+        if (tuple.includes(3 * i + j)) {
+          return 'x';
+        }
+        return 'o';
+      });
+      return row.join('');
+    })
+  }
   console.log(matrix.join('\n'));
 };
 

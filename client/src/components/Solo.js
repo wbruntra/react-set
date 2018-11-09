@@ -5,7 +5,7 @@ import {
   makeDeck,
   cardToggle,
   reshuffle,
-  removeSelected,
+  removeSelected as removeSelectedCards,
   isSet
 } from '../utils/helpers';
 // import socket from '../socket';
@@ -57,76 +57,11 @@ class Host extends Component {
       ...players,
       [declarer]: players[declarer] + 1
     };
-    return {
+    this.setState({
       players: newPlayers,
       gameOver: newScore >= 6
-    };
+    });
   };
-
-  processAction = (action) => {
-    const timeNow = new Date().getTime();
-    const { type, payload } = action;
-    const { players, declarer, timeDeclared, selected } = this.state;
-    switch (type) {
-      case 'join':
-        if (
-          Object.keys(players).includes(payload.name)
-        ) {
-          return;
-        }
-        const newPlayers = {
-          ...players,
-          [payload.name]: 0
-        };
-        this.setAndSendState({ players: newPlayers });
-        break;
-      case 'declare':
-        this.performDeclare(payload.name, payload.selected);
-        break;
-      case 'select':
-        if (
-          payload.name === declarer &&
-          timeNow - timeDeclared < config.turnTime
-        ) {
-          this.updateSelected(payload.selected);
-        } else {
-          console.log('Selection invalid');
-        }
-        break;
-      default:
-        return;
-    }
-  }
-
-  componentDidMount() {
-    const { board, deck } = this.state;
-    this.gameRef = firestore.collection('games').doc('foo');
-    this.gameRef.set({
-      board,
-      deck
-    });
-    this.actionsRef = this.gameRef.collection('actions');
-    this.actionsRef.get().then(snapshot => {
-      snapshot.forEach(doc => {
-        console.log(doc.id, '=>', doc.data());
-      });
-    });
-
-    this.actionsRef.onSnapshot(snapshot => {
-      snapshot.docChanges().forEach(change => {
-        if (change.type === 'added') {
-          const action = change.doc.data();
-          window.created = action.created;
-          console.log(action);
-          this.processAction(action);
-          this.actionsRef.doc(change.doc.id).delete();
-        }
-        if (change.type === 'removed') {
-          console.log('Removed action: ', change.doc.data());
-        }
-      });
-    });
-  }
 
   performDeclare = (declarer, selected) => {
     const timeNow = new Date().getTime();
@@ -136,37 +71,28 @@ class Host extends Component {
       timeDeclared: timeNow,
     };
     if (!this.state.declarer) {
-      this.setAndSendState(update);
+      this.setState(update);
       this.undeclareID = setTimeout(() => {
         const nextUpdate = {
           declarer: null,
           timeDeclared: null,
           selected: []
         };
-        this.setAndSendState(nextUpdate);
+        this.setState(nextUpdate);
       }, config.turnTime);
     }
   };
 
-  setAndSendState = update => {
-    this.setState(update);
-    this.gameRef.update({
-      ...update
-    });
-  };
-
   updateSelected = newSelected => {
-    const newState = {
-      setFound: isSet(newSelected),
-      selected: newSelected,
-    };
-    if (newState.setFound) {
+    if (isSet(newSelected)) {
+      this.markPointForDeclarer();
+      this.setState({ setFound: true });
       clearTimeout(this.undeclareID);
       setTimeout(() => {
         this.removeSet();
       }, 2000);
     }
-    this.setAndSendState(newState);
+    this.setState({ selected: newSelected });
   };
 
   handleCardClick = card => {
@@ -194,15 +120,13 @@ class Host extends Component {
   removeSet = () => {
     if (isSet(this.state.selected)) {
       console.log('Set found, removing');
-      const newScores = this.markPointForDeclarer();
       const newState = {
         setFound: false,
         declarer: null,
         timeDeclared: null,
-        ...newScores,
-        ...removeSelected(this.state)
+        ...removeSelectedCards(this.state)
       };
-      this.setAndSendState(newState);
+      this.setState(newState);
     }
   };
 

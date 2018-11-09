@@ -2,35 +2,26 @@ import React, { Component } from 'react';
 import { includes, map } from 'lodash';
 import images from './assets/Files';
 import { countSets } from '../utils/helpers';
+import Card from './Card';
 
 class Board extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      sets: countSets(props.board, true)
+      sets: countSets(props.board, true),
     };
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (JSON.stringify(prevProps.board) !== JSON.stringify(this.props.board)) {
       this.setState({
-        sets: countSets(this.props.board, true)
+        sets: countSets(this.props.board, true),
       });
     }
   }
 
   render() {
-    const {
-      board,
-      selected,
-      deck,
-      declarer,
-      players,
-      setFound,
-      gameOver,
-      syncing
-    } = this.props;
-    // console.log('render', syncing);
+    const { board, selected, deck, declarer, players, setFound, gameOver, syncing } = this.props;
     const { sets } = this.state;
     if (gameOver) {
       return <div>GAME OVER!</div>;
@@ -63,23 +54,13 @@ class Board extends Component {
               return (
                 <div
                   key={card}
-                  className={
-                    'col s4 m3 card' + (includes(selected, card) ? ' red' : '')
-                  }
+                  className={'col s4' + (includes(selected, card) ? ' amber accent-2' : '')}
                   onClick={() => {
                     this.props.handleCardClick(card);
                   }}
                 >
-                  <div className="card-image">
-                    <img
-                      className={
-                        setFound && !includes(selected, card)
-                          ? 'blurry'
-                          : undefined
-                      }
-                      src={images[card]}
-                      alt={card}
-                    />
+                  <div className={`card ${setFound && !includes(selected, card) ? 'blurry' : ''}`}>
+                    <Card desc={card} />
                   </div>
                 </div>
               );
@@ -100,22 +81,9 @@ class Board extends Component {
             })}
           </div>
           <div className="row">
-            {/* <button className="btn" onClick={this.props.handleDeclare}>
-              SET!
-            </button> */}
             {this.props.handleRedeal && (
               <button onClick={this.props.handleRedeal} className="btn">
                 Shuffle
-              </button>
-            )}
-            {this.state.setFound && (
-              <button
-                onClick={() => {
-                  this.props.dealNext();
-                }}
-                className="btn"
-              >
-                Next
               </button>
             )}
           </div>

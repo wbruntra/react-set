@@ -43,6 +43,7 @@ class Guest extends Component {
       this.setState({
         ...doc.data(),
       });
+      console.log(doc.data());
     });
     this.actionsRef = this.gameRef.collection('actions');
   }
@@ -61,7 +62,6 @@ class Guest extends Component {
 
   handleCardClick = card => {
     const { declarer, name } = this.state;
-    console.log(declarer, name);
     if (declarer === name) {
       const newSelected = cardToggle(card, this.state.selected);
       const action = {
