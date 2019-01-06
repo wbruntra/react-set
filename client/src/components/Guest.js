@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import Board from './Board';
 import { cardToggle } from '../utils/helpers';
-// import socket from '../socket';
 import * as firebase from 'firebase';
 import firestore from '../firestore';
 

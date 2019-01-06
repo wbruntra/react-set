@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 import Host from './Host';
@@ -9,7 +9,7 @@ import Solo from './Solo';
 class App extends Component {
   render() {
     return (
-      <div>
+      <Fragment>
         <Router>
           <Switch>
             <Route exact path="/" component={Host} />
@@ -18,7 +18,7 @@ class App extends Component {
             <Route path="/solo" component={Solo} />
           </Switch>
         </Router>
-      </div>
+      </Fragment>
     );
   }
 }

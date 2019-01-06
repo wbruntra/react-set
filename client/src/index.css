@@ -4,6 +4,14 @@ body {
   font-family: sans-serif;
 }
 
+nav .brand-logo {
+  font-size: 1.8rem;
+}
+
+.row {
+  margin-bottom: 10px;
+}
+
 .blurry {
   filter: grayscale(1) blur(9px);
 }

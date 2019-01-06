@@ -6,37 +6,28 @@ import {
   cardToggle,
   reshuffle,
   removeSelected as removeSelectedCards,
-  isSet
+  isSet,
 } from '../utils/helpers';
 // import socket from '../socket';
 import firestore from '../firestore';
 
 const config = {
-  turnTime: 5000
+  turnTime: 5000,
 };
 
-// const sendUpdate = (socket, payload) => {
-//   socket.emit('host', {
-//     type: 'update',
-//     payload: {
-//       ...payload
-//     }
-//   });
-// };
-
-class Host extends Component {
+class Solo extends Component {
   constructor(props) {
     super(props);
     const initialDeck = makeDeck();
     const initialGameState = {
       ...reshuffle({
         deck: initialDeck.slice(12),
-        board: initialDeck.slice(0, 12)
+        board: initialDeck.slice(0, 12),
       }),
-      selected: []
+      selected: [],
     };
     const players = {
-      host: 0
+      host: 0,
     };
 
     this.state = {
@@ -46,7 +37,7 @@ class Host extends Component {
       declarer: null,
       timeDeclared: null,
       gameOver: false,
-      ...initialGameState
+      ...initialGameState,
     };
   }
 
@@ -55,11 +46,11 @@ class Host extends Component {
     const newScore = players[declarer] + 1;
     const newPlayers = {
       ...players,
-      [declarer]: players[declarer] + 1
+      [declarer]: players[declarer] + 1,
     };
     this.setState({
       players: newPlayers,
-      gameOver: newScore >= 6
+      gameOver: newScore >= 6,
     });
   };
 
@@ -76,7 +67,7 @@ class Host extends Component {
         const nextUpdate = {
           declarer: null,
           timeDeclared: null,
-          selected: []
+          selected: [],
         };
         this.setState(nextUpdate);
       }, config.turnTime);
@@ -96,7 +87,7 @@ class Host extends Component {
   };
 
   handleCardClick = card => {
-    console.log(card, 'clicked')
+    console.log(card, 'clicked');
     const { declarer } = this.state;
     if (declarer && declarer === 'host') {
       const newSelected = cardToggle(card, this.state.selected);
@@ -107,7 +98,7 @@ class Host extends Component {
     }
   };
 
-  handleDeclare = (card) => {
+  handleDeclare = card => {
     console.log('SET declared!');
     this.performDeclare('host', card);
   };
@@ -124,7 +115,7 @@ class Host extends Component {
         setFound: false,
         declarer: null,
         timeDeclared: null,
-        ...removeSelectedCards(this.state)
+        ...removeSelectedCards(this.state),
       };
       this.setState(newState);
     }
@@ -133,22 +124,20 @@ class Host extends Component {
   render() {
     const { board, deck, selected, declarer, players } = this.state;
     return (
-      <div>
-        <Board
-          board={board}
-          deck={deck}
-          selected={selected}
-          declarer={declarer}
-          handleCardClick={this.handleCardClick}
-          handleDeclare={this.handleDeclare}
-          handleRedeal={this.handleRedeal}
-          players={players}
-          setFound={this.state.setFound}
-          gameOver={this.state.gameOver}
-        />
-      </div>
+      <Board
+        board={board}
+        deck={deck}
+        selected={selected}
+        declarer={declarer}
+        handleCardClick={this.handleCardClick}
+        handleDeclare={this.handleDeclare}
+        handleRedeal={this.handleRedeal}
+        players={players}
+        setFound={this.state.setFound}
+        gameOver={this.state.gameOver}
+      />
     );
   }
 }
 
-export default Host;
+export default Solo;

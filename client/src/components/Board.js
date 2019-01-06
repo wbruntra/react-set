@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { includes, map } from 'lodash';
+import React, { Component, Fragment } from 'react';
+import { includes, map, debounce } from 'lodash';
 import { countSets } from '../utils/helpers';
 import Card from './Card';
 
@@ -9,6 +9,16 @@ class Board extends Component {
     this.state = {
       sets: countSets(props.board, true),
     };
+  }
+
+  resize = () => this.forceUpdate();
+
+  componentDidMount() {
+    window.addEventListener('resize', debounce(this.resize, 150));
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.resize);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -26,7 +36,7 @@ class Board extends Component {
       return <div>GAME OVER!</div>;
     }
     return (
-      <div>
+      <Fragment>
         <div className="navbar-fixed">
           <nav>
             <div className="nav-wrapper">
@@ -47,7 +57,7 @@ class Board extends Component {
             </div>
           </nav>
         </div>
-        <div className="container">
+        <div className="container" style={{ maxWidth: 0.95 * window.innerHeight }}>
           <div className="row">
             {board.map(card => {
               return (
@@ -87,7 +97,7 @@ class Board extends Component {
             )}
           </div>
         </div>
-      </div>
+      </Fragment>
     );
   }
 }
