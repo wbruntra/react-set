@@ -1,0 +1,30 @@
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+- url: /favicon\.ico
+  static_files: client/build/favicon.ico
+  upload: build/favicon\.ico
+- url: /(.*)\.json
+  static_files: client/build/\1.json
+  upload: client/build/(.*)\.json
+- url: /static
+  static_dir: client/build/static
+- url: /(.*)\.js
+  static_files: client/build/\1.js
+  upload: client/build/(.*)\.js
+- url: /.*
+  static_files: client/build/index.html
+  upload: client/build/index.html
+
+skip_files:
+- ^(.*/)?#.*#$
+- ^(.*/)?.*~$
+- ^(.*/)?.*\.py[co]$
+- ^(.*/)?.*/RCS/.*$
+- ^(.*/)?\..*$
+- ^(.*/)?.*\.bak$
+- (.*/)?node_modules/
+- client/src/
+- client/public/

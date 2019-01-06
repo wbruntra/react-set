@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { includes, map } from 'lodash';
-import images from './assets/Files';
 import { countSets } from '../utils/helpers';
 import Card from './Card';
 
