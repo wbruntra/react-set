@@ -1,9 +1,20 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import { Modal } from 'react-materialize';
 
 class Main extends Component {
-  state = {};
+  state = {
+    popupVisible: true,
+  };
+
+  togglePopup = () => {
+    this.setState(state => ({
+      popupVisible: !state.popupVisible,
+    }));
+  };
+
   render() {
+    const { popupVisible } = this.state;
     return (
       <div className="container">
         <ul className="collection">
@@ -16,7 +27,23 @@ class Main extends Component {
           <li className="collection-item">
             <Link to="/host">Host</Link>
           </li>
+          <li className="collection-item">
+            <p
+              onClick={() => {
+                // window.$('#popup').modal('open');
+                this.togglePopup();
+              }}
+            >
+              Hello world
+            </p>
+          </li>
         </ul>
+        {/* <div className="modal popup-message" style={{display:popupVisible ? 'block' : 'none'}}>
+          <div className="modal-content">
+            <h4 className="center-align">Declaring...</h4>
+          </div>
+        </div> */}
+        {/* <Modal id="popup">Hello, world!</Modal> */}
       </div>
     );
   }

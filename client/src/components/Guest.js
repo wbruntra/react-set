@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import Board from './Board';
 import { cardToggle } from '../utils/helpers';
 import * as firebase from 'firebase';
@@ -13,7 +13,9 @@ class Guest extends Component {
       selected: [],
     };
     this.state = {
+      popupVisible: false,
       syncing: false,
+      dots: '',
       name: '',
       nameInput: 'guest',
       setFound: false,
@@ -26,11 +28,14 @@ class Guest extends Component {
     if (!prevState.declarer && this.state.declarer) {
       this.setState({
         syncing: false,
+        popupVisible: false,
       });
+      window.clearInterval(this.progressBar);
     }
   }
 
   componentDidMount() {
+    // this.togglePopup();
     // const previousNickname = localStorage.getItem('nickname');
     // if (previousNickname) {
     //   this.setState({
@@ -86,6 +91,7 @@ class Guest extends Component {
     console.log('Change syncing');
     this.setState({
       syncing: true,
+      popupVisible: true,
     });
     this.sendAction(action);
   };
@@ -97,8 +103,22 @@ class Guest extends Component {
     });
   };
 
+  togglePopup = () => {
+    this.setState(state => ({
+      popupVisible: !state.popupVisible,
+    }));
+    this.progressBar = window.setInterval(() => {
+      this.setState(state => {
+        let newDots = state.dots.length > 2 ? '' : state.dots + '.';
+        return {
+          dots: newDots,
+        };
+      });
+    }, 350);
+  };
+
   render() {
-    const { board, deck, selected, name, declarer, players } = this.state;
+    const { board, deck, selected, name, declarer, players, popupVisible } = this.state;
     if (!name) {
       return (
         <div>
@@ -115,7 +135,15 @@ class Guest extends Component {
       );
     }
     return (
-      <div>
+      <Fragment>
+        <div className="modal popup-message" style={{ display: popupVisible ? 'block' : 'none' }}>
+          <div className="modal-content">
+            <h4 className="center-align">Declaring</h4>
+            <div className="progress">
+              <div className="indeterminate" style={{ width: '30%' }} />
+            </div>
+          </div>
+        </div>
         <Board
           board={board}
           deck={deck}
@@ -128,7 +156,7 @@ class Guest extends Component {
           gameOver={this.state.gameOver}
           syncing={this.state.syncing}
         />
-      </div>
+      </Fragment>
     );
   }
 }

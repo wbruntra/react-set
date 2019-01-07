@@ -74,11 +74,11 @@ class Board extends Component {
                 </div>
               );
             })}
-            {syncing && (
+            {/* {syncing && (
               <div className="progress">
                 <div className="indeterminate" style={{ width: '50%' }} />
               </div>
-            )}
+            )} */}
           </div>
           <div className="row">
             {map(players, (score, name) => {
