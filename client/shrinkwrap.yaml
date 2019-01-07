@@ -1,5 +1,6 @@
 dependencies:
   firebase: 5.7.2
+  immutability-helper: 2.9.0
   jquery: 2.1.1
   lodash: 4.17.11
   materialize-css: 1.0.0-rc.2
@@ -5746,6 +5747,12 @@ packages:
     dev: false
     resolution:
       integrity: sha512-4Urocwu9+XLDJw4Tc6ZCg7APVjjLInCFvO4TwGsAYV5zT6YYSor14dsZR0+0tHlDIN92cFUOq+i7fC00G5vTxA==
+  /immutability-helper/2.9.0:
+    dependencies:
+      invariant: 2.2.4
+    dev: false
+    resolution:
+      integrity: sha512-2LYtDuGugMLyoFV0qGvblnq39E2VVQ9m4dDktlRLVBBVV1LnUMK0rlqkbtlUjfT1UJO876OobtPlNZTEbOOYVQ==
   /import-cwd/2.1.0:
     dependencies:
       import-from: 2.1.0
@@ -11810,6 +11817,7 @@ shrinkwrapMinorVersion: 9
 shrinkwrapVersion: 3
 specifiers:
   firebase: ^5.5.8
+  immutability-helper: ^2.9.0
   jquery: ^2.1.1
   lodash: ^4.17.11
   materialize-css: ^1.0.0-rc.2

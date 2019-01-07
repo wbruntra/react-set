@@ -2,11 +2,12 @@ import React, { Component } from 'react';
 import Board from './Board';
 // import { concat } from 'lodash';
 import { makeDeck, cardToggle, reshuffle, removeSelected, isSet } from '../utils/helpers';
-
+import update from 'immutability-helper';
 import firestore from '../firestore';
 
 const config = {
   turnTime: 5000,
+  colors: [' amber accent-2', ' light-blue lighten-3', ' pink lighten-3', ' purple darken-1'],
 };
 
 class Host extends Component {
@@ -21,11 +22,16 @@ class Host extends Component {
       selected: [],
     };
     const players = {
-      host: 0,
+      host: {
+        score: 0,
+        color: config.colors[0],
+      },
     };
 
     this.state = {
       players,
+      myName: 'host',
+      myColor: config.colors[0],
       setFound: false,
       autoplay: false,
       declarer: null,
@@ -37,11 +43,14 @@ class Host extends Component {
 
   markPointForDeclarer = () => {
     const { declarer, players } = this.state;
-    const newScore = players[declarer] + 1;
-    const newPlayers = {
-      ...players,
-      [declarer]: players[declarer] + 1,
-    };
+    const newScore = players[declarer].score + 1;
+    const newPlayers = update(players, {
+      [declarer]: {
+        $merge: {
+          score: newScore,
+        },
+      },
+    });
     return {
       players: newPlayers,
       gameOver: newScore >= 6,
@@ -59,8 +68,12 @@ class Host extends Component {
         }
         const newPlayers = {
           ...players,
-          [payload.name]: 0,
+          [payload.name]: {
+            score: 0,
+            color: config.colors[Object.keys(players).length],
+          },
         };
+        console.log(newPlayers);
         this.setAndSendState({ players: newPlayers });
         break;
       case 'declare':
@@ -71,6 +84,14 @@ class Host extends Component {
           this.updateSelected(payload.selected);
         } else {
           console.log('Selection invalid');
+        }
+        break;
+      case 'found':
+        if (!declarer) {
+          this.setState({
+            declarer: payload.name,
+          });
+          this.updateSelected(payload.selected, payload.name);
         }
         break;
       default:
@@ -135,11 +156,14 @@ class Host extends Component {
     });
   };
 
-  updateSelected = newSelected => {
+  updateSelected = (newSelected, declarer) => {
     const newState = {
       setFound: isSet(newSelected),
       selected: newSelected,
     };
+    if (declarer) {
+      newState.declarer = declarer;
+    }
     if (newState.setFound) {
       clearTimeout(this.undeclareID);
       setTimeout(() => {
@@ -151,14 +175,22 @@ class Host extends Component {
 
   handleCardClick = card => {
     console.log(card, 'clicked');
-    const { declarer } = this.state;
-    if (declarer && declarer === 'host') {
-      const newSelected = cardToggle(card, this.state.selected);
-      this.updateSelected(newSelected);
-    } else {
-      console.log('Click! Not active player');
-      this.handleDeclare(card);
+    // const { declarer } = this.state;
+    const newSelected = cardToggle(card, this.state.selected);
+    if (isSet(newSelected)) {
+      this.setState({
+        declarer: 'host',
+      });
+      this.updateSelected(newSelected, 'host');
     }
+    this.setState({
+      selected: newSelected,
+    });
+    // if (declarer && declarer === 'host') {
+    // } else {
+    //   console.log('Click! Not active player');
+    //   this.handleDeclare(card);
+    // }
   };
 
   handleDeclare = card => {
@@ -200,6 +232,7 @@ class Host extends Component {
         players={players}
         setFound={this.state.setFound}
         gameOver={this.state.gameOver}
+        myName={this.state.myName}
       />
     );
   }

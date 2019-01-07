@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { includes, map, debounce } from 'lodash';
+import { includes, isEmpty, map, debounce } from 'lodash';
 import { countSets } from '../utils/helpers';
 import Card from './Card';
 
@@ -30,7 +30,22 @@ class Board extends Component {
   }
 
   render() {
-    const { board, selected, deck, declarer, players, setFound, gameOver, syncing } = this.props;
+    const {
+      board,
+      selected,
+      deck,
+      declarer,
+      players,
+      setFound,
+      gameOver,
+      syncing,
+      myName,
+    } = this.props;
+    if (isEmpty(players)) {
+      return null;
+    }
+    const borderColor = declarer ? players[declarer].color : players[myName].color;
+    // const borderColor = ' purple darken-1';
     const { sets } = this.state;
     if (gameOver) {
       return <div>GAME OVER!</div>;
@@ -63,7 +78,7 @@ class Board extends Component {
               return (
                 <div
                   key={card}
-                  className={'col s4' + (includes(selected, card) ? ' amber accent-2' : '')}
+                  className={'col s4' + (includes(selected, card) ? borderColor : '')}
                   onClick={() => {
                     this.props.handleCardClick(card);
                   }}
@@ -81,10 +96,12 @@ class Board extends Component {
             )} */}
           </div>
           <div className="row">
-            {map(players, (score, name) => {
+            {map(players, (info, name) => {
               return (
                 <div key={name} className="col s4 m3">
-                  {name}: {score}
+                  <span className={'player-name' + info.color}>
+                    {name}: {info.score}
+                  </span>
                 </div>
               );
             })}

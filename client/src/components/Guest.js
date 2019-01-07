@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import Board from './Board';
-import { cardToggle } from '../utils/helpers';
+import { cardToggle, isSet } from '../utils/helpers';
 import * as firebase from 'firebase';
 import firestore from '../firestore';
 
@@ -46,6 +46,7 @@ class Guest extends Component {
     this.gameRef.onSnapshot(doc => {
       this.setState({
         ...doc.data(),
+        popupVisible: false,
       });
       console.log(doc.data());
     });
@@ -66,19 +67,21 @@ class Guest extends Component {
 
   handleCardClick = card => {
     const { declarer, name } = this.state;
-    if (declarer === name) {
-      const newSelected = cardToggle(card, this.state.selected);
+    const newSelected = cardToggle(card, this.state.selected);
+    const newState = {};
+    if (isSet(newSelected)) {
       const action = {
-        type: 'select',
-        payload: { selected: newSelected, name: this.state.name },
+        type: 'found',
+        payload: { selected: newSelected, name },
       };
       this.sendAction(action);
-      this.setState({
-        selected: newSelected,
-      });
-    } else {
-      this.handleDeclare(card);
+      newState.popupVisible = true;
     }
+    this.setState({
+      ...newState,
+      selected: newSelected,
+    });
+    // this.handleDeclare(card);
   };
 
   handleDeclare = card => {
@@ -138,7 +141,7 @@ class Guest extends Component {
       <Fragment>
         <div className="modal popup-message" style={{ display: popupVisible ? 'block' : 'none' }}>
           <div className="modal-content">
-            <h4 className="center-align">Declaring</h4>
+            <p className="flow-text center-align">SET!</p>
             <div className="progress">
               <div className="indeterminate" style={{ width: '30%' }} />
             </div>
@@ -155,6 +158,7 @@ class Guest extends Component {
           setFound={this.state.setFound}
           gameOver={this.state.gameOver}
           syncing={this.state.syncing}
+          myName={this.state.name}
         />
       </Fragment>
     );
