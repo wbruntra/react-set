@@ -5,7 +5,7 @@ threadsafe: true
 handlers:
 - url: /favicon\.ico
   static_files: client/build/favicon.ico
-  upload: build/favicon\.ico
+  upload: client/build/favicon\.ico
 - url: /(.*)\.json
   static_files: client/build/\1.json
   upload: client/build/(.*)\.json

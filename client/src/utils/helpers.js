@@ -2,7 +2,7 @@ import { clone, range, shuffle, concat, includes, without } from 'lodash';
 
 const displaySet = (tuple, rowSize = 3) => {
   let matrix;
-  if (rowSize == 4) {
+  if (rowSize === 4) {
     matrix = range(3).map(i => {
       const row = range(4).map(j => {
         if (tuple.includes(4 * i + j)) {

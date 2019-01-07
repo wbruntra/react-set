@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { concat } from 'lodash';
 import firestore from '../firestore';
 
 class Lobby extends Component {
@@ -15,7 +14,6 @@ class Lobby extends Component {
   }
 
   componentDidMount() {
-    const { games } = this.state;
     this.gamesRef = firestore.collection('games');
 
     this.gamesRef.onSnapshot(snapshot => {

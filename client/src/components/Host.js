@@ -51,7 +51,7 @@ class Host extends Component {
   processAction = action => {
     const timeNow = new Date().getTime();
     const { type, payload } = action;
-    const { players, declarer, timeDeclared, selected } = this.state;
+    const { players, declarer, timeDeclared } = this.state;
     switch (type) {
       case 'join':
         if (Object.keys(players).includes(payload.name)) {

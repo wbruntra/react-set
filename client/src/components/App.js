@@ -5,6 +5,7 @@ import Host from './Host';
 import Guest from './Guest';
 import Lobby from './Lobby';
 import Solo from './Solo';
+import Main from './Main';
 
 class App extends Component {
   render() {
@@ -12,7 +13,8 @@ class App extends Component {
       <Fragment>
         <Router>
           <Switch>
-            <Route exact path="/" component={Host} />
+            <Route exact path="/" component={Main} />
+            <Route path="/host" component={Host} />
             <Route path="/guest" component={Guest} />
             <Route path="/lobby" component={Lobby} />
             <Route path="/solo" component={Solo} />

@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import Board from './Board';
-// import { concat } from 'lodash';
 import {
   makeDeck,
   cardToggle,
@@ -8,8 +7,6 @@ import {
   removeSelected as removeSelectedCards,
   isSet,
 } from '../utils/helpers';
-// import socket from '../socket';
-import firestore from '../firestore';
 
 const config = {
   turnTime: 5000,
