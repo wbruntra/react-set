@@ -33,7 +33,7 @@ class Guest extends Component {
   }
 
   componentDidMount() {
-    this.togglePopup();
+    // this.togglePopup();
     // const previousNickname = localStorage.getItem('nickname');
     // if (previousNickname) {
     //   this.setState({

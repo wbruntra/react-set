@@ -1,6 +1,6 @@
+// @flow
 import React, { Component } from 'react';
 import Board from './Board';
-// import { concat } from 'lodash';
 import { makeDeck, cardToggle, reshuffle, removeSelected, isSet } from '../utils/helpers';
 import update from 'immutability-helper';
 import firestore from '../firestore';
@@ -81,24 +81,23 @@ class Host extends Component {
             color: config.colors[Object.keys(players).length],
           },
         };
-        console.log(newPlayers);
         this.setAndSendState({ players: newPlayers });
         break;
-      case 'declare':
-        this.performDeclare(payload.name, payload.selected);
-        break;
-      case 'select':
-        if (payload.name === declarer && timeNow - timeDeclared < config.turnTime) {
-          this.updateSelected(payload.selected);
-        } else {
-          console.log('Selection invalid');
-        }
-        break;
+      // case 'declare':
+      //   this.performDeclare(payload.name, payload.selected);
+      //   break;
+      // case 'select':
+      //   if (payload.name === declarer && timeNow - timeDeclared < config.turnTime) {
+      //     this.updateSelected(payload.selected);
+      //   } else {
+      //     console.log('Selection invalid');
+      //   }
+      //   break;
       case 'found':
         if (!declarer) {
-          this.setState({
-            declarer: payload.name,
-          });
+          // this.setState({
+          //   declarer: payload.name,
+          // });
           this.updateSelected(payload.selected, payload.name);
         }
         break;
@@ -137,26 +136,6 @@ class Host extends Component {
     });
   }
 
-  performDeclare = (declarer, selected) => {
-    const timeNow = new Date().getTime();
-    const update = {
-      declarer,
-      selected,
-      timeDeclared: timeNow,
-    };
-    if (!this.state.declarer) {
-      this.setAndSendState(update);
-      this.undeclareID = setTimeout(() => {
-        const nextUpdate = {
-          declarer: null,
-          timeDeclared: null,
-          selected: [],
-        };
-        this.setAndSendState(nextUpdate);
-      }, config.turnTime);
-    }
-  };
-
   setAndSendState = update => {
     this.setState(update);
     this.gameRef.update({
@@ -164,14 +143,15 @@ class Host extends Component {
     });
   };
 
-  updateSelected = (newSelected, declarer) => {
+  updateSelected = (newSelected: Array<string>, declarer: string) => {
     const newState = {
       setFound: isSet(newSelected),
       selected: newSelected,
+      declarer,
     };
-    if (declarer) {
-      newState.declarer = declarer;
-    }
+    // if (declarer) {
+    //   newState.declarer = declarer;
+    // }
     if (newState.setFound) {
       clearTimeout(this.undeclareID);
       setTimeout(() => {
@@ -182,29 +162,21 @@ class Host extends Component {
   };
 
   handleCardClick = card => {
-    console.log(card, 'clicked');
-    // const { declarer } = this.state;
-    const newSelected = cardToggle(card, this.state.selected);
-    if (isSet(newSelected)) {
+    if (!this.state.declarer) {
+      const newSelected = cardToggle(card, this.state.selected);
+      if (isSet(newSelected)) {
+        this.updateSelected(newSelected, 'host');
+      }
       this.setState({
-        declarer: 'host',
+        selected: newSelected,
       });
-      this.updateSelected(newSelected, 'host');
     }
-    this.setState({
-      selected: newSelected,
-    });
-    // if (declarer && declarer === 'host') {
-    // } else {
-    //   console.log('Click! Not active player');
-    //   this.handleDeclare(card);
-    // }
   };
 
-  handleDeclare = card => {
-    console.log('SET declared!');
-    this.performDeclare('host', card);
-  };
+  // handleDeclare = card => {
+  //   console.log('SET declared!');
+  //   this.performDeclare('host', card);
+  // };
 
   handleRedeal = () => {
     const newState = reshuffle(this.state);
@@ -213,7 +185,6 @@ class Host extends Component {
 
   removeSet = () => {
     if (isSet(this.state.selected)) {
-      console.log('Set found, removing');
       const newScores = this.markPointForDeclarer();
       const newState = {
         setFound: false,
@@ -235,7 +206,7 @@ class Host extends Component {
         selected={selected}
         declarer={declarer}
         handleCardClick={this.handleCardClick}
-        handleDeclare={this.handleDeclare}
+        // handleDeclare={this.handleDeclare}
         handleRedeal={this.handleRedeal}
         players={players}
         setFound={this.state.setFound}

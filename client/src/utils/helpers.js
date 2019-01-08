@@ -1,6 +1,7 @@
+// @flow
 import { clone, range, shuffle, concat, includes, without } from 'lodash';
 
-const displaySet = (tuple, rowSize = 3) => {
+const displaySet = (tuple: Array<number>, rowSize: number = 3) => {
   let matrix;
   if (rowSize === 4) {
     matrix = range(3).map(i => {
@@ -21,7 +22,7 @@ const displaySet = (tuple, rowSize = 3) => {
         return 'o';
       });
       return row.join('');
-    })
+    });
   }
   console.log(matrix.join('\n'));
 };
@@ -30,12 +31,16 @@ export const serializeGame = state => {
   const status = JSON.stringify({
     board: state.board,
     deck: state.deck,
-    selected: state.selected
+    selected: state.selected,
   });
   return status;
 };
 
-export const countSets = (board, debug, returnWhenFound) => {
+export const countSets = (
+  board: Array<string>,
+  debug: boolean,
+  returnWhenFound: boolean,
+): number => {
   let count = 0;
   let candidate = [];
   for (let a = 0; a < board.length - 2; a++) {
@@ -57,7 +62,7 @@ export const countSets = (board, debug, returnWhenFound) => {
   return count;
 };
 
-export const makeDeck = () => {
+export const makeDeck = (): Array<string> => {
   const deck = [];
   range(3).forEach(c => {
     range(3).forEach(n => {
@@ -72,7 +77,7 @@ export const makeDeck = () => {
   return deck;
 };
 
-export const isSet = selected => {
+export const isSet = (selected: Array<string>): boolean => {
   if (selected.length !== 3) {
     return false;
   }
@@ -86,7 +91,7 @@ export const isSet = selected => {
   return true;
 };
 
-export const nameThird = (a, b) => {
+export const nameThird = (a: string, b: string): string => {
   let features;
   let missing;
   let result = '';
@@ -102,7 +107,7 @@ export const nameThird = (a, b) => {
   return result.trim();
 };
 
-export const cardToggle = (card, selected) => {
+export const cardToggle = (card: string, selected: Array<string>): Array<string> => {
   if (includes(selected, card)) {
     return without(selected, card);
   } else {
@@ -110,17 +115,14 @@ export const cardToggle = (card, selected) => {
   }
 };
 
-export const reshuffle = ({ board, deck }) => {
+export const reshuffle = ({ board, deck }: { board: Array<string>, deck: Array<string> }) => {
   let newDeck = shuffle(concat(board, deck));
-  while (
-    countSets(newDeck.slice(0, 12)) === 0 &&
-    countSets(newDeck, false, true)
-  ) {
+  while (countSets(newDeck.slice(0, 12)) === 0 && countSets(newDeck, false, true)) {
     newDeck = shuffle(newDeck);
   }
   return {
     deck: newDeck.slice(12),
-    board: newDeck.slice(0, 12)
+    board: newDeck.slice(0, 12),
   };
 };
 
@@ -129,9 +131,9 @@ export const reshuffle = ({ board, deck }) => {
 export const update = (ref, data) => {
   ref.set(
     {
-      ...data
+      ...data,
     },
-    { merge: true }
+    { merge: true },
   );
 };
 
@@ -147,13 +149,13 @@ export const removeSelected = state => {
   while (countSets(newBoard) === 0) {
     ({ deck: newDeck, board: newBoard } = reshuffle({
       board: newBoard,
-      deck: newDeck
+      deck: newDeck,
     }));
   }
 
   return {
     deck: newDeck,
     board: newBoard,
-    selected: []
+    selected: [],
   };
 };

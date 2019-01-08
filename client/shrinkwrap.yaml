@@ -1,5 +1,6 @@
 dependencies:
   firebase: 5.7.2
+  flow-bin: 0.89.0
   immutability-helper: 2.9.0
   lodash: 4.17.11
   materialize-css: 1.0.0-rc.2
@@ -4927,6 +4928,13 @@ packages:
     dev: false
     resolution:
       integrity: sha1-2uRqnXj74lKSJYzB54CkHZXAN4I=
+  /flow-bin/0.89.0:
+    dev: false
+    engines:
+      node: '>=0.10.0'
+    hasBin: true
+    resolution:
+      integrity: sha512-DkO4PsXYrl53V6G5+t5HbRMC5ajYUQej2LEGPUZ+j9okTb41Sn5j9vfxsCpXMEAslYnQoysHhYu4GUZsQX/DrQ==
   /flush-write-stream/1.0.3:
     dependencies:
       inherits: 2.0.3
@@ -11786,6 +11794,7 @@ shrinkwrapMinorVersion: 9
 shrinkwrapVersion: 3
 specifiers:
   firebase: ^5.5.8
+  flow-bin: ^0.89.0
   immutability-helper: ^2.9.0
   lodash: ^4.17.11
   materialize-css: ^1.0.0-rc.2
