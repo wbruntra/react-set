@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { includes, isEmpty, map, debounce } from 'lodash';
 import { countSets } from '../utils/helpers';
 import Card from './Card';
+import { Link } from 'react-router-dom';
 
 class Board extends Component {
   constructor(props) {
@@ -38,17 +39,22 @@ class Board extends Component {
       players,
       setFound,
       gameOver,
-      syncing,
       myName,
     } = this.props;
-    if (isEmpty(players)) {
+    if (isEmpty(players) || !Object.keys(players).includes(myName)) {
       return null;
     }
     const borderColor = declarer ? players[declarer].color : players[myName].color;
     // const borderColor = ' purple darken-1';
     const { sets } = this.state;
     if (gameOver) {
-      return <div>GAME OVER!</div>;
+      return <div className="container">
+      <p>
+      GAME OVER!
+
+      </p>
+      <Link to="/">Main Menu</Link>
+      </div>;
     }
     return (
       <Fragment>
@@ -89,11 +95,6 @@ class Board extends Component {
                 </div>
               );
             })}
-            {/* {syncing && (
-              <div className="progress">
-                <div className="indeterminate" style={{ width: '50%' }} />
-              </div>
-            )} */}
           </div>
           <div className="row">
             {map(players, (info, name) => {

@@ -1,8 +1,10 @@
 import React, { Component, Fragment } from 'react';
 import Board from './Board';
+import { isEmpty } from 'lodash';
 import { cardToggle, isSet } from '../utils/helpers';
 import * as firebase from 'firebase';
 import firestore from '../firestore';
+import Modal from './Modal';
 
 class Guest extends Component {
   constructor(props) {
@@ -14,10 +16,8 @@ class Guest extends Component {
     };
     this.state = {
       popupVisible: false,
-      syncing: false,
-      dots: '',
       name: '',
-      nameInput: 'guest',
+      nameInput: '',
       setFound: false,
       autoplay: false,
       ...initialGameState,
@@ -27,21 +27,20 @@ class Guest extends Component {
   componentDidUpdate(prevProps, prevState) {
     if (!prevState.declarer && this.state.declarer) {
       this.setState({
-        syncing: false,
         popupVisible: false,
       });
-      window.clearInterval(this.progressBar);
     }
   }
 
   componentDidMount() {
-    // this.togglePopup();
+    this.togglePopup();
     // const previousNickname = localStorage.getItem('nickname');
     // if (previousNickname) {
     //   this.setState({
     //     name: previousNickname,
     //   });
     // }
+    this.nameInput.focus();
     this.gameRef = firestore.collection('games').doc('foo');
     this.gameRef.onSnapshot(doc => {
       this.setState({
@@ -55,28 +54,36 @@ class Guest extends Component {
 
   handleNickname = e => {
     e.preventDefault();
-    localStorage.setItem('nickname', this.state.nameInput);
+    const { nameInput } = this.state;
+    const playerName = isEmpty(nameInput) ? 'guest' : nameInput;
+    localStorage.setItem('nickname', playerName);
     this.setState({
-      name: this.state.nameInput,
+      name: playerName,
     });
     this.sendAction({
       type: 'join',
-      payload: { name: this.state.nameInput },
+      payload: { name: playerName },
     });
   };
 
   handleCardClick = card => {
-    const { declarer, name } = this.state;
+    const { name } = this.state;
     const newSelected = cardToggle(card, this.state.selected);
     const newState = {};
-    if (isSet(newSelected)) {
-      const action = {
-        type: 'found',
-        payload: { selected: newSelected, name },
-      };
-      this.sendAction(action);
-      newState.popupVisible = true;
+    if (newSelected.length === 3) {
+      if (isSet(newSelected)) {
+        const action = {
+          type: 'found',
+          payload: { selected: newSelected, name },
+        };
+        this.sendAction(action);
+        newState.popupVisible = true;
+      } else {
+        console.log('Bad set selected!');
+        window.setTimeout(this.resetLocalSelected, 1000);
+      }
     }
+
     this.setState({
       ...newState,
       selected: newSelected,
@@ -84,20 +91,20 @@ class Guest extends Component {
     // this.handleDeclare(card);
   };
 
-  handleDeclare = card => {
-    console.log('SET declared!');
-    const action = {
-      type: 'declare',
-      payload: { selected: [card], name: this.state.name },
-    };
-    // console.log(JSON.stringify(action))
-    console.log('Change syncing');
-    this.setState({
-      syncing: true,
-      popupVisible: true,
-    });
-    this.sendAction(action);
-  };
+  // handleDeclare = card => {
+  //   console.log('SET declared!');
+  //   const action = {
+  //     type: 'declare',
+  //     payload: { selected: [card], name: this.state.name },
+  //   };
+  //   // console.log(JSON.stringify(action))
+  //   console.log('Change syncing');
+  //   this.setState({
+  //     syncing: true,
+  //     popupVisible: true,
+  //   });
+  //   this.sendAction(action);
+  // };
 
   sendAction = action => {
     this.actionsRef.add({
@@ -110,25 +117,34 @@ class Guest extends Component {
     this.setState(state => ({
       popupVisible: !state.popupVisible,
     }));
-    this.progressBar = window.setInterval(() => {
-      this.setState(state => {
-        let newDots = state.dots.length > 2 ? '' : state.dots + '.';
-        return {
-          dots: newDots,
-        };
+  };
+
+  resetLocalSelected = () => {
+    // NOTE: Need to be sure a real set wasn't found during the delay
+    const { declarer, selected } = this.state;
+    if (isSet(selected)) {
+      return;
+    }
+    if (selected.length === 3 && !declarer) {
+      this.setState({
+        selected: [],
       });
-    }, 350);
+    }
   };
 
   render() {
     const { board, deck, selected, name, declarer, players, popupVisible } = this.state;
     if (!name) {
       return (
-        <div>
+        <div className="container">
           <h2>Choose nickname</h2>
           <form onSubmit={this.handleNickname}>
             <input
+              ref={input => {
+                this.nameInput = input;
+              }}
               type="text"
+              placeholder="your name"
               value={this.state.nameInput}
               onChange={e => this.setState({ nameInput: e.target.value })}
             />
@@ -139,25 +155,23 @@ class Guest extends Component {
     }
     return (
       <Fragment>
-        <div className="modal popup-message" style={{ display: popupVisible ? 'block' : 'none' }}>
-          <div className="modal-content">
-            <p className="flow-text center-align">SET!</p>
-            <div className="progress">
-              <div className="indeterminate" style={{ width: '30%' }} />
-            </div>
+        <Modal visible={popupVisible}>
+          <p className="flow-text center-align">SET!</p>
+          <div className="progress">
+            <div className="indeterminate" style={{ width: '30%' }} />
           </div>
-        </div>
+        </Modal>
         <Board
           board={board}
           deck={deck}
           selected={selected}
           declarer={declarer}
           handleCardClick={this.handleCardClick}
-          handleDeclare={this.handleDeclare}
+          // handleDeclare={this.handleDeclare}
           players={players}
           setFound={this.state.setFound}
           gameOver={this.state.gameOver}
-          syncing={this.state.syncing}
+          // syncing={this.state.syncing}
           myName={this.state.name}
         />
       </Fragment>

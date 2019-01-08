@@ -10,8 +10,9 @@ const config = {
 };
 
 const Shape = ({ shape, fill, color }) => {
-  const { padding, height, width, strokeWidth } = config;
+  let { padding, height, width, strokeWidth } = config;
   if (shape === '0') {
+    padding = padding + 1;
     return (
       <g>
         {/* triangle */}
@@ -27,7 +28,7 @@ const Shape = ({ shape, fill, color }) => {
           ${width - padding},${padding}
           ${width - padding},${height - padding}
           ${padding},${height - padding}`}
-          style={{ fill: fill, stroke: color, strokeWidth: config.strokeWidth }}
+          style={{ fill: fill, stroke: color, strokeWidth: strokeWidth }}
         />
       </g>
     );
@@ -83,7 +84,7 @@ class Card extends Component {
   };
 
   drawShape = () => {
-    const [number, color, shape, fill] = this.props.desc.split('');
+    const [, color, shape, fill] = this.props.desc.split('');
     return (
       <Fragment>
         <g>
@@ -107,7 +108,7 @@ class Card extends Component {
   };
 
   render() {
-    const [number, color, shape, fill] = this.props.desc.split('');
+    const [number, color, , fill] = this.props.desc.split('');
     return (
       <div className="game-card">
         <svg width="0" height="0">

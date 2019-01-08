@@ -7,7 +7,15 @@ import firestore from '../firestore';
 
 const config = {
   turnTime: 5000,
-  colors: [' amber accent-2', ' light-blue lighten-3', ' pink lighten-3', ' purple darken-1'],
+  colors: [
+    ' amber accent-2',
+    ' light-blue lighten-3',
+    ' pink lighten-3',
+    ' purple darken-1',
+    ' light-green lighten-1',
+    ' orange accent-2',
+  ],
+  playingTo: 7,
 };
 
 class Host extends Component {
@@ -53,7 +61,7 @@ class Host extends Component {
     });
     return {
       players: newPlayers,
-      gameOver: newScore >= 6,
+      gameOver: newScore >= config.playingTo,
     };
   };
 
