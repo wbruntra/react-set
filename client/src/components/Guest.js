@@ -1,8 +1,10 @@
+// @flow
 import React, { Component, Fragment } from 'react';
 import Board from './Board';
 import { isEmpty } from 'lodash';
 import { cardToggle, isSet } from '../utils/helpers';
-import * as firebase from 'firebase';
+import firebase from 'firebase/app';
+import 'firebase/firestore';
 import firestore from '../firestore';
 import Modal from './Modal';
 
@@ -33,23 +35,22 @@ class Guest extends Component {
   }
 
   componentDidMount() {
-    // this.togglePopup();
-    // const previousNickname = localStorage.getItem('nickname');
-    // if (previousNickname) {
-    //   this.setState({
-    //     name: previousNickname,
-    //   });
-    // }
+    const previousNickname = localStorage.getItem('nickname');
+    const { gameName } = this.props.match.params;
+    if (previousNickname) {
+      this.setState({
+        nameInput: previousNickname,
+      });
+    }
     this.nameInput.focus();
-    this.gameRef = firestore.collection('games').doc('foo');
+    this.gameRef = firestore.collection('games').doc(gameName);
     this.gameRef.onSnapshot(doc => {
       this.setState({
         ...doc.data(),
         popupVisible: false,
       });
-      console.log(doc.data());
     });
-    this.actionsRef = this.gameRef.collection('actions');
+    this.actionsRef = this.gameRef.collection('actions');    
   }
 
   handleNickname = e => {
@@ -66,8 +67,11 @@ class Guest extends Component {
     });
   };
 
-  handleCardClick = card => {
-    const { name } = this.state;
+  handleCardClick = (card: string) => {
+    const { name, declarer } = this.state;
+    if (declarer) {
+      return;
+    }
     const newSelected = cardToggle(card, this.state.selected);
     const newState = {};
     if (newSelected.length === 3) {
@@ -88,23 +92,7 @@ class Guest extends Component {
       ...newState,
       selected: newSelected,
     });
-    // this.handleDeclare(card);
   };
-
-  // handleDeclare = card => {
-  //   console.log('SET declared!');
-  //   const action = {
-  //     type: 'declare',
-  //     payload: { selected: [card], name: this.state.name },
-  //   };
-  //   // console.log(JSON.stringify(action))
-  //   console.log('Change syncing');
-  //   this.setState({
-  //     syncing: true,
-  //     popupVisible: true,
-  //   });
-  //   this.sendAction(action);
-  // };
 
   sendAction = action => {
     this.actionsRef.add({
@@ -137,7 +125,7 @@ class Guest extends Component {
     if (!name) {
       return (
         <div className="container">
-          <h2>Choose nickname</h2>
+          <h4>Choose nickname</h4>
           <form onSubmit={this.handleNickname}>
             <input
               ref={input => {
@@ -148,11 +136,12 @@ class Guest extends Component {
               value={this.state.nameInput}
               onChange={e => this.setState({ nameInput: e.target.value })}
             />
-            <input type="submit" />
+            <input className="btn" type="submit" />
           </form>
         </div>
       );
     }
+
     return (
       <Fragment>
         <Modal visible={popupVisible}>

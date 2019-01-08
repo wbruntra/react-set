@@ -3,6 +3,8 @@ import React, { Component } from 'react';
 import Board from './Board';
 import { makeDeck, cardToggle, reshuffle, removeSelected, isSet } from '../utils/helpers';
 import update from 'immutability-helper';
+import firebase from 'firebase/app';
+import 'firebase/firestore';
 import firestore from '../firestore';
 
 const config = {
@@ -15,7 +17,7 @@ const config = {
     ' light-green lighten-1',
     ' orange accent-2',
   ],
-  playingTo: 7,
+  playingTo: 6,
 };
 
 class Host extends Component {
@@ -29,16 +31,13 @@ class Host extends Component {
       }),
       selected: [],
     };
-    const players = {
-      host: {
-        score: 0,
-        color: config.colors[0],
-      },
-    };
 
     this.state = {
-      players,
-      myName: 'host',
+      players: {},
+      gameTitle: '',
+      created: false,
+      myName: '',
+      inputName: '',
       myColor: config.colors[0],
       setFound: false,
       autoplay: false,
@@ -49,70 +48,37 @@ class Host extends Component {
     };
   }
 
-  markPointForDeclarer = () => {
-    const { declarer, players } = this.state;
-    const newScore = players[declarer].score + 1;
-    const newPlayers = update(players, {
-      [declarer]: {
-        $merge: {
-          score: newScore,
+  handleHostName = e => {
+    e.preventDefault();
+    const { inputName } = this.state;
+    this.setState({
+      myName: inputName,
+      players: {
+        [inputName]: {
+          score: 0,
+          color: config.colors[0],
         },
       },
     });
-    return {
-      players: newPlayers,
-      gameOver: newScore >= config.playingTo,
-    };
   };
 
-  processAction = action => {
-    const timeNow = new Date().getTime();
-    const { type, payload } = action;
-    const { players, declarer, timeDeclared } = this.state;
-    switch (type) {
-      case 'join':
-        if (Object.keys(players).includes(payload.name)) {
-          return;
-        }
-        const newPlayers = {
-          ...players,
-          [payload.name]: {
-            score: 0,
-            color: config.colors[Object.keys(players).length],
-          },
-        };
-        this.setAndSendState({ players: newPlayers });
-        break;
-      // case 'declare':
-      //   this.performDeclare(payload.name, payload.selected);
-      //   break;
-      // case 'select':
-      //   if (payload.name === declarer && timeNow - timeDeclared < config.turnTime) {
-      //     this.updateSelected(payload.selected);
-      //   } else {
-      //     console.log('Selection invalid');
-      //   }
-      //   break;
-      case 'found':
-        if (!declarer) {
-          // this.setState({
-          //   declarer: payload.name,
-          // });
-          this.updateSelected(payload.selected, payload.name);
-        }
-        break;
-      default:
-        return;
+  handleCreateGame = e => {
+    e.preventDefault();
+    const { gameTitle, board, deck } = this.state;
+    if (gameTitle === '') {
+      return;
     }
-  };
-
-  componentDidMount() {
-    const { board, deck } = this.state;
-    this.gameRef = firestore.collection('games').doc('foo');
+    this.gameRef = firestore.collection('games').doc(gameTitle);
     this.gameRef.set({
       board,
       deck,
+      lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
     });
+    window.setInterval(() => {
+      this.gameRef.update({
+        lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    }, 20000);
     this.actionsRef = this.gameRef.collection('actions');
     this.actionsRef.get().then(snapshot => {
       snapshot.forEach(doc => {
@@ -134,7 +100,60 @@ class Host extends Component {
         }
       });
     });
-  }
+    this.setState({
+      created: true,
+    });
+  };
+
+  markPointForDeclarer = () => {
+    const { declarer, players } = this.state;
+    const newScore = players[declarer].score + 1;
+    const newPlayers = update(players, {
+      [declarer]: {
+        $merge: {
+          score: newScore,
+        },
+      },
+    });
+    const gameOver = newScore >= config.playingTo;
+    if (gameOver) {
+      window.setTimeout(() => {
+        this.gameRef.delete();
+      }, 3000);
+    }
+    return {
+      players: newPlayers,
+      gameOver,
+    };
+  };
+
+  processAction = action => {
+    const timeNow = new Date().getTime();
+    const { type, payload } = action;
+    const { players, declarer, timeDeclared } = this.state;
+    switch (type) {
+      case 'join':
+        if (Object.keys(players).includes(payload.name)) {
+          return;
+        }
+        const newPlayers = {
+          ...players,
+          [payload.name]: {
+            score: 0,
+            color: config.colors[Object.keys(players).length],
+          },
+        };
+        this.setAndSendState({ players: newPlayers });
+        break;
+      case 'found':
+        if (!declarer) {
+          this.updateSelected(payload.selected, payload.name);
+        }
+        break;
+      default:
+        return;
+    }
+  };
 
   setAndSendState = update => {
     this.setState(update);
@@ -149,9 +168,6 @@ class Host extends Component {
       selected: newSelected,
       declarer,
     };
-    // if (declarer) {
-    //   newState.declarer = declarer;
-    // }
     if (newState.setFound) {
       clearTimeout(this.undeclareID);
       setTimeout(() => {
@@ -173,11 +189,6 @@ class Host extends Component {
     }
   };
 
-  // handleDeclare = card => {
-  //   console.log('SET declared!');
-  //   this.performDeclare('host', card);
-  // };
-
   handleRedeal = () => {
     const newState = reshuffle(this.state);
     this.setAndSendState(newState);
@@ -198,7 +209,53 @@ class Host extends Component {
   };
 
   render() {
-    const { board, deck, selected, declarer, players } = this.state;
+    const {
+      board,
+      deck,
+      selected,
+      declarer,
+      players,
+      gameTitle,
+      created,
+      myName,
+      inputName,
+    } = this.state;
+    if (myName === '') {
+      return (
+        <div className="container">
+          <form onSubmit={this.handleHostName}>
+            <input
+              placeholder="your name"
+              value={inputName}
+              onChange={e => {
+                this.setState({ inputName: e.target.value });
+              }}
+            />
+            <button type="submit" className="btn">
+              Set name
+            </button>
+          </form>
+        </div>
+      );
+    }
+    if (!created) {
+      return (
+        <div className="container">
+          <h4>Name your game:</h4>
+          <form onSubmit={this.handleCreateGame}>
+            <input
+              onChange={e => {
+                this.setState({ gameTitle: e.target.value });
+              }}
+              value={gameTitle}
+            />
+            <button type="submit" className="btn">
+              Create
+            </button>
+          </form>
+        </div>
+      );
+    }
     return (
       <Board
         board={board}

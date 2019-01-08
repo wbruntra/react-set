@@ -7,14 +7,14 @@ class Main extends Component {
     return (
       <div className="container">
         <ul className="collection">
-          <li className="collection-item">
+          {/* <li className="collection-item">
             <Link to="/solo">Solo</Link>
-          </li>
-          <li className="collection-item">
-            <Link to="/guest">Guest</Link>
-          </li>
+          </li> */}
           <li className="collection-item">
             <Link to="/host">Host</Link>
+          </li>
+          <li className="collection-item">
+            <Link to="/lobby">Guest</Link>
           </li>
         </ul>
       </div>
