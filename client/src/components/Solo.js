@@ -8,14 +8,14 @@ import {
   isSet,
   nameThird,
 } from '../utils/helpers';
-import { shuffle } from 'lodash';
+import { clone, shuffle } from 'lodash';
 import { colors } from '../config';
 import update from 'immutability-helper';
 
 const config = {
   turnTime: 4000,
   colors,
-  playingTo: 4,
+  playingTo: 5,
 };
 
 class Solo extends Component {
@@ -42,6 +42,7 @@ class Solo extends Component {
 
     this.state = {
       players,
+      gameStarted: false,
       name: 'you',
       setFound: false,
       autoplay: false,
@@ -49,11 +50,18 @@ class Solo extends Component {
       timeDeclared: null,
       gameOver: false,
       ...initialGameState,
-      cpuTurnInterval: 800,
+      difficulty: '3',
+      cpuTurnInterval: 4000,
+      cpuFound: [],
     };
   }
 
-  componentDidMount = () => {
+  handleStartGame = e => {
+    e.preventDefault();
+    this.setState({
+      gameStarted: true,
+    });
+    console.log(`Turns every ${this.state.cpuTurnInterval} ms`);
     this.cpuTimer = setInterval(this.cpuTurn, this.state.cpuTurnInterval);
   };
 
@@ -70,6 +78,25 @@ class Solo extends Component {
     const c = nameThird(a, b);
     if (board.includes(c)) {
       const newSelected = [a, b, c];
+      this.setState({
+        declarer: 'cpu',
+        cpuFound: newSelected,
+      });
+      this.cpuAnimation = window.setInterval(this.animateCpuChoice, 900);
+      // this.updateSelected(newSelected, 'cpu');
+    }
+  };
+
+  animateCpuChoice = () => {
+    const { selected, cpuFound } = this.state;
+    const cpuCopy = clone(cpuFound);
+    const newSelected = clone(selected).concat(cpuCopy.pop());
+    this.setState({
+      cpuFound: cpuCopy,
+      selected: newSelected,
+    });
+    if (newSelected.length === 3) {
+      clearInterval(this.cpuAnimation);
       this.updateSelected(newSelected, 'cpu');
     }
   };
@@ -144,7 +171,7 @@ class Solo extends Component {
 
   handleCardClick = card => {
     const { setFound, declarer, name } = this.state;
-    if (!setFound) {
+    if (!setFound && declarer !== 'cpu') {
       const newSelected = cardToggle(card, this.state.selected);
       if (!declarer) {
         this.performDeclare(name);
@@ -180,7 +207,37 @@ class Solo extends Component {
   };
 
   render() {
-    const { board, deck, selected, declarer, players } = this.state;
+    const { board, deck, selected, declarer, players, gameStarted } = this.state;
+    if (!gameStarted) {
+      return (
+        <div className="container">
+          <h4>Choose difficulty</h4>
+          <div className="row">
+            <div className="col s4">
+              <form onSubmit={this.handleStartGame}>
+                <p className="range-field">
+                  <input
+                    type="range"
+                    value={this.state.difficulty}
+                    min="2"
+                    max="6"
+                    onChange={e => {
+                      const difficulty = e.target.value;
+                      const cpuTurnInterval = 12000 / Number(difficulty);
+                      this.setState({
+                        cpuTurnInterval,
+                        difficulty,
+                      });
+                    }}
+                  />
+                </p>
+                <input type="submit" value="Start" className="btn" />
+              </form>
+            </div>
+          </div>
+        </div>
+      );
+    }
     return (
       <Board
         board={board}

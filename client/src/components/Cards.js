@@ -9,12 +9,12 @@ class Cards extends Component {
     const initialGameState = {
       ...reshuffle({
         deck: initialDeck.slice(12),
-        board: initialDeck.slice(0, 12)
+        board: initialDeck.slice(0, 12),
       }),
-      selected: []
+      selected: [],
     };
     const players = {
-      host: 0
+      host: 0,
     };
 
     this.state = {
@@ -24,20 +24,19 @@ class Cards extends Component {
       declarer: null,
       timeDeclared: null,
       gameOver: false,
-      ...initialGameState
+      ...initialGameState,
     };
   }
   render() {
     console.log(this.state.board);
     return (
       <div>
-        {this.state.board.map((desc) => {
-          return <Card key={desc} desc={desc} />
+        {this.state.board.map(desc => {
+          return <Card key={desc} desc={desc} />;
         })}
       </div>
     );
   }
-
 }
 
 export default Cards;
