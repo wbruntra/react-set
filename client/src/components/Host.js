@@ -1,11 +1,12 @@
 // @flow
-import React, { Component } from 'react';
+import * as React from 'react';
 import Board from './Board';
 import { makeDeck, cardToggle, reshuffle, removeSelected, isSet } from '../utils/helpers';
 import update from 'immutability-helper';
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 import firestore from '../firestore';
+import type { CollectionReference, DocumentReference } from 'firebase';
 
 const config = {
   turnTime: 5000,
@@ -20,8 +21,30 @@ const config = {
   playingTo: 6,
 };
 
-class Host extends Component {
-  constructor(props) {
+type Props = {
+  /* ... */
+};
+
+type State = {
+  players: {},
+  gameTitle: string,
+  created: boolean,
+  myName: string,
+  inputName: string,
+  setFound: boolean,
+  autoplay: boolean,
+  declarer: ?string,
+  deck: Array<string>,
+  board: Array<string>,
+  selected: Array<string>,
+  gameOver: boolean,
+};
+
+class Host extends React.Component<Props, State> {
+  gameRef: DocumentReference;
+  actionsRef: CollectionReference;
+
+  constructor(props: {}) {
     super(props);
     const initialDeck = makeDeck();
     const initialGameState = {
@@ -38,17 +61,16 @@ class Host extends Component {
       created: false,
       myName: '',
       inputName: '',
-      myColor: config.colors[0],
       setFound: false,
       autoplay: false,
       declarer: null,
-      timeDeclared: null,
       gameOver: false,
       ...initialGameState,
     };
   }
 
-  handleHostName = e => {
+  handleHostName = (e: SyntheticKeyboardEvent<HTMLFormElement>) => {
+    console.log(e.currentTarget);
     e.preventDefault();
     const { inputName } = this.state;
     this.setState({
@@ -62,7 +84,7 @@ class Host extends Component {
     });
   };
 
-  handleCreateGame = e => {
+  handleCreateGame = (e: SyntheticKeyboardEvent<HTMLFormElement>) => {
     e.preventDefault();
     const { gameTitle, board, deck } = this.state;
     if (gameTitle === '') {
@@ -105,8 +127,11 @@ class Host extends Component {
     });
   };
 
-  markPointForDeclarer = () => {
-    const { declarer, players } = this.state;
+  markPointForDeclarer = (declarer: ?string) => {
+    if (!declarer) {
+      return {};
+    }
+    const { players } = this.state;
     const newScore = players[declarer].score + 1;
     const newPlayers = update(players, {
       [declarer]: {
@@ -127,10 +152,12 @@ class Host extends Component {
     };
   };
 
-  processAction = action => {
-    const timeNow = new Date().getTime();
+  processAction = (action: {
+    type: string,
+    payload: { name: string, selected: Array<string> },
+  }) => {
     const { type, payload } = action;
-    const { players, declarer, timeDeclared } = this.state;
+    const { players, declarer } = this.state;
     switch (type) {
       case 'join':
         if (Object.keys(players).includes(payload.name)) {
@@ -155,7 +182,7 @@ class Host extends Component {
     }
   };
 
-  setAndSendState = update => {
+  setAndSendState = (update: {}) => {
     this.setState(update);
     this.gameRef.update({
       ...update,
@@ -169,7 +196,6 @@ class Host extends Component {
       declarer,
     };
     if (newState.setFound) {
-      clearTimeout(this.undeclareID);
       setTimeout(() => {
         this.removeSet();
       }, 2000);
@@ -177,7 +203,7 @@ class Host extends Component {
     this.setAndSendState(newState);
   };
 
-  handleCardClick = card => {
+  handleCardClick = (card: string) => {
     const { myName } = this.state;
     if (!this.state.declarer) {
       const newSelected = cardToggle(card, this.state.selected);
@@ -196,8 +222,9 @@ class Host extends Component {
   };
 
   removeSet = () => {
-    if (isSet(this.state.selected)) {
-      const newScores = this.markPointForDeclarer();
+    const { declarer, selected } = this.state;
+    if (isSet(selected)) {
+      const newScores = this.markPointForDeclarer(declarer);
       const newState = {
         setFound: false,
         declarer: null,
@@ -224,16 +251,17 @@ class Host extends Component {
     if (myName === '') {
       return (
         <div className="container">
+          <h4>Enter your name:</h4>
           <form onSubmit={this.handleHostName}>
             <input
-              placeholder="your name"
+              placeholder="hostname"
               value={inputName}
               onChange={e => {
                 this.setState({ inputName: e.target.value });
               }}
             />
             <button type="submit" className="btn">
-              Set name
+              Send
             </button>
           </form>
         </div>

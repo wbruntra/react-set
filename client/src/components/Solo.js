@@ -6,10 +6,16 @@ import {
   reshuffle,
   removeSelected as removeSelectedCards,
   isSet,
+  nameThird,
 } from '../utils/helpers';
+import { shuffle } from 'lodash';
+import { colors } from '../config';
+import update from 'immutability-helper';
 
 const config = {
-  turnTime: 5000,
+  turnTime: 4000,
+  colors,
+  playingTo: 4,
 };
 
 class Solo extends Component {
@@ -24,43 +30,93 @@ class Solo extends Component {
       selected: [],
     };
     const players = {
-      host: 0,
+      you: {
+        score: 0,
+        color: config.colors[0],
+      },
+      cpu: {
+        score: 0,
+        color: config.colors[1],
+      },
     };
 
     this.state = {
       players,
+      name: 'you',
       setFound: false,
       autoplay: false,
       declarer: null,
       timeDeclared: null,
       gameOver: false,
       ...initialGameState,
+      cpuTurnInterval: 800,
     };
   }
 
-  markPointForDeclarer = () => {
-    const { declarer, players } = this.state;
-    const newScore = players[declarer] + 1;
-    const newPlayers = {
-      ...players,
-      [declarer]: players[declarer] + 1,
-    };
+  componentDidMount = () => {
+    this.cpuTimer = setInterval(this.cpuTurn, this.state.cpuTurnInterval);
+  };
+
+  componentWillUnmount = () => {
+    clearInterval(this.cpuTimer);
+  };
+
+  cpuTurn = () => {
+    const { board, declarer, gameOver } = this.state;
+    if (declarer || gameOver) {
+      return;
+    }
+    const [a, b] = shuffle(board).slice(0, 2);
+    const c = nameThird(a, b);
+    if (board.includes(c)) {
+      const newSelected = [a, b, c];
+      this.updateSelected(newSelected, 'cpu');
+    }
+  };
+
+  updatePlayerScore = (name: string, delta: number) => {
+    const { players } = this.state;
+    const newScore = players[name].score + delta;
+    const newPlayers = update(players, {
+      [name]: {
+        $merge: {
+          score: newScore,
+        },
+      },
+    });
+    return [newPlayers, newScore];
+  };
+
+  expireDeclare = () => {
+    const { declarer, selected } = this.state;
+    if (!isSet(selected)) {
+      const [newPlayers] = this.updatePlayerScore(declarer, -1);
+      this.setState({
+        players: newPlayers,
+        declarer: null,
+      });
+    }
+  };
+
+  markPointForDeclarer = declarer => {
+    const [newPlayers, newScore] = this.updatePlayerScore(declarer, 1);
     this.setState({
       players: newPlayers,
-      gameOver: newScore >= 6,
+      gameOver: newScore >= config.playingTo,
     });
   };
 
-  performDeclare = (declarer, selected) => {
-    const timeNow = new Date().getTime();
-    const update = {
-      declarer,
-      selected,
-      timeDeclared: timeNow,
-    };
+  performDeclare = declarer => {
     if (!this.state.declarer) {
+      const timeNow = new Date().getTime();
+      const update = {
+        declarer,
+        timeDeclared: timeNow,
+      };
       this.setState(update);
+
       this.undeclareID = setTimeout(() => {
+        this.expireDeclare();
         const nextUpdate = {
           declarer: null,
           timeDeclared: null,
@@ -71,44 +127,49 @@ class Solo extends Component {
     }
   };
 
-  updateSelected = newSelected => {
-    if (isSet(newSelected)) {
-      this.markPointForDeclarer();
-      this.setState({ setFound: true });
+  updateSelected = (newSelected: Array<string>, declarer: string) => {
+    const newState = {
+      setFound: isSet(newSelected),
+      selected: newSelected,
+      declarer,
+    };
+    if (newState.setFound) {
       clearTimeout(this.undeclareID);
       setTimeout(() => {
         this.removeSet();
       }, 2000);
     }
-    this.setState({ selected: newSelected });
+    this.setState(newState);
   };
 
   handleCardClick = card => {
-    console.log(card, 'clicked');
-    const { declarer } = this.state;
-    if (declarer && declarer === 'host') {
+    const { setFound, declarer, name } = this.state;
+    if (!setFound) {
       const newSelected = cardToggle(card, this.state.selected);
-      this.updateSelected(newSelected);
-    } else {
-      console.log('Click! Not active player');
-      this.handleDeclare(card);
+      if (!declarer) {
+        this.performDeclare(name);
+      }
+      this.setState({
+        selected: newSelected,
+      });
+      if (isSet(newSelected)) {
+        this.updateSelected(newSelected, 'you');
+      }
     }
-  };
-
-  handleDeclare = card => {
-    console.log('SET declared!');
-    this.performDeclare('host', card);
   };
 
   handleRedeal = () => {
     const newState = reshuffle(this.state);
-    this.setAndSendState(newState);
+    this.setState(newState);
   };
 
   removeSet = () => {
-    if (isSet(this.state.selected)) {
+    const { declarer, selected } = this.state;
+    if (isSet(selected)) {
       console.log('Set found, removing');
+      const newScores = this.markPointForDeclarer(declarer);
       const newState = {
+        ...newScores,
         setFound: false,
         declarer: null,
         timeDeclared: null,
@@ -132,6 +193,7 @@ class Solo extends Component {
         players={players}
         setFound={this.state.setFound}
         gameOver={this.state.gameOver}
+        myName={this.state.name}
       />
     );
   }

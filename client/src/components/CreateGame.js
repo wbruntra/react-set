@@ -1,4 +1,3 @@
-// @flow
 import React, { Component } from 'react';
 import Board from './Board';
 import { makeDeck, cardToggle, reshuffle, removeSelected, isSet } from '../utils/helpers';

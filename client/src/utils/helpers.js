@@ -27,7 +27,11 @@ const displaySet = (tuple: Array<number>, rowSize: number = 3) => {
   console.log(matrix.join('\n'));
 };
 
-export const serializeGame = state => {
+export const serializeGame = (state: {
+  board: Array<string>,
+  deck: Array<string>,
+  selected: Array<string>,
+}) => {
   const status = JSON.stringify({
     board: state.board,
     deck: state.deck,
@@ -38,8 +42,8 @@ export const serializeGame = state => {
 
 export const countSets = (
   board: Array<string>,
-  debug: boolean,
-  returnWhenFound: boolean,
+  debug?: boolean,
+  returnWhenFound?: boolean,
 ): number => {
   let count = 0;
   let candidate = [];
@@ -51,10 +55,10 @@ export const countSets = (
           if (debug) {
             displaySet([a, b, c]);
           }
-          if (returnWhenFound) {
-            return true;
-          }
           count++;
+          if (returnWhenFound) {
+            return count;
+          }
         }
       }
     }
@@ -63,7 +67,7 @@ export const countSets = (
 };
 
 export const makeDeck = (): Array<string> => {
-  const deck = [];
+  let deck = [];
   range(3).forEach(c => {
     range(3).forEach(n => {
       range(3).forEach(s => {
@@ -115,9 +119,18 @@ export const cardToggle = (card: string, selected: Array<string>): Array<string>
   }
 };
 
-export const reshuffle = ({ board, deck }: { board: Array<string>, deck: Array<string> }) => {
+export const reshuffle = ({
+  board,
+  deck,
+}: {
+  board: Array<string>,
+  deck: Array<string>,
+}): { board: Array<string>, deck: Array<string> } => {
   let newDeck = shuffle(concat(board, deck));
-  while (countSets(newDeck.slice(0, 12)) === 0 && countSets(newDeck, false, true)) {
+  while (
+    countSets(newDeck.slice(0, 12), false, true) === 0 &&
+    countSets(newDeck, false, true) > 0
+  ) {
     newDeck = shuffle(newDeck);
   }
   return {
@@ -128,16 +141,24 @@ export const reshuffle = ({ board, deck }: { board: Array<string>, deck: Array<s
 
 // DB stuff
 
-export const update = (ref, data) => {
-  ref.set(
-    {
-      ...data,
-    },
-    { merge: true },
-  );
-};
+// export const update = (ref, data) => {
+//   ref.set(
+//     {
+//       ...data,
+//     },
+//     { merge: true },
+//   );
+// };
 
-export const removeSelected = state => {
+export const removeSelected = (state: {
+  board: Array<string>,
+  deck: Array<string>,
+  selected: Array<string>,
+}): {
+  board: Array<string>,
+  deck: Array<string>,
+  selected: Array<string>,
+} => {
   const { board, deck, selected } = state;
   const newCards = deck.slice(0, 3);
   let newBoard = clone(board);
