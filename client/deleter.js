@@ -59,4 +59,32 @@ function deleteQueryBatch(db, query, batchSize, resolve, reject) {
     .catch(reject);
 }
 
-deleteCollection(firestore, 'games/foo/actions', 20);
+// deleteCollection(firestore, 'games/foo/actions', 20);
+
+const gamesRef = firestore.collection('games');
+const query = gamesRef
+  .orderBy('__name__')
+  .limit(10)
+  .get()
+  .then(snapshot => {
+    const batch = firestore.batch();
+    snapshot.docs.forEach(g => {
+      const updated = g.data().lastUpdate.toMillis();
+      const now = new Date().getTime();
+      const age = Math.round((now - updated) / 1000);
+      if (age > 30) {
+        batch.delete(g.ref);
+      }
+    });
+    return batch.commit().then(() => {
+      console.log('Delete successful');
+    });
+  });
+
+// return new Promise((resolve, reject) => {
+//   deleteQueryBatch(db, query, batchSize, resolve, reject);
+// });
+
+// games.forEach(g => {
+//   console.log('​g', g);
+// });

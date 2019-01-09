@@ -1,5 +1,4 @@
-// @flow
-import React, { Component, Fragment } from 'react';
+import * as React from 'react';
 import Board from './Board';
 import { isEmpty } from 'lodash';
 import { cardToggle, isSet } from '../utils/helpers';
@@ -8,7 +7,23 @@ import 'firebase/firestore';
 import firestore from '../firestore';
 import Modal from './Modal';
 
-class Guest extends Component {
+type Props = {
+  /* ... */
+};
+
+type State = {
+  popupVisible: boolean,
+  name: string,
+  nameInput: string,
+  setFound: boolean,
+  autoplay: boolean,
+  deck: Array<string>,
+  board: Array<string>,
+  selected: Array<string>,
+  declarer: string,
+};
+
+class Guest extends React.Component<Props, State> {
   constructor(props) {
     super(props);
     const initialGameState = {
@@ -22,6 +37,7 @@ class Guest extends Component {
       nameInput: '',
       setFound: false,
       autoplay: false,
+      declarer: '',
       ...initialGameState,
     };
   }
@@ -50,7 +66,7 @@ class Guest extends Component {
         popupVisible: false,
       });
     });
-    this.actionsRef = this.gameRef.collection('actions');    
+    this.actionsRef = this.gameRef.collection('actions');
   }
 
   handleNickname = e => {
@@ -143,7 +159,7 @@ class Guest extends Component {
     }
 
     return (
-      <Fragment>
+      <React.Fragment>
         <Modal visible={popupVisible}>
           <p className="flow-text center-align">SET!</p>
           <div className="progress">
@@ -163,7 +179,7 @@ class Guest extends Component {
           // syncing={this.state.syncing}
           myName={this.state.name}
         />
-      </Fragment>
+      </React.Fragment>
     );
   }
 }

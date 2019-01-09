@@ -178,10 +178,11 @@ class Host extends Component {
   };
 
   handleCardClick = card => {
+    const { myName } = this.state;
     if (!this.state.declarer) {
       const newSelected = cardToggle(card, this.state.selected);
       if (isSet(newSelected)) {
-        this.updateSelected(newSelected, 'host');
+        this.updateSelected(newSelected, myName);
       }
       this.setState({
         selected: newSelected,
