@@ -31,16 +31,7 @@ class Board extends Component {
   }
 
   render() {
-    const {
-      board,
-      selected,
-      deck,
-      declarer,
-      players,
-      setFound,
-      gameOver,
-      myName,
-    } = this.props;
+    const { board, selected, deck, declarer, players, setFound, gameOver, myName } = this.props;
     if (isEmpty(players) || !Object.keys(players).includes(myName)) {
       return null;
     }
@@ -48,13 +39,21 @@ class Board extends Component {
     // const borderColor = ' purple darken-1';
     const { sets } = this.state;
     if (gameOver) {
-      return <div className="container">
-      <p>
-      GAME OVER!
-
-      </p>
-      <Link to="/">Main Menu</Link>
-      </div>;
+      return (
+        <div className="container">
+          <p>GAME OVER!</p>
+          {this.props.solo && (
+            <div className="row">
+              <button className="btn" onClick={this.props.resetGame}>
+                Play Again
+              </button>
+            </div>
+          )}
+          <div className="row">
+            <Link to="/">Main Menu</Link>
+          </div>
+        </div>
+      );
     }
     return (
       <Fragment>

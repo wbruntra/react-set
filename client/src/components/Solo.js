@@ -8,55 +8,59 @@ import {
   isSet,
   nameThird,
 } from '../utils/helpers';
-import { shuffle } from 'lodash';
+import { shuffle, cloneDeep } from 'lodash';
 import { colors } from '../config';
 import update from 'immutability-helper';
 
 const config = {
   turnTime: 4000,
   colors,
-  playingTo: 5,
+  playingTo: 6,
 };
 
 const calculateIntervalFromDifficulty = d => {
   return 12000 / (2.5 * Number(d));
 };
 
+const createGameState = () => {
+  const initialDeck = makeDeck();
+  return {
+    ...reshuffle({
+      deck: initialDeck.slice(12),
+      board: initialDeck.slice(0, 12),
+    }),
+    selected: [],
+  };
+};
+
+const initialState = {
+  players: {
+    you: {
+      score: 0,
+      color: config.colors[0],
+    },
+    cpu: {
+      score: 0,
+      color: config.colors[1],
+    },
+  },
+  gameStarted: false,
+  name: 'you',
+  setFound: false,
+  declarer: null,
+  timeDeclared: null,
+  gameOver: false,
+  difficulty: '2',
+  cpuTurnInterval: 1000,
+  cpuFound: [],
+};
+
 class Solo extends Component {
   constructor(props) {
     super(props);
-    const initialDeck = makeDeck();
-    const initialGameState = {
-      ...reshuffle({
-        deck: initialDeck.slice(12),
-        board: initialDeck.slice(0, 12),
-      }),
-      selected: [],
-    };
-    const players = {
-      you: {
-        score: 0,
-        color: config.colors[0],
-      },
-      cpu: {
-        score: 0,
-        color: config.colors[1],
-      },
-    };
-
     this.state = {
-      players,
-      gameStarted: false,
-      name: 'you',
-      setFound: false,
-      autoplay: false,
-      declarer: null,
-      timeDeclared: null,
-      gameOver: false,
-      ...initialGameState,
-      difficulty: '2',
-      cpuTurnInterval: 1000,
-      cpuFound: [],
+      ...cloneDeep(initialState),
+      ...createGameState(),
     };
   }
 
@@ -89,14 +93,12 @@ class Solo extends Component {
     const [a, b] = shuffle(board).slice(0, 2);
     const c = nameThird(a, b);
     if (board.includes(c)) {
-      // const newSelected = [a, b, c];
       this.setState({
         declarer: 'cpu',
         selected: [a],
         cpuFound: [b, c],
       });
       this.cpuAnimation = window.setInterval(this.animateCpuChoice, 1000);
-      // this.updateSelected(newSelected, 'cpu');
     }
   };
 
@@ -134,6 +136,8 @@ class Solo extends Component {
       this.setState({
         players: newPlayers,
         declarer: null,
+        timeDeclared: null,
+        selected: [],
       });
     }
   };
@@ -157,12 +161,6 @@ class Solo extends Component {
 
       this.undeclareID = setTimeout(() => {
         this.expireDeclare();
-        const nextUpdate = {
-          declarer: null,
-          timeDeclared: null,
-          selected: [],
-        };
-        this.setState(nextUpdate);
       }, config.turnTime);
     }
   };
@@ -219,6 +217,14 @@ class Solo extends Component {
     }
   };
 
+  resetGame = () => {
+    clearInterval(this.cpuTimer);
+    this.setState({
+      ...cloneDeep(initialState),
+      ...createGameState(),
+    });
+  };
+
   render() {
     const { board, deck, selected, declarer, players, gameStarted } = this.state;
     if (!gameStarted) {
@@ -264,6 +270,8 @@ class Solo extends Component {
         setFound={this.state.setFound}
         gameOver={this.state.gameOver}
         myName={this.state.name}
+        resetGame={this.resetGame}
+        solo={true}
       />
     );
   }

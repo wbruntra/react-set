@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import firestore from '../firestore';
 import { Link } from 'react-router-dom';
-import { filter } from 'lodash';
 
 class Lobby extends Component {
   constructor(props) {
@@ -46,7 +45,7 @@ class Lobby extends Component {
 
   render() {
     const { games } = this.state;
-    const activeGames = filter(games, g => {
+    const activeGames = games.filter(g => {
       const updated = g.lastUpdate.toMillis();
       const now = new Date().getTime();
       const age = Math.round((now - updated) / 1000);

@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
+import { range } from '../utils/helpers';
 import './card.css';
-import { range } from 'lodash';
 
 const config = {
   width: 120,

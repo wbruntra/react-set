@@ -1,11 +1,15 @@
 // @flow
 import { shuffle } from 'lodash';
 
+export const range = (n: number) => {
+  return [...Array(n).keys()];
+};
+
 const displaySet = (tuple: Array<number>, rowSize: number = 3) => {
   let matrix;
   if (rowSize === 4) {
-    matrix = [...Array(3).keys()].map(i => {
-      const row = [...Array(4).keys()].map(j => {
+    matrix = range(3).map(i => {
+      const row = range(4).map(j => {
         if (tuple.includes(4 * i + j)) {
           return 'x';
         }
@@ -14,8 +18,8 @@ const displaySet = (tuple: Array<number>, rowSize: number = 3) => {
       return row.join('');
     });
   } else {
-    matrix = [...Array(4).keys()].map(i => {
-      const row = [...Array(3).keys()].map(j => {
+    matrix = range(4).map(i => {
+      const row = range(3).map(j => {
         if (tuple.includes(3 * i + j)) {
           return 'x';
         }
@@ -40,11 +44,7 @@ export const serializeGame = (state: {
   return status;
 };
 
-export const countSets = (
-  board: Array<string>,
-  debug?: boolean,
-  returnWhenFound?: boolean,
-): number => {
+export const countSets = (board: Array<string>, debug?: boolean, returnWhenFound?: boolean) => {
   let count = 0;
   let candidate = [];
   for (let a = 0; a < board.length - 2; a++) {
@@ -68,10 +68,10 @@ export const countSets = (
 
 export const makeDeck = (): Array<string> => {
   let deck = [];
-  [...Array(3).keys()].forEach(c => {
-    [...Array(3).keys()].forEach(n => {
-      [...Array(3).keys()].forEach(s => {
-        [...Array(3).keys()].forEach(f => {
+  range(3).forEach(c => {
+    range(3).forEach(n => {
+      range(3).forEach(s => {
+        range(3).forEach(f => {
           const card = '' + c + s + n + f;
           deck.push(card);
         });
@@ -81,7 +81,7 @@ export const makeDeck = (): Array<string> => {
   return deck;
 };
 
-export const isSet = (selected: Array<string>): boolean => {
+export const isSet = (selected: Array<string>) => {
   if (selected.length !== 3) {
     return false;
   }
@@ -95,7 +95,7 @@ export const isSet = (selected: Array<string>): boolean => {
   return true;
 };
 
-export const nameThird = (a: string, b: string): string => {
+export const nameThird = (a: string, b: string) => {
   let features;
   let missing;
   let result = '';
@@ -113,7 +113,7 @@ export const nameThird = (a: string, b: string): string => {
 
 export const cardToggle = (card: string, selected: Array<string>): Array<string> => {
   if (selected.includes(card)) {
-    return selected.filter(c => (c !== card));
+    return selected.filter(c => c !== card);
   } else {
     return [...selected, card];
   }
@@ -126,6 +126,7 @@ export const reshuffle = ({
   board: Array<string>,
   deck: Array<string>,
 }): { board: Array<string>, deck: Array<string> } => {
+  console.log([...board, ...deck]);
   let newDeck = shuffle([...board, ...deck]);
   while (
     countSets(newDeck.slice(0, 12), false, true) === 0 &&
