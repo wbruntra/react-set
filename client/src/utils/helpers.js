@@ -1,11 +1,11 @@
 // @flow
-import { clone, range, shuffle, concat, includes, without } from 'lodash';
+import { shuffle } from 'lodash';
 
 const displaySet = (tuple: Array<number>, rowSize: number = 3) => {
   let matrix;
   if (rowSize === 4) {
-    matrix = range(3).map(i => {
-      const row = range(4).map(j => {
+    matrix = [...Array(3).keys()].map(i => {
+      const row = [...Array(4).keys()].map(j => {
         if (tuple.includes(4 * i + j)) {
           return 'x';
         }
@@ -14,8 +14,8 @@ const displaySet = (tuple: Array<number>, rowSize: number = 3) => {
       return row.join('');
     });
   } else {
-    matrix = range(4).map(i => {
-      const row = range(3).map(j => {
+    matrix = [...Array(4).keys()].map(i => {
+      const row = [...Array(3).keys()].map(j => {
         if (tuple.includes(3 * i + j)) {
           return 'x';
         }
@@ -68,10 +68,10 @@ export const countSets = (
 
 export const makeDeck = (): Array<string> => {
   let deck = [];
-  range(3).forEach(c => {
-    range(3).forEach(n => {
-      range(3).forEach(s => {
-        range(3).forEach(f => {
+  [...Array(3).keys()].forEach(c => {
+    [...Array(3).keys()].forEach(n => {
+      [...Array(3).keys()].forEach(s => {
+        [...Array(3).keys()].forEach(f => {
           const card = '' + c + s + n + f;
           deck.push(card);
         });
@@ -112,10 +112,10 @@ export const nameThird = (a: string, b: string): string => {
 };
 
 export const cardToggle = (card: string, selected: Array<string>): Array<string> => {
-  if (includes(selected, card)) {
-    return without(selected, card);
+  if (selected.includes(card)) {
+    return selected.filter(c => (c !== card));
   } else {
-    return concat(selected, card);
+    return [...selected, card];
   }
 };
 
@@ -126,7 +126,7 @@ export const reshuffle = ({
   board: Array<string>,
   deck: Array<string>,
 }): { board: Array<string>, deck: Array<string> } => {
-  let newDeck = shuffle(concat(board, deck));
+  let newDeck = shuffle([...board, ...deck]);
   while (
     countSets(newDeck.slice(0, 12), false, true) === 0 &&
     countSets(newDeck, false, true) > 0
@@ -161,7 +161,7 @@ export const removeSelected = (state: {
 } => {
   const { board, deck, selected } = state;
   const newCards = deck.slice(0, 3);
-  let newBoard = clone(board);
+  let newBoard = [...board];
   let newDeck = deck.slice(3);
   selected.forEach((c, i) => {
     let index = newBoard.indexOf(c);

@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { includes, isEmpty, map, debounce } from 'lodash';
+import { isEmpty, map, debounce } from 'lodash';
 import { countSets } from '../utils/helpers';
 import Card from './Card';
 import { Link } from 'react-router-dom';
@@ -84,12 +84,12 @@ class Board extends Component {
               return (
                 <div
                   key={card}
-                  className={'col s4' + (includes(selected, card) ? borderColor : '')}
+                  className={'col s4' + (selected.includes(card) ? borderColor : '')}
                   onClick={() => {
                     this.props.handleCardClick(card);
                   }}
                 >
-                  <div className={`card ${setFound && !includes(selected, card) ? 'blurry' : ''}`}>
+                  <div className={`card ${setFound && !selected.includes(card) ? 'blurry' : ''}`}>
                     <Card desc={card} />
                   </div>
                 </div>

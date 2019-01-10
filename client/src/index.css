@@ -12,8 +12,12 @@ nav .brand-logo {
   margin-bottom: 10px;
 }
 
+.card {
+  transition: filter linear .2s;
+}
+
 .blurry {
-  filter: grayscale(1) blur(9px);
+  filter: grayscale(.9) blur(7px);
 }
 
 .popup-message {

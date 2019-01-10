@@ -8,7 +8,7 @@ import {
   isSet,
   nameThird,
 } from '../utils/helpers';
-import { clone, shuffle } from 'lodash';
+import { shuffle } from 'lodash';
 import { colors } from '../config';
 import update from 'immutability-helper';
 
@@ -16,6 +16,10 @@ const config = {
   turnTime: 4000,
   colors,
   playingTo: 5,
+};
+
+const calculateIntervalFromDifficulty = d => {
+  return 12000 / (2.5 * Number(d));
 };
 
 class Solo extends Component {
@@ -50,8 +54,8 @@ class Solo extends Component {
       timeDeclared: null,
       gameOver: false,
       ...initialGameState,
-      difficulty: '3',
-      cpuTurnInterval: 4000,
+      difficulty: '2',
+      cpuTurnInterval: 1000,
       cpuFound: [],
     };
   }
@@ -63,6 +67,14 @@ class Solo extends Component {
     });
     console.log(`Turns every ${this.state.cpuTurnInterval} ms`);
     this.cpuTimer = setInterval(this.cpuTurn, this.state.cpuTurnInterval);
+  };
+
+  componentDidMount = () => {
+    const { difficulty } = this.state;
+    const cpuTurnInterval = calculateIntervalFromDifficulty(difficulty);
+    this.setState({
+      cpuTurnInterval,
+    });
   };
 
   componentWillUnmount = () => {
@@ -77,20 +89,21 @@ class Solo extends Component {
     const [a, b] = shuffle(board).slice(0, 2);
     const c = nameThird(a, b);
     if (board.includes(c)) {
-      const newSelected = [a, b, c];
+      // const newSelected = [a, b, c];
       this.setState({
         declarer: 'cpu',
-        cpuFound: newSelected,
+        selected: [a],
+        cpuFound: [b, c],
       });
-      this.cpuAnimation = window.setInterval(this.animateCpuChoice, 900);
+      this.cpuAnimation = window.setInterval(this.animateCpuChoice, 1000);
       // this.updateSelected(newSelected, 'cpu');
     }
   };
 
   animateCpuChoice = () => {
     const { selected, cpuFound } = this.state;
-    const cpuCopy = clone(cpuFound);
-    const newSelected = clone(selected).concat(cpuCopy.pop());
+    const cpuCopy = [...cpuFound];
+    const newSelected = [...selected, cpuCopy.pop()];
     this.setState({
       cpuFound: cpuCopy,
       selected: newSelected,
@@ -219,11 +232,11 @@ class Solo extends Component {
                   <input
                     type="range"
                     value={this.state.difficulty}
-                    min="2"
-                    max="6"
+                    min="1"
+                    max="5"
                     onChange={e => {
                       const difficulty = e.target.value;
-                      const cpuTurnInterval = 12000 / Number(difficulty);
+                      const cpuTurnInterval = calculateIntervalFromDifficulty(difficulty);
                       this.setState({
                         cpuTurnInterval,
                         difficulty,
