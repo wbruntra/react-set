@@ -73,6 +73,7 @@ const query = gamesRef
       const now = new Date().getTime();
       const age = Math.round((now - updated) / 1000);
       if (age > 30) {
+        console.log('Deleting:', g.id);
         batch.delete(g.ref);
       }
     });

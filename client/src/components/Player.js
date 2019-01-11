@@ -33,7 +33,7 @@ type State = {
   gameOver: boolean,
 };
 
-class Host extends React.Component<Props, State> {
+class Player extends React.Component<Props, State> {
   gameRef: DocumentReference;
   actionsRef: CollectionReference;
   nameInputRef: { current: any | HTMLInputElement };
@@ -68,7 +68,7 @@ class Host extends React.Component<Props, State> {
     this.nameInputRef.current.focus();
   };
 
-  handleHostName = (e: SyntheticKeyboardEvent<HTMLFormElement>) => {
+  handlePlayerName = (e: SyntheticKeyboardEvent<HTMLFormElement>) => {
     console.log(e.currentTarget);
     e.preventDefault();
     const { inputName } = this.state;
@@ -83,115 +83,8 @@ class Host extends React.Component<Props, State> {
     });
   };
 
-  handleCreateGame = (e: SyntheticKeyboardEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const { myName, board, deck, selected } = this.state;
-    let gameTitle = this.state.gameTitle;
-    if (gameTitle === '') {
-      gameTitle = `${myName}'s game`;
-    }
-    this.gameRef = firestore.collection('games').doc(gameTitle);
-    this.gameRef.set({
-      board,
-      deck,
-      selected,
-      lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
-    });
-    window.setInterval(() => {
-      this.gameRef.update({
-        lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
-      });
-    }, 30000);
-    this.actionsRef = this.gameRef.collection('actions');
-    this.actionsRef.get().then(snapshot => {
-      snapshot.forEach(doc => {
-        console.log(doc.id, '=>', doc.data());
-      });
-    });
-
-    this.actionsRef.onSnapshot(snapshot => {
-      snapshot.docChanges().forEach(change => {
-        if (change.type === 'added') {
-          const action = change.doc.data();
-          window.created = action.created;
-          console.log(action);
-          this.processAction(action);
-          this.actionsRef.doc(change.doc.id).delete();
-        }
-        if (change.type === 'removed') {
-          console.log('Removed action: ', change.doc.data());
-        }
-      });
-    });
-    this.setState({
-      created: true,
-    });
-  };
-
-  markPointForDeclarer = (declarer: ?string) => {
-    if (!declarer) {
-      return {};
-    }
-    const { players } = this.state;
-    const newScore = players[declarer].score + 1;
-    const newPlayers = update(players, {
-      [declarer]: {
-        $merge: {
-          score: newScore,
-        },
-      },
-    });
-    const gameOver = newScore >= config.playingTo && declarer;
-    if (gameOver) {
-      window.setTimeout(() => {
-        this.gameRef.delete();
-      }, 3000);
-    }
-    return {
-      players: newPlayers,
-      gameOver,
-    };
-  };
-
-  processAction = (action: {
-    type: string,
-    payload: { name: string, selected: Array<string> },
-  }) => {
-    const { type, payload } = action;
-    const { players, declarer } = this.state;
-    switch (type) {
-      case 'join':
-        if (Object.keys(players).includes(payload.name)) {
-          return;
-        }
-        const newPlayers = {
-          ...players,
-          [payload.name]: {
-            score: 0,
-            color: config.colors[Object.keys(players).length],
-          },
-        };
-        this.setAndSendState({ players: newPlayers });
-        break;
-      case 'found':
-        if (!declarer) {
-          this.updateSelected(payload.selected, payload.name);
-        }
-        break;
-      default:
-        return;
-    }
-  };
-
-  setAndSendState = (update: {}) => {
-    this.setState(update);
-    this.gameRef.update({
-      ...update,
-    });
-  };
-
   triggerFoundSequence = (selected, name) => {
-
+    
   }
 
   updateSelected = (newSelected: Array<string>, declarer: string) => {
@@ -203,7 +96,7 @@ class Host extends React.Component<Props, State> {
     if (newState.setFound) {
       setTimeout(() => {
         this.removeSet();
-      }, 4000);
+      }, 2000);
     }
     this.setAndSendState(newState);
   };
@@ -257,7 +150,7 @@ class Host extends React.Component<Props, State> {
       return (
         <div className="container">
           <h4>Enter your name:</h4>
-          <form onSubmit={this.handleHostName}>
+          <form onSubmit={this.handlePlayerName}>
             <input
               ref={this.nameInputRef}
               placeholder="hostname"
@@ -279,7 +172,6 @@ class Host extends React.Component<Props, State> {
           <h4>Name your game:</h4>
           <form onSubmit={this.handleCreateGame}>
             <input
-              placeholder={`${myName}'s game`}
               onChange={e => {
                 this.setState({ gameTitle: e.target.value });
               }}
@@ -310,4 +202,4 @@ class Host extends React.Component<Props, State> {
   }
 }
 
-export default Host;
+export default Player;

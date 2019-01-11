@@ -49,7 +49,7 @@ class Lobby extends Component {
       const updated = g.lastUpdate.toMillis();
       const now = new Date().getTime();
       const age = Math.round((now - updated) / 1000);
-      return age < 30;
+      return age < 40;
     });
     if (activeGames.length === 0) {
       return (

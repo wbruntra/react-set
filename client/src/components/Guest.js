@@ -36,7 +36,8 @@ class Guest extends React.Component<Props, State> {
       name: '',
       nameInput: '',
       setFound: false,
-      autoplay: false,
+      displayAnimation: false,
+      animatedSet: [],
       declarer: '',
       ...initialGameState,
     };
@@ -61,13 +62,48 @@ class Guest extends React.Component<Props, State> {
     this.nameInput.focus();
     this.gameRef = firestore.collection('games').doc(gameName);
     this.gameRef.onSnapshot(doc => {
-      this.setState({
-        ...doc.data(),
-        popupVisible: false,
-      });
+      if (!this.state.displayAnimation) {
+        this.processUpdate(doc);
+      } else {
+        setTimeout(() => {
+          this.processUpdate(doc);
+        }, 1800);
+      }
     });
     this.actionsRef = this.gameRef.collection('actions');
   }
+
+  processUpdate = doc => {
+    const updatedState = { ...doc.data() };
+    console.log('Updating', updatedState);
+    if (!this.state.displayAnimation && updatedState.selected.length === 3) {
+      console.log('New set found');
+      Object.assign(updatedState, {
+        displayAnimation: true,
+        selected: updatedState.selected.slice(0, 1),
+        animatedSet: updatedState.selected.slice(1),
+      });
+      this.animationId = setInterval(this.animate, 800);
+    }
+    this.setState({
+      ...updatedState,
+      popupVisible: false,
+    });
+  };
+
+  animate = () => {
+    const animatedSet = [...this.state.animatedSet];
+    const newSelected = [...this.state.selected, animatedSet.shift()];
+    const newState = {
+      selected: newSelected,
+      animatedSet,
+    };
+    if (newSelected.length === 3) {
+      clearInterval(this.animationId);
+      Object.assign(newState, {displayAnimation: false});
+    }
+    this.setState(newState);
+  };
 
   handleNickname = e => {
     e.preventDefault();

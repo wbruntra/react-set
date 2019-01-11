@@ -1,8 +1,12 @@
 import React, { Component, Fragment } from 'react';
 import { isEmpty, map, debounce } from 'lodash';
-import { countSets } from '../utils/helpers';
+import { countSets, isSet } from '../utils/helpers';
 import Card from './Card';
 import { Link } from 'react-router-dom';
+import sadTrombone from '../assets/sad_trombone.mp3';
+import applause from '../assets/applause.mp3';
+import chimeSound from '../assets/electronic_chime.mp3';
+import badSound from '../assets/error_alert.mp3';
 
 class Board extends Component {
   constructor(props) {
@@ -11,6 +15,21 @@ class Board extends Component {
       sets: countSets(props.board, true),
     };
   }
+
+  finalSound = () => {
+    const { gameOver, myName } = this.props;
+    const soundEffect = gameOver === myName ? applause : sadTrombone;
+    return <audio src={soundEffect} autoPlay />;
+  };
+
+  setSound = () => {
+    const { myName, declarer, selected, setFound } = this.props;
+    let sound = chimeSound;
+    if (declarer !== myName) {
+      sound = badSound;
+    }
+    return <audio src={sound} autoPlay />;
+  };
 
   resize = () => this.forceUpdate();
 
@@ -31,7 +50,8 @@ class Board extends Component {
   }
 
   render() {
-    const { board, selected, deck, declarer, players, setFound, gameOver, myName } = this.props;
+    const { board, selected, deck, declarer, players, gameOver, myName, setFound } = this.props;
+    // const setFound = isSet(selected);
     if (isEmpty(players) || !Object.keys(players).includes(myName)) {
       return null;
     }
@@ -41,7 +61,9 @@ class Board extends Component {
     if (gameOver) {
       return (
         <div className="container">
+          {this.finalSound()}
           <p>GAME OVER!</p>
+          <p>Winner: {gameOver} </p>
           {this.props.solo && (
             <div className="row">
               <button className="btn" onClick={this.props.resetGame}>
@@ -57,6 +79,7 @@ class Board extends Component {
     }
     return (
       <Fragment>
+        {declarer && setFound && this.setSound()}
         <div className="navbar-fixed">
           <nav>
             <div className="nav-wrapper">
@@ -88,7 +111,11 @@ class Board extends Component {
                     this.props.handleCardClick(card);
                   }}
                 >
-                  <div className={`card ${setFound && !selected.includes(card) ? 'blurry' : ''}`}>
+                  <div
+                    className={`card ${
+                      setFound && selected.length === 3 && !selected.includes(card) ? 'blurry' : ''
+                    }`}
+                  >
                     <Card desc={card} />
                   </div>
                 </div>

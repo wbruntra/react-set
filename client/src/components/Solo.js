@@ -11,11 +11,16 @@ import {
 import { shuffle, cloneDeep } from 'lodash';
 import { colors } from '../config';
 import update from 'immutability-helper';
+import chimeSound from '../assets/electronic_chime.mp3';
+import badSound from '../assets/error_alert.mp3';
+
+const debugging = false;
 
 const config = {
   turnTime: 4000,
   colors,
   playingTo: 6,
+  cpuDelay: 1200,
 };
 
 const calculateIntervalFromDifficulty = d => {
@@ -31,6 +36,12 @@ const createGameState = () => {
     }),
     selected: [],
   };
+};
+
+const logTime = (msg = '') => {
+  const d = new Date();
+  const s = (d.getTime() % 10 ** 6) / 1000;
+  console.log(msg, s.toFixed(1));
 };
 
 const initialState = {
@@ -64,13 +75,19 @@ class Solo extends Component {
     };
   }
 
+  ding = () => {
+    if (this.state.setFound) return <audio ref={this.chimeRef} src={chimeSound} autoPlay />;
+  };
+
   handleStartGame = e => {
     e.preventDefault();
     this.setState({
       gameStarted: true,
     });
     console.log(`Turns every ${this.state.cpuTurnInterval} ms`);
-    this.cpuTimer = setInterval(this.cpuTurn, this.state.cpuTurnInterval);
+    setTimeout(() => {
+      this.cpuTimer = setInterval(this.cpuTurn, this.state.cpuTurnInterval);
+    }, config.cpuDelay);
   };
 
   componentDidMount = () => {
@@ -90,6 +107,9 @@ class Solo extends Component {
     if (declarer || gameOver) {
       return;
     }
+    if (debugging) {
+      logTime('Guess');
+    }
     const [a, b] = shuffle(board).slice(0, 2);
     const c = nameThird(a, b);
     if (board.includes(c)) {
@@ -97,8 +117,10 @@ class Solo extends Component {
         declarer: 'cpu',
         selected: [a],
         cpuFound: [b, c],
+        setFound: true,
       });
-      this.cpuAnimation = window.setInterval(this.animateCpuChoice, 1000);
+      clearInterval(this.cpuTimer);
+      this.cpuAnimation = setInterval(this.animateCpuChoice, 1000);
     }
   };
 
@@ -144,10 +166,12 @@ class Solo extends Component {
 
   markPointForDeclarer = declarer => {
     const [newPlayers, newScore] = this.updatePlayerScore(declarer, 1);
-    this.setState({
+    const gameOver = newScore >= config.playingTo && declarer;
+    const newState = {
       players: newPlayers,
-      gameOver: newScore >= config.playingTo,
-    });
+      gameOver,
+    };
+    this.setState(newState);
   };
 
   performDeclare = declarer => {
@@ -215,6 +239,10 @@ class Solo extends Component {
       };
       this.setState(newState);
     }
+    clearInterval(this.cpuTimer);
+    setTimeout(() => {
+      this.cpuTimer = setInterval(this.cpuTurn, this.state.cpuTurnInterval);
+    }, config.cpuDelay);
   };
 
   resetGame = () => {
@@ -226,7 +254,7 @@ class Solo extends Component {
   };
 
   render() {
-    const { board, deck, selected, declarer, players, gameStarted } = this.state;
+    const { board, deck, selected, declarer, players, gameStarted, setFound } = this.state;
     if (!gameStarted) {
       return (
         <div className="container">
@@ -258,21 +286,26 @@ class Solo extends Component {
       );
     }
     return (
-      <Board
-        board={board}
-        deck={deck}
-        selected={selected}
-        declarer={declarer}
-        handleCardClick={this.handleCardClick}
-        handleDeclare={this.handleDeclare}
-        handleRedeal={this.handleRedeal}
-        players={players}
-        setFound={this.state.setFound}
-        gameOver={this.state.gameOver}
-        myName={this.state.name}
-        resetGame={this.resetGame}
-        solo={true}
-      />
+      <React.Fragment>
+        {/* {this.ding()} */}
+        {/* {declarer === 'cpu' && <audio src={badSound} autoPlay />}
+        {declarer === 'you' && setFound && <audio src={chimeSound} autoPlay />} */}
+        <Board
+          board={board}
+          deck={deck}
+          selected={selected}
+          declarer={declarer}
+          handleCardClick={this.handleCardClick}
+          handleDeclare={this.handleDeclare}
+          handleRedeal={this.handleRedeal}
+          players={players}
+          setFound={this.state.setFound}
+          gameOver={this.state.gameOver}
+          myName={this.state.name}
+          resetGame={this.resetGame}
+          solo={true}
+        />
+      </React.Fragment>
     );
   }
 }
