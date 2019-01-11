@@ -126,7 +126,6 @@ export const reshuffle = ({
   board: Array<string>,
   deck: Array<string>,
 }): { board: Array<string>, deck: Array<string> } => {
-  console.log([...board, ...deck]);
   let newDeck = shuffle([...board, ...deck]);
   while (
     countSets(newDeck.slice(0, 12), false, true) === 0 &&

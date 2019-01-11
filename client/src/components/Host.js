@@ -1,4 +1,3 @@
-// @flow
 import * as React from 'react';
 import Board from './Board';
 import { makeDeck, cardToggle, reshuffle, removeSelected, isSet } from '../utils/helpers';
@@ -6,18 +5,12 @@ import update from 'immutability-helper';
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 import firestore from '../firestore';
-import type { CollectionReference, DocumentReference } from 'firebase';
+import type { CollectionReference, DocumentReference } from 'firebase/firestore';
+import { colors } from '../config';
 
 const config = {
   turnTime: 5000,
-  colors: [
-    ' amber accent-2',
-    ' light-blue lighten-3',
-    ' pink lighten-3',
-    ' purple darken-1',
-    ' light-green lighten-1',
-    ' orange accent-2',
-  ],
+  colors,
   playingTo: 6,
 };
 
@@ -43,6 +36,7 @@ type State = {
 class Host extends React.Component<Props, State> {
   gameRef: DocumentReference;
   actionsRef: CollectionReference;
+  nameInputRef: { current: any | HTMLInputElement };
 
   constructor(props: {}) {
     super(props);
@@ -54,6 +48,7 @@ class Host extends React.Component<Props, State> {
       }),
       selected: [],
     };
+    this.nameInputRef = React.createRef();
 
     this.state = {
       players: {},
@@ -68,6 +63,10 @@ class Host extends React.Component<Props, State> {
       ...initialGameState,
     };
   }
+
+  componentDidMount = () => {
+    this.nameInputRef.current.focus();
+  };
 
   handleHostName = (e: SyntheticKeyboardEvent<HTMLFormElement>) => {
     console.log(e.currentTarget);
@@ -254,6 +253,7 @@ class Host extends React.Component<Props, State> {
           <h4>Enter your name:</h4>
           <form onSubmit={this.handleHostName}>
             <input
+              ref={this.nameInputRef}
               placeholder="hostname"
               value={inputName}
               onChange={e => {

@@ -232,7 +232,7 @@ class Solo extends Component {
         <div className="container">
           <h4>Choose difficulty</h4>
           <div className="row">
-            <div className="col s4">
+            <div className="col s8 m4">
               <form onSubmit={this.handleStartGame}>
                 <p className="range-field">
                   <input
