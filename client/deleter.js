@@ -69,12 +69,17 @@ const query = gamesRef
   .then(snapshot => {
     const batch = firestore.batch();
     snapshot.docs.forEach(g => {
-      const updated = g.data().lastUpdate.toMillis();
-      const now = new Date().getTime();
-      const age = Math.round((now - updated) / 1000);
-      if (age > 30) {
-        console.log('Deleting:', g.id);
+      const { lastUpdate } = g.data();
+      if (!lastUpdate) {
         batch.delete(g.ref);
+      } else {
+        const updated = g.data().lastUpdate.toMillis();
+        const now = new Date().getTime();
+        const age = Math.round((now - updated) / 1000);
+        if (age > 30) {
+          console.log('Deleting:', g.id);
+          batch.delete(g.ref);
+        }
       }
     });
     return batch.commit().then(() => {

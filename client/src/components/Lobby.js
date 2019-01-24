@@ -46,7 +46,11 @@ class Lobby extends Component {
   render() {
     const { games } = this.state;
     const activeGames = games.filter(g => {
-      const updated = g.lastUpdate.toMillis();
+      const { lastUpdate } = g;
+      if (!lastUpdate) {
+        return false;
+      }
+      const updated = lastUpdate.toMillis();
       const now = new Date().getTime();
       const age = Math.round((now - updated) / 1000);
       return age < 40;

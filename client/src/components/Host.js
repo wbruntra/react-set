@@ -64,12 +64,7 @@ class Host extends React.Component<Props, State> {
     };
   }
 
-  componentDidMount = () => {
-    this.nameInputRef.current.focus();
-  };
-
   handleHostName = (e: SyntheticKeyboardEvent<HTMLFormElement>) => {
-    console.log(e.currentTarget);
     e.preventDefault();
     const { inputName } = this.state;
     this.setState({
@@ -260,6 +255,7 @@ class Host extends React.Component<Props, State> {
           <form onSubmit={this.handleHostName}>
             <input
               ref={this.nameInputRef}
+              autoFocus
               placeholder="hostname"
               value={inputName}
               onChange={e => {

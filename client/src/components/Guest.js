@@ -59,7 +59,6 @@ class Guest extends React.Component<Props, State> {
         nameInput: previousNickname,
       });
     }
-    this.nameInput.focus();
     this.gameRef = firestore.collection('games').doc(gameName);
     this.gameRef.onSnapshot(doc => {
       if (!this.state.displayAnimation) {
@@ -180,9 +179,6 @@ class Guest extends React.Component<Props, State> {
           <h4>Choose nickname</h4>
           <form onSubmit={this.handleNickname}>
             <input
-              ref={input => {
-                this.nameInput = input;
-              }}
               type="text"
               placeholder="your name"
               value={this.state.nameInput}
