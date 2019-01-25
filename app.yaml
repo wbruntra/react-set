@@ -14,9 +14,15 @@ handlers:
 - url: /(.*)\.js
   static_files: client/build/\1.js
   upload: client/build/(.*)\.js
+- url: /index.html
+  script: main.app
 - url: /.*
   static_files: client/build/index.html
   upload: client/build/index.html
+
+libraries:
+- name: ssl
+  version: latest
 
 skip_files:
 - ^(.*/)?#.*#$
