@@ -6,9 +6,11 @@ class Main extends Component {
   render() {
     return (
       <div className="container">
-        <h2>Main Menu</h2>
         <div className="row">
-          <div className="col s3">
+            <h2 className="center-align">Main Menu</h2>
+        </div>
+        <div className="row">
+          <div className="col s8 offset-s2 m3 offset-m1">
             <Link to="/solo">
               <div className="card">
                 <Card desc="0012" />
@@ -16,7 +18,7 @@ class Main extends Component {
             </Link>
             <p className="center-align">Play Solo</p>
           </div>
-          <div className="col s3">
+          <div className="col s8 offset-s2 m3">
             <Link to="/lobby">
               <div className="card">
                 <Card desc="1121" />
@@ -24,7 +26,7 @@ class Main extends Component {
             </Link>
             <p className="center-align">Join Game</p>
           </div>
-          <div className="col s3">
+          <div className="col s8 offset-s2 m3">
             <Link to="/host">
               <div className="card">
                 <Card desc="2200" />

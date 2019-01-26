@@ -34,3 +34,4 @@ skip_files:
 - (.*/)?node_modules/
 - client/src/
 - client/public/
+- venv/
