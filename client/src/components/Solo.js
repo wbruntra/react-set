@@ -11,8 +11,7 @@ import {
 import { shuffle, cloneDeep } from 'lodash';
 import { colors } from '../config';
 import update from 'immutability-helper';
-import chimeSound from '../assets/electronic_chime.mp3';
-import badSound from '../assets/error_alert.mp3';
+import Slider from 'react-rangeslider';
 
 const debugging = false;
 
@@ -61,7 +60,7 @@ const initialState = {
   declarer: null,
   timeDeclared: null,
   gameOver: false,
-  difficulty: '2',
+  difficulty: 2,
   cpuTurnInterval: 1000,
   cpuFound: [],
 };
@@ -74,10 +73,6 @@ class Solo extends Component {
       ...createGameState(),
     };
   }
-
-  ding = () => {
-    if (this.state.setFound) return <audio ref={this.chimeRef} src={chimeSound} autoPlay />;
-  };
 
   handleStartGame = e => {
     e.preventDefault();
@@ -262,22 +257,23 @@ class Solo extends Component {
           <div className="row">
             <div className="col s8 m4">
               <form onSubmit={this.handleStartGame}>
-                <p className="range-field">
-                  <input
-                    type="range"
-                    value={this.state.difficulty}
-                    min="1"
-                    max="5"
-                    onChange={e => {
-                      const difficulty = e.target.value;
-                      const cpuTurnInterval = calculateIntervalFromDifficulty(difficulty);
-                      this.setState({
-                        cpuTurnInterval,
-                        difficulty,
-                      });
-                    }}
-                  />
-                </p>
+                <Slider
+                  ref={input => {
+                    this.difficultyInput = input;
+                  }}
+                  min={1}
+                  max={5}
+                  orientation="horizontal"
+                  tooltip={true}
+                  value={this.state.difficulty}
+                  onChange={difficulty => {
+                    const cpuTurnInterval = calculateIntervalFromDifficulty(difficulty);
+                    this.setState({
+                      cpuTurnInterval,
+                      difficulty,
+                    });
+                  }}
+                />
                 <input type="submit" value="Start" className="btn" />
               </form>
             </div>
@@ -287,9 +283,6 @@ class Solo extends Component {
     }
     return (
       <React.Fragment>
-        {/* {this.ding()} */}
-        {/* {declarer === 'cpu' && <audio src={badSound} autoPlay />}
-        {declarer === 'you' && setFound && <audio src={chimeSound} autoPlay />} */}
         <Board
           board={board}
           deck={deck}

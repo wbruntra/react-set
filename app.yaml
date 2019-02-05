@@ -35,3 +35,4 @@ skip_files:
 - client/src/
 - client/public/
 - venv/
+- .git/
