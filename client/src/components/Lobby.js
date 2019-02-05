@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import firestore from '../firestore';
 import { Link } from 'react-router-dom';
 
@@ -55,26 +55,31 @@ class Lobby extends Component {
       const age = Math.round((now - updated) / 1000);
       return age < 40;
     });
-    if (activeGames.length === 0) {
-      return (
-        <div className="container">
-          <p>No active games</p>
-          <Link to="/">Back</Link>
-        </div>
-      );
-    }
     return (
       <div className="container">
-        <h4>Available games</h4>
-        <ul className="collection">
-          {activeGames.map(game => {
-            return (
-              <li className="collection-item" key={game.name}>
-                <Link to={`/guest/${game.name}`}> {game.name} </Link>
-              </li>
-            );
-          })}
-        </ul>
+        {activeGames.length === 0 ? (
+          <Fragment>
+            <div className="row center-align">
+              <div className="col s4 card horizontal game-tile-empty">
+                <p>No active games</p>
+              </div>
+            </div>
+            <Link to="/">Back</Link>
+          </Fragment>
+        ) : (
+          <Fragment>
+            <h4 className="center-align">Available games</h4>
+            <div className="row center-align">
+              {activeGames.map(game => {
+                return (
+                  <div className="col s4 game-tile" key={game.name}>
+                    <Link to={`/guest/${game.name}`}> {game.name} </Link>
+                  </div>
+                );
+              })}
+            </div>
+          </Fragment>
+        )}
         {/* <form onSubmit={this.addGame}>
           <input
             type="text"
