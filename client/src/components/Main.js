@@ -1,13 +1,13 @@
-import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
-import Card from './Card';
+import React, { Component } from 'react'
+import { Link } from 'react-router-dom'
+import Card from './Card'
 
 class Main extends Component {
   render() {
     return (
       <div className="container">
         <div className="row">
-            <h2 className="center-align">Main Menu</h2>
+          <h2 className="center-align">Main Menu</h2>
         </div>
         <div className="row">
           <div className="col s8 offset-s2 m3 offset-m1">
@@ -47,8 +47,8 @@ class Main extends Component {
           </li>
         </ul> */}
       </div>
-    );
+    )
   }
 }
 
-export default Main;
+export default Main

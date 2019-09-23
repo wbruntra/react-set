@@ -1,11 +1,11 @@
-import React, { Component, Fragment } from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import React, { Component, Fragment } from 'react'
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 
-import Host from './Host';
-import Guest from './Guest';
-import Lobby from './Lobby';
-import Solo from './Solo';
-import Main from './Main';
+import Host from './Host'
+import Guest from './Guest'
+import Lobby from './Lobby'
+import Solo from './Solo'
+import Main from './Main'
 
 class App extends Component {
   render() {
@@ -21,8 +21,8 @@ class App extends Component {
           </Switch>
         </Router>
       </Fragment>
-    );
+    )
   }
 }
 
-export default App;
+export default App

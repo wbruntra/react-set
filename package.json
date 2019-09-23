@@ -13,18 +13,18 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "better-sqlite3": "^4.1.4",
-    "concurrently": "^4.0.1",
-    "cookie-parser": "^1.4.3",
-    "db-migrate": "^0.11.3",
+    "better-sqlite3": "^5.4.3",
+    "concurrently": "^4.1.2",
+    "cookie-parser": "^1.4.4",
+    "db-migrate": "^0.11.6",
     "db-migrate-mysql": "^1.1.10",
-    "db-migrate-sqlite3": "^0.3.1",
-    "express": "^4.16.3",
-    "morgan": "^1.9.0",
-    "nodemon": "^1.18.4",
-    "sequelize": "^4.38.0",
-    "sequelize-cli": "^4.1.1",
-    "socket.io": "^2.1.1",
-    "sqlite3": "^4.0.2"
+    "db-migrate-sqlite3": "^0.4.0",
+    "express": "^4.17.1",
+    "morgan": "^1.9.1",
+    "nodemon": "^1.19.2",
+    "sequelize": "^5.19.0",
+    "sequelize-cli": "^5.5.1",
+    "socket.io": "^2.3.0",
+    "sqlite3": "^4.1.0"
   }
 }

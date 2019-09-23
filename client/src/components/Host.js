@@ -1,54 +1,31 @@
-import * as React from 'react';
-import Board from './Board';
-import { makeDeck, cardToggle, reshuffle, removeSelected, isSet } from '../utils/helpers';
-import update from 'immutability-helper';
-import firebase from 'firebase/app';
-import 'firebase/firestore';
-import firestore from '../firestore';
-import type { CollectionReference, DocumentReference } from 'firebase/firestore';
-import { colors } from '../config';
+import * as React from 'react'
+import Board from './Board'
+import { makeDeck, cardToggle, reshuffle, removeSelected, isSet } from '../utils/helpers'
+import update from 'immutability-helper'
+import firebase from 'firebase/app'
+import 'firebase/firestore'
+import firestore from '../firestore'
+import { colors } from '../config'
 
 const config = {
   turnTime: 5000,
   colors,
   playingTo: 6,
-};
+}
 
-type Props = {
-  /* ... */
-};
+class Host extends React.Component {
 
-type State = {
-  players: {},
-  gameTitle: string,
-  created: boolean,
-  myName: string,
-  inputName: string,
-  setFound: boolean,
-  autoplay: boolean,
-  declarer: ?string,
-  deck: Array<string>,
-  board: Array<string>,
-  selected: Array<string>,
-  gameOver: boolean,
-};
-
-class Host extends React.Component<Props, State> {
-  gameRef: DocumentReference;
-  actionsRef: CollectionReference;
-  nameInputRef: { current: any | HTMLInputElement };
-
-  constructor(props: {}) {
-    super(props);
-    const initialDeck = makeDeck();
+  constructor(props) {
+    super(props)
+    const initialDeck = makeDeck()
     const initialGameState = {
       ...reshuffle({
         deck: initialDeck.slice(12),
         board: initialDeck.slice(0, 12),
       }),
       selected: [],
-    };
-    this.nameInputRef = React.createRef();
+    }
+    this.nameInputRef = React.createRef()
 
     this.state = {
       players: {},
@@ -61,12 +38,12 @@ class Host extends React.Component<Props, State> {
       declarer: null,
       gameOver: false,
       ...initialGameState,
-    };
+    }
   }
 
-  handleHostName = (e: SyntheticKeyboardEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const { inputName } = this.state;
+  handleHostName = (e) => {
+    e.preventDefault()
+    const { inputName } = this.state
     this.setState({
       myName: inputName,
       players: {
@@ -75,90 +52,87 @@ class Host extends React.Component<Props, State> {
           color: config.colors[0],
         },
       },
-    });
-  };
+    })
+  }
 
-  handleCreateGame = (e: SyntheticKeyboardEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const { myName, board, deck, selected } = this.state;
-    let gameTitle = this.state.gameTitle;
+  handleCreateGame = (e) => {
+    e.preventDefault()
+    const { myName, board, deck, selected } = this.state
+    let gameTitle = this.state.gameTitle
     if (gameTitle === '') {
-      gameTitle = `${myName}'s game`;
+      gameTitle = `${myName}'s game`
     }
-    this.gameRef = firestore.collection('games').doc(gameTitle);
+    this.gameRef = firestore.collection('games').doc(gameTitle)
     this.gameRef.set({
       board,
       deck,
       selected,
       lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
-    });
+    })
     this.activeGameUpdater = window.setInterval(() => {
       this.gameRef.update({
         lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
-      });
-    }, 30000);
-    this.actionsRef = this.gameRef.collection('actions');
+      })
+    }, 30000)
+    this.actionsRef = this.gameRef.collection('actions')
     this.actionsRef.get().then(snapshot => {
       snapshot.forEach(doc => {
-        console.log(doc.id, '=>', doc.data());
-      });
-    });
+        console.log(doc.id, '=>', doc.data())
+      })
+    })
 
     this.actionsRef.onSnapshot(snapshot => {
       snapshot.docChanges().forEach(change => {
         if (change.type === 'added') {
-          const action = change.doc.data();
-          window.created = action.created;
-          console.log(action);
-          this.processAction(action);
-          this.actionsRef.doc(change.doc.id).delete();
+          const action = change.doc.data()
+          window.created = action.created
+          console.log(action)
+          this.processAction(action)
+          this.actionsRef.doc(change.doc.id).delete()
         }
         if (change.type === 'removed') {
-          console.log('Removed action: ', change.doc.data());
+          console.log('Removed action: ', change.doc.data())
         }
-      });
-    });
+      })
+    })
     this.setState({
       created: true,
-    });
-  };
+    })
+  }
 
-  markPointForDeclarer = (declarer: ?string) => {
+  markPointForDeclarer = (declarer) => {
     if (!declarer) {
-      return {};
+      return {}
     }
-    const { players } = this.state;
-    const newScore = players[declarer].score + 1;
+    const { players } = this.state
+    const newScore = players[declarer].score + 1
     const newPlayers = update(players, {
       [declarer]: {
         $merge: {
           score: newScore,
         },
       },
-    });
-    const gameOver = newScore >= config.playingTo && declarer;
+    })
+    const gameOver = newScore >= config.playingTo && declarer
     if (gameOver) {
       window.setTimeout(() => {
-        this.gameRef.delete();
-        clearInterval(this.activeGameUpdater);
-      }, 3000);
+        this.gameRef.delete()
+        clearInterval(this.activeGameUpdater)
+      }, 3000)
     }
     return {
       players: newPlayers,
       gameOver,
-    };
-  };
+    }
+  }
 
-  processAction = (action: {
-    type: string,
-    payload: { name: string, selected: Array<string> },
-  }) => {
-    const { type, payload } = action;
-    const { players, declarer } = this.state;
+  processAction = (action) => {
+    const { type, payload } = action
+    const { players, declarer } = this.state
     switch (type) {
       case 'join':
         if (Object.keys(players).includes(payload.name)) {
-          return;
+          return
         }
         const newPlayers = {
           ...players,
@@ -166,74 +140,74 @@ class Host extends React.Component<Props, State> {
             score: 0,
             color: config.colors[Object.keys(players).length],
           },
-        };
-        this.setAndSendState({ players: newPlayers });
-        break;
+        }
+        this.setAndSendState({ players: newPlayers })
+        break
       case 'found':
         if (!declarer) {
-          this.updateSelected(payload.selected, payload.name);
+          this.updateSelected(payload.selected, payload.name)
         }
-        break;
+        break
       default:
-        return;
+        return
     }
-  };
+  }
 
-  setAndSendState = (update: {}) => {
-    this.setState(update);
+  setAndSendState = (update) => {
+    this.setState(update)
     this.gameRef.update({
       ...update,
-    });
-  };
+    })
+  }
 
-  triggerFoundSequence = (selected, name) => {};
+  triggerFoundSequence = (selected, name) => {}
 
-  updateSelected = (newSelected: Array<string>, declarer: string) => {
+  updateSelected = (newSelected, declarer) => {
     const newState = {
       setFound: isSet(newSelected),
       selected: newSelected,
       declarer,
-    };
+    }
     if (newState.setFound) {
       setTimeout(() => {
-        this.removeSet();
-      }, 4000);
+        this.removeSet()
+      }, 4000)
     }
-    this.setAndSendState(newState);
-  };
+    this.setAndSendState(newState)
+  }
 
-  handleCardClick = (card: string) => {
-    const { myName } = this.state;
+  handleCardClick = (card) => {
+    const { myName } = this.state
     if (!this.state.declarer) {
-      const newSelected = cardToggle(card, this.state.selected);
+      const newSelected = cardToggle(card, this.state.selected)
       if (isSet(newSelected)) {
-        this.updateSelected(newSelected, myName);
+        this.updateSelected(newSelected, myName)
       }
       this.setState({
         selected: newSelected,
-      });
+      })
     }
-  };
+  }
 
   handleRedeal = () => {
-    const newState = reshuffle(this.state);
-    this.setAndSendState(newState);
-  };
+    const newState = reshuffle(this.state)
+    this.setAndSendState(newState)
+  }
 
   removeSet = () => {
-    const { declarer, selected } = this.state;
+    const { declarer, selected } = this.state
     if (isSet(selected)) {
-      const newScores = this.markPointForDeclarer(declarer);
+      const newScores = this.markPointForDeclarer(declarer)
       const newState = {
         setFound: false,
         declarer: null,
         timeDeclared: null,
         ...newScores,
         ...removeSelected(this.state),
-      };
-      this.setAndSendState(newState);
+      }
+      this.setAndSendState(newState)
     }
-  };
+  }
 
   render() {
     const {
@@ -246,7 +220,7 @@ class Host extends React.Component<Props, State> {
       created,
       myName,
       inputName,
-    } = this.state;
+    } = this.state
     if (myName === '') {
       return (
         <div className="container">
@@ -258,7 +232,7 @@ class Host extends React.Component<Props, State> {
               placeholder="hostname"
               value={inputName}
               onChange={e => {
-                this.setState({ inputName: e.target.value });
+                this.setState({ inputName: e.target.value })
               }}
             />
             <button type="submit" className="btn">
@@ -266,7 +240,7 @@ class Host extends React.Component<Props, State> {
             </button>
           </form>
         </div>
-      );
+      )
     }
     if (!created) {
       return (
@@ -276,7 +250,7 @@ class Host extends React.Component<Props, State> {
             <input
               placeholder={`${myName}'s game`}
               onChange={e => {
-                this.setState({ gameTitle: e.target.value });
+                this.setState({ gameTitle: e.target.value })
               }}
               value={gameTitle}
             />
@@ -285,7 +259,7 @@ class Host extends React.Component<Props, State> {
             </button>
           </form>
         </div>
-      );
+      )
     }
     return (
       <Board
@@ -301,8 +275,8 @@ class Host extends React.Component<Props, State> {
         gameOver={this.state.gameOver}
         myName={this.state.myName}
       />
-    );
+    )
   }
 }
 
-export default Host;
+export default Host

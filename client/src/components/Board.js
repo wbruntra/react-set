@@ -3,8 +3,6 @@ import { isEmpty, map, debounce } from 'lodash'
 import { countSets, isSet } from '../utils/helpers'
 import Card from './Card'
 import { Link } from 'react-router-dom'
-import chimeSound from '../assets/electronic_chime.mp3'
-import badSound from '../assets/error_alert.mp3'
 import GameOver from './GameOver'
 
 class Board extends Component {
@@ -13,15 +11,6 @@ class Board extends Component {
     this.state = {
       sets: countSets(props.board, true),
     }
-  }
-
-  setSound = () => {
-    const { myName, declarer, selected, setFound } = this.props
-    let sound = chimeSound
-    if (declarer !== myName) {
-      sound = badSound
-    }
-    return <audio src={sound} autoPlay />
   }
 
   resize = debounce(() => {
@@ -56,7 +45,6 @@ class Board extends Component {
     }
     return (
       <Fragment>
-        {declarer && setFound && this.setSound()}
         <div className="navbar-fixed">
           <nav>
             <div className="nav-wrapper">

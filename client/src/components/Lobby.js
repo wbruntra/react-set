@@ -1,74 +1,74 @@
-import React, { Component, Fragment } from 'react';
-import firestore from '../firestore';
-import { Link } from 'react-router-dom';
+import React, { Component, Fragment } from 'react'
+import firestore from '../firestore'
+import { Link } from 'react-router-dom'
 
-const styles = {};
+const styles = {}
 
 class Lobby extends Component {
   constructor(props) {
-    super(props);
-    const games = [];
+    super(props)
+    const games = []
 
     this.state = {
       name: '',
       newGame: 'baz',
       init: false,
       games,
-    };
+    }
   }
 
   componentDidMount() {
-    this.gamesRef = firestore.collection('games');
+    this.gamesRef = firestore.collection('games')
 
     this.unsubscribe = this.gamesRef.onSnapshot(snapshot => {
-      const newGames = [];
+      const newGames = []
       snapshot.forEach(doc => {
         newGames.push({
           name: doc.id,
           ...doc.data(),
-        });
-      });
+        })
+      })
       this.setState({
         init: true,
         games: newGames,
-      });
-    });
+      })
+    })
   }
 
   componentWillUnmount = () => {
-    this.unsubscribe();
-  };
+    this.unsubscribe()
+  }
 
   addGame = e => {
-    e.preventDefault();
-    const { newGame } = this.state;
+    e.preventDefault()
+    const { newGame } = this.state
     this.gamesRef.doc(newGame).set({
       host: 'bill',
-    });
-  };
+    })
+  }
 
   render() {
-    const { games, init } = this.state;
+    const { games, init } = this.state
     if (!init) {
-      return null;
+      return null
     }
     const activeGames = games.filter(g => {
-      const { lastUpdate } = g;
+      const { lastUpdate } = g
       if (!lastUpdate) {
-        return false;
+        return false
       }
-      const updated = lastUpdate.toMillis();
-      const now = new Date().getTime();
-      const age = Math.round((now - updated) / 1000);
-      return age < 40;
-    });
+      const updated = lastUpdate.toMillis()
+      const now = new Date().getTime()
+      const age = Math.round((now - updated) / 1000)
+      return age < 40
+    })
     return (
       <div className="container" style={{ height: '100vh' }}>
         {activeGames.length === 0 ? (
           <Fragment>
             <div className="row">
               <div className="col s8 offset-s2 m6 offset-m3">
-                <div className="card-panel teal" style={{ marginTop: window.innerHeight * .20 }}>
+                <div className="card-panel teal" style={{ marginTop: window.innerHeight * 0.2 }}>
                   <span className="white-text">There are currently no active games.</span>
                 </div>
                 <Link to="/">Back</Link>
@@ -86,14 +86,14 @@ class Lobby extends Component {
                       <div className="card-panel">{game.name}</div>
                     </Link>
                   </div>
-                );
+                )
               })}
             </div>
           </Fragment>
         )}
       </div>
-    );
+    )
   }
 }
 
-export default Lobby;
+export default Lobby

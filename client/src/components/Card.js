@@ -1,18 +1,18 @@
-import React, { Component, Fragment } from 'react';
-import { range } from '../utils/helpers';
-import './card.css';
+import React, { Component, Fragment } from 'react'
+import { range } from '../utils/helpers'
+import './card.css'
 
 const config = {
   width: 120,
   height: 200,
   strokeWidth: 4,
   padding: 25,
-};
+}
 
 const Shape = ({ shape, fill, color }) => {
-  let { padding, height, width, strokeWidth } = config;
+  let { padding, height, width, strokeWidth } = config
   if (shape === '0') {
-    padding = padding + 1;
+    padding = padding + 1
     return (
       <g>
         {/* triangle */}
@@ -31,7 +31,7 @@ const Shape = ({ shape, fill, color }) => {
           style={{ fill: fill, stroke: color, strokeWidth: strokeWidth }}
         />
       </g>
-    );
+    )
   }
   if (shape === '1') {
     return (
@@ -48,7 +48,7 @@ const Shape = ({ shape, fill, color }) => {
           fill={fill}
         />
       </g>
-    );
+    )
   }
   if (shape === '2') {
     return (
@@ -61,9 +61,9 @@ const Shape = ({ shape, fill, color }) => {
           style={{ fill: fill, stroke: color, strokeWidth: config.strokeWidth }}
         />
       </g>
-    );
+    )
   }
-};
+}
 
 class Card extends Component {
   colors = {
@@ -71,20 +71,20 @@ class Card extends Component {
     1: '#3E009E',
     2: '#FF0000',
     white: '#fff',
-  };
+  }
 
   getFill = (color, fill) => {
     if (fill === '1') {
-      return `url(#card-${color}-${fill})`;
+      return `url(#card-${color}-${fill})`
     }
     if (fill === '2') {
-      return this.colors[color];
+      return this.colors[color]
     }
-    return this.colors.white;
-  };
+    return this.colors.white
+  }
 
   drawShape = () => {
-    const [, color, shape, fill] = this.props.desc.split('');
+    const [, color, shape, fill] = this.props.desc.split('')
     return (
       <Fragment>
         <g>
@@ -104,11 +104,11 @@ class Card extends Component {
         </g>
         <Shape shape={shape} fill={this.getFill(color, fill)} color={this.colors[color]} />
       </Fragment>
-    );
-  };
+    )
+  }
 
   render() {
-    const [number, color, , fill] = this.props.desc.split('');
+    const [number, color, , fill] = this.props.desc.split('')
     return (
       <div className="game-card">
         <svg width="0" height="0">
@@ -139,11 +139,11 @@ class Card extends Component {
             >
               {this.drawShape()}
             </svg>
-          );
+          )
         })}
       </div>
-    );
+    )
   }
 }
 
-export default Card;
+export default Card

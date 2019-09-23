@@ -1,54 +1,31 @@
-import * as React from 'react';
-import Board from './Board';
-import { makeDeck, cardToggle, reshuffle, removeSelected, isSet } from '../utils/helpers';
-import update from 'immutability-helper';
-import firebase from 'firebase/app';
-import 'firebase/firestore';
-import firestore from '../firestore';
-import type { CollectionReference, DocumentReference } from 'firebase/firestore';
-import { colors } from '../config';
+import * as React from 'react'
+import Board from './Board'
+import { makeDeck, cardToggle, reshuffle, removeSelected, isSet } from '../utils/helpers'
+import update from 'immutability-helper'
+import firebase from 'firebase/app'
+import 'firebase/firestore'
+import firestore from '../firestore'
+import { colors } from '../config'
 
 const config = {
   turnTime: 5000,
   colors,
   playingTo: 6,
-};
+}
 
-type Props = {
-  /* ... */
-};
+class Player extends React.Component {
 
-type State = {
-  players: {},
-  gameTitle: string,
-  created: boolean,
-  myName: string,
-  inputName: string,
-  setFound: boolean,
-  autoplay: boolean,
-  declarer: ?string,
-  deck: Array<string>,
-  board: Array<string>,
-  selected: Array<string>,
-  gameOver: boolean,
-};
-
-class Player extends React.Component<Props, State> {
-  gameRef: DocumentReference;
-  actionsRef: CollectionReference;
-  nameInputRef: { current: any | HTMLInputElement };
-
-  constructor(props: {}) {
-    super(props);
-    const initialDeck = makeDeck();
+  constructor() {
+    super(props)
+    const initialDeck = makeDeck()
     const initialGameState = {
       ...reshuffle({
         deck: initialDeck.slice(12),
         board: initialDeck.slice(0, 12),
       }),
       selected: [],
-    };
-    this.nameInputRef = React.createRef();
+    }
+    this.nameInputRef = React.createRef()
 
     this.state = {
       players: {},
@@ -61,17 +38,17 @@ class Player extends React.Component<Props, State> {
       declarer: null,
       gameOver: false,
       ...initialGameState,
-    };
+    }
   }
 
   componentDidMount = () => {
-    this.nameInputRef.current.focus();
-  };
+    this.nameInputRef.current.focus()
+  }
 
-  handlePlayerName = (e: SyntheticKeyboardEvent<HTMLFormElement>) => {
-    console.log(e.currentTarget);
-    e.preventDefault();
-    const { inputName } = this.state;
+  handlePlayerName = (e) => {
+    console.log(e.currentTarget)
+    e.preventDefault()
+    const { inputName } = this.state
     this.setState({
       myName: inputName,
       players: {
@@ -80,59 +57,57 @@ class Player extends React.Component<Props, State> {
           color: config.colors[0],
         },
       },
-    });
-  };
-
-  triggerFoundSequence = (selected, name) => {
-    
+    })
   }
 
-  updateSelected = (newSelected: Array<string>, declarer: string) => {
+  triggerFoundSequence = (selected, name) => {}
+
+  updateSelected = (newSelected, declarer) => {
     const newState = {
       setFound: isSet(newSelected),
       selected: newSelected,
       declarer,
-    };
+    }
     if (newState.setFound) {
       setTimeout(() => {
-        this.removeSet();
-      }, 2000);
+        this.removeSet()
+      }, 2000)
     }
-    this.setAndSendState(newState);
-  };
+    this.setAndSendState(newState)
+  }
 
-  handleCardClick = (card: string) => {
-    const { myName } = this.state;
+  handleCardClick = (card) => {
+    const { myName } = this.state
     if (!this.state.declarer) {
-      const newSelected = cardToggle(card, this.state.selected);
+      const newSelected = cardToggle(card, this.state.selected)
       if (isSet(newSelected)) {
-        this.updateSelected(newSelected, myName);
+        this.updateSelected(newSelected, myName)
       }
       this.setState({
         selected: newSelected,
-      });
+      })
     }
-  };
+  }
 
   handleRedeal = () => {
-    const newState = reshuffle(this.state);
-    this.setAndSendState(newState);
-  };
+    const newState = reshuffle(this.state)
+    this.setAndSendState(newState)
+  }
 
   removeSet = () => {
-    const { declarer, selected } = this.state;
+    const { declarer, selected } = this.state
     if (isSet(selected)) {
-      const newScores = this.markPointForDeclarer(declarer);
+      const newScores = this.markPointForDeclarer(declarer)
       const newState = {
         setFound: false,
         declarer: null,
         timeDeclared: null,
         ...newScores,
         ...removeSelected(this.state),
-      };
-      this.setAndSendState(newState);
+      }
+      this.setAndSendState(newState)
     }
-  };
+  }
 
   render() {
     const {
@@ -145,7 +120,7 @@ class Player extends React.Component<Props, State> {
       created,
       myName,
       inputName,
-    } = this.state;
+    } = this.state
     if (myName === '') {
       return (
         <div className="container">
@@ -156,7 +131,7 @@ class Player extends React.Component<Props, State> {
               placeholder="hostname"
               value={inputName}
               onChange={e => {
-                this.setState({ inputName: e.target.value });
+                this.setState({ inputName: e.target.value })
               }}
             />
             <button type="submit" className="btn">
@@ -164,7 +139,7 @@ class Player extends React.Component<Props, State> {
             </button>
           </form>
         </div>
-      );
+      )
     }
     if (!created) {
       return (
@@ -173,7 +148,7 @@ class Player extends React.Component<Props, State> {
           <form onSubmit={this.handleCreateGame}>
             <input
               onChange={e => {
-                this.setState({ gameTitle: e.target.value });
+                this.setState({ gameTitle: e.target.value })
               }}
               value={gameTitle}
             />
@@ -182,7 +157,7 @@ class Player extends React.Component<Props, State> {
             </button>
           </form>
         </div>
-      );
+      )
     }
     return (
       <Board
@@ -198,8 +173,8 @@ class Player extends React.Component<Props, State> {
         gameOver={this.state.gameOver}
         myName={this.state.myName}
       />
-    );
+    )
   }
 }
 
-export default Player;
+export default Player
