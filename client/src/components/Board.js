@@ -1,81 +1,58 @@
-import React, { Component, Fragment } from 'react';
-import { isEmpty, map, debounce } from 'lodash';
-import { countSets, isSet } from '../utils/helpers';
-import Card from './Card';
-import { Link } from 'react-router-dom';
-import sadTrombone from '../assets/sad_trombone.mp3';
-import applause from '../assets/applause.mp3';
-import chimeSound from '../assets/electronic_chime.mp3';
-import badSound from '../assets/error_alert.mp3';
+import React, { Component, Fragment } from 'react'
+import { isEmpty, map, debounce } from 'lodash'
+import { countSets, isSet } from '../utils/helpers'
+import Card from './Card'
+import { Link } from 'react-router-dom'
+import chimeSound from '../assets/electronic_chime.mp3'
+import badSound from '../assets/error_alert.mp3'
+import GameOver from './GameOver'
 
 class Board extends Component {
   constructor(props) {
-    super(props);
+    super(props)
     this.state = {
       sets: countSets(props.board, true),
-    };
+    }
   }
 
-  finalSound = () => {
-    const { gameOver, myName } = this.props;
-    const soundEffect = gameOver === myName ? applause : sadTrombone;
-    return <audio src={soundEffect} autoPlay />;
-  };
-
   setSound = () => {
-    const { myName, declarer, selected, setFound } = this.props;
-    let sound = chimeSound;
+    const { myName, declarer, selected, setFound } = this.props
+    let sound = chimeSound
     if (declarer !== myName) {
-      sound = badSound;
+      sound = badSound
     }
-    return <audio src={sound} autoPlay />;
-  };
+    return <audio src={sound} autoPlay />
+  }
 
-  resize = () => this.forceUpdate();
+  resize = debounce(() => {
+    this.forceUpdate()
+  }, 150)
 
   componentDidMount() {
-    window.addEventListener('resize', debounce(this.resize, 150));
+    window.addEventListener('resize', this.resize)
   }
 
   componentWillUnmount() {
-    window.removeEventListener('resize', this.resize);
+    window.removeEventListener('resize', this.resize)
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (JSON.stringify(prevProps.board) !== JSON.stringify(this.props.board)) {
       this.setState({
         sets: countSets(this.props.board, true),
-      });
+      })
     }
   }
 
   render() {
-    const { board, selected, deck, declarer, players, gameOver, myName, setFound } = this.props;
-    // const setFound = isSet(selected);
+    const { board, selected, deck, declarer, players, gameOver, myName, setFound } = this.props
     if (isEmpty(players) || !Object.keys(players).includes(myName)) {
-      return null;
+      return null
     }
-    const borderColor = declarer ? players[declarer].color : players[myName].color;
-    // const borderColor = ' purple darken-1';
-    const { sets } = this.state;
+    const borderColor = declarer ? players[declarer].color : players[myName].color
+    const { sets } = this.state
     if (gameOver) {
-      return (
-        <div className="container">
-          {this.finalSound()}
-          <p>GAME OVER!</p>
-          <p>Winner: {gameOver} </p>
-          {this.props.solo && (
-            <div className="row">
-              <button className="btn" onClick={this.props.resetGame}>
-                Play Again
-              </button>
-            </div>
-          )}
-          <div className="row">
-            <Link to="/">Main Menu</Link>
-          </div>
-        </div>
-      );
+      return <GameOver gameOver={gameOver} myName={myName} />
     }
     return (
       <Fragment>
@@ -108,7 +85,7 @@ class Board extends Component {
                   key={card}
                   className={'col s4' + (selected.includes(card) ? borderColor : '')}
                   onClick={() => {
-                    this.props.handleCardClick(card);
+                    this.props.handleCardClick(card)
                   }}
                 >
                   <div
@@ -119,7 +96,7 @@ class Board extends Component {
                     <Card desc={card} />
                   </div>
                 </div>
-              );
+              )
             })}
           </div>
           <div className="row">
@@ -130,7 +107,7 @@ class Board extends Component {
                     {name}: {info.score}
                   </span>
                 </div>
-              );
+              )
             })}
           </div>
           <div className="row">
@@ -142,8 +119,8 @@ class Board extends Component {
           </div>
         </div>
       </Fragment>
-    );
+    )
   }
 }
 
-export default Board;
+export default Board

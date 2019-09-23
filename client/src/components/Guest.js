@@ -72,18 +72,27 @@ class Guest extends React.Component<Props, State> {
     this.actionsRef = this.gameRef.collection('actions');
   }
 
+  componentWillUnmount = () => {
+    if (this.gameRef) {
+      this.gameRef();
+    }
+  }
+
   processUpdate = doc => {
     const updatedState = { ...doc.data() };
-    console.log('Updating', updatedState);
-    if (!this.state.displayAnimation && updatedState.selected.length === 3) {
-      console.log('New set found');
-      Object.assign(updatedState, {
-        displayAnimation: true,
-        selected: updatedState.selected.slice(0, 1),
-        animatedSet: updatedState.selected.slice(1),
-      });
-      this.animationId = setInterval(this.animate, 800);
+    if (isEmpty(updatedState)) {
+      return;
     }
+    console.log('Updating', updatedState);
+    // if (!this.state.displayAnimation && updatedState.selected.length === 3) {
+    //   console.log('New set found');
+    //   Object.assign(updatedState, {
+    //     displayAnimation: true,
+    //     selected: updatedState.selected.slice(0, 1),
+    //     animatedSet: updatedState.selected.slice(1),
+    //   });
+    //   this.animationId = setInterval(this.animate, 800);
+    // }
     this.setState({
       ...updatedState,
       popupVisible: false,
@@ -99,7 +108,7 @@ class Guest extends React.Component<Props, State> {
     };
     if (newSelected.length === 3) {
       clearInterval(this.animationId);
-      Object.assign(newState, {displayAnimation: false});
+      Object.assign(newState, { displayAnimation: false });
     }
     this.setState(newState);
   };

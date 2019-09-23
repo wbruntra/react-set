@@ -92,7 +92,7 @@ class Host extends React.Component<Props, State> {
       selected,
       lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
     });
-    window.setInterval(() => {
+    this.activeGameUpdater = window.setInterval(() => {
       this.gameRef.update({
         lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
       });
@@ -140,6 +140,7 @@ class Host extends React.Component<Props, State> {
     if (gameOver) {
       window.setTimeout(() => {
         this.gameRef.delete();
+        clearInterval(this.activeGameUpdater);
       }, 3000);
     }
     return {
@@ -185,9 +186,7 @@ class Host extends React.Component<Props, State> {
     });
   };
 
-  triggerFoundSequence = (selected, name) => {
-
-  }
+  triggerFoundSequence = (selected, name) => {};
 
   updateSelected = (newSelected: Array<string>, declarer: string) => {
     const newState = {

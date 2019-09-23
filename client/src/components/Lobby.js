@@ -2,6 +2,8 @@ import React, { Component, Fragment } from 'react';
 import firestore from '../firestore';
 import { Link } from 'react-router-dom';
 
+const styles = {};
+
 class Lobby extends Component {
   constructor(props) {
     super(props);
@@ -10,6 +12,7 @@ class Lobby extends Component {
     this.state = {
       name: '',
       newGame: 'baz',
+      init: false,
       games,
     };
   }
@@ -26,6 +29,7 @@ class Lobby extends Component {
         });
       });
       this.setState({
+        init: true,
         games: newGames,
       });
     });
@@ -44,7 +48,10 @@ class Lobby extends Component {
   };
 
   render() {
-    const { games } = this.state;
+    const { games, init } = this.state;
+    if (!init) {
+      return null;
+    }
     const activeGames = games.filter(g => {
       const { lastUpdate } = g;
       if (!lastUpdate) {
@@ -56,42 +63,34 @@ class Lobby extends Component {
       return age < 40;
     });
     return (
-      <div className="container">
+      <div className="container" style={{ height: '100vh' }}>
         {activeGames.length === 0 ? (
           <Fragment>
-            <div className="row center-align">
-              <div className="col s4 card horizontal game-tile-empty">
-                <p>No active games</p>
+            <div className="row">
+              <div className="col s8 offset-s2 m6 offset-m3">
+                <div className="card-panel teal" style={{ marginTop: window.innerHeight * .20 }}>
+                  <span className="white-text">There are currently no active games.</span>
+                </div>
+                <Link to="/">Back</Link>
               </div>
             </div>
-            <Link to="/">Back</Link>
           </Fragment>
         ) : (
           <Fragment>
             <h4 className="center-align">Available games</h4>
             <div className="row center-align">
-              {activeGames.map(game => {
+              {activeGames.map((game, i) => {
                 return (
-                  <div className="col s4 game-tile" key={game.name}>
-                    <Link to={`/guest/${game.name}`}> {game.name} </Link>
+                  <div className="col s6 m4" key={game.name}>
+                    <Link to={`/guest/${game.name}`}>
+                      <div className="card-panel">{game.name}</div>
+                    </Link>
                   </div>
                 );
               })}
             </div>
           </Fragment>
         )}
-        {/* <form onSubmit={this.addGame}>
-          <input
-            type="text"
-            value={this.state.newGame}
-            onChange={e => {
-              this.setState({
-                newGame: e.target.value,
-              });
-            }}
-          />
-          <input value="Add Game" className="btn" type="submit" />
-        </form> */}
       </div>
     );
   }

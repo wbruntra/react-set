@@ -30,7 +30,7 @@ module.exports = {
    * - true - add a semicolon at the end of every line
    * - false - only add semicolons at the beginning of lines that may introduce ASI failures
    */
-  noSemi: true,
+  semi: false,
   /**
    * Add additional logging from prettierrc (not prettier itself).
    * Defaults to false

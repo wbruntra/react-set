@@ -1,6 +1,6 @@
 // import * as firebase from 'firebase';
-import firebase from 'firebase/app';
-import 'firebase/firestore';
+import firebase from 'firebase/app'
+import 'firebase/firestore'
 
 const config = {
   apiKey: 'AIzaSyAvSp91vcvkgt9RYafRIgY8noH4NSX0P0g',
@@ -9,13 +9,13 @@ const config = {
   projectId: 'isthisprime',
   storageBucket: 'isthisprime.appspot.com',
   messagingSenderId: '522572340456',
-};
+}
 
-firebase.initializeApp(config);
+firebase.initializeApp(config)
 
-const firestore = firebase.firestore();
+const firestore = firebase.firestore()
 
-const settings = { timestampsInSnapshots: true };
-firestore.settings(settings);
+// const settings = { timestampsInSnapshots: true };
+// firestore.settings(settings);
 
-export default firestore;
+export default firestore
