@@ -48,10 +48,25 @@ const Squiggle = ({ fill, color }) => {
       <g>
         <path
           stroke={color}
-          transform="rotate(89.69688415527344 58.75771713256837,97.92066192626952) "
+          transform="
+          rotate(270,58.8,98)
+          scale(0.8 1)
+          translate(10 0)
+          "
           id="svg_5"
-          d="m-17.485088,66.013951c50.828541,-35.451902 101.657071,35.451899 152.485601,0l0,63.813412c-50.82853,35.451904 -101.657061,-35.451896 -152.485601,0l0,-63.813412z"
-          fillOpacity="null"
+          d="
+          m-17.49,66
+          c50.83,-35.45 101.7,35.45
+          152.5,0
+          c30,-10 30,43.8
+          0,63.8
+          c-50.8,35.45 -101.6,-35.45
+          -152.5,0
+          c-30,15 -30,-45
+          0,-63.59
+          z
+          "
+        fillOpacity="null"
           strokeOpacity="null"
           strokeWidth={strokeWidth}
           fill={fill}
@@ -150,7 +165,7 @@ class Card extends Component {
         <svg width="0" height="0">
           <pattern
             id={`card-${color}-${fill}`}
-            width={120 / 7}
+            width={120 / 12}
             height="10"
             patternTransform="rotate(45 0 0)"
             patternUnits="userSpaceOnUse"
