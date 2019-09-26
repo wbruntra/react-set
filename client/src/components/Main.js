@@ -37,13 +37,7 @@ class Main extends Component {
         </div>
         {/* <ul className="collection">
           <li className="collection-item">
-            <Link to="/host">Host</Link>
-          </li>
-          <li className="collection-item">
-            <Link to="/lobby">Guest</Link>
-          </li>
-          <li className="collection-item">
-            <Link to="/solo">Solo</Link>
+            <Link to="/rules">Rules</Link>
           </li>
         </ul> */}
       </div>

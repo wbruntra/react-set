@@ -6,6 +6,7 @@ import Guest from './Guest'
 import Lobby from './Lobby'
 import Solo from './Solo'
 import Main from './Main'
+import Rules from './Rules'
 
 class App extends Component {
   render() {
@@ -18,6 +19,7 @@ class App extends Component {
             <Route path="/lobby" component={Lobby} />
             <Route path="/guest/:gameName" component={Guest} />
             <Route path="/solo" component={Solo} />
+            <Route path="/rules" component={Rules} />
           </Switch>
         </Router>
       </Fragment>
