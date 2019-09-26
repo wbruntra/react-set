@@ -7,7 +7,6 @@ import 'firebase/firestore'
 import firestore from '../firestore'
 import Modal from './Modal'
 
-
 class Guest extends React.Component {
   constructor(props) {
     super(props)
@@ -46,13 +45,7 @@ class Guest extends React.Component {
     }
     this.gameRef = firestore.collection('games').doc(gameName)
     this.gameRef.onSnapshot(doc => {
-      if (!this.state.displayAnimation) {
-        this.processUpdate(doc)
-      } else {
-        setTimeout(() => {
-          this.processUpdate(doc)
-        }, 1800)
-      }
+      this.processUpdate(doc)
     })
     this.actionsRef = this.gameRef.collection('actions')
   }
@@ -69,15 +62,6 @@ class Guest extends React.Component {
       return
     }
     console.log('Updating', updatedState)
-    // if (!this.state.displayAnimation && updatedState.selected.length === 3) {
-    //   console.log('New set found');
-    //   Object.assign(updatedState, {
-    //     displayAnimation: true,
-    //     selected: updatedState.selected.slice(0, 1),
-    //     animatedSet: updatedState.selected.slice(1),
-    //   });
-    //   this.animationId = setInterval(this.animate, 800);
-    // }
     this.setState({
       ...updatedState,
       popupVisible: false,
@@ -112,7 +96,7 @@ class Guest extends React.Component {
     })
   }
 
-  handleCardClick = (card) => {
+  handleCardClick = card => {
     const { name, declarer } = this.state
     if (declarer) {
       return
