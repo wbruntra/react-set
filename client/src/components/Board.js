@@ -34,7 +34,17 @@ class Board extends Component {
   }
 
   render() {
-    const { board, selected, deck, declarer, players, gameOver, myName, setFound } = this.props
+    const {
+      board,
+      selected,
+      deck,
+      declarer,
+      players,
+      gameOver,
+      myName,
+      setFound,
+      sharedDevice,
+    } = this.props
     if (isEmpty(players) || !Object.keys(players).includes(myName)) {
       return null
     }
@@ -67,7 +77,7 @@ class Board extends Component {
         </div>
         <div className="container" style={{ maxWidth: 0.95 * window.innerHeight }}>
           <div className="row">
-            {board.map(card => {
+            {board.map((card) => {
               return (
                 <div
                   key={card}
@@ -89,6 +99,23 @@ class Board extends Component {
           </div>
           <div className="row">
             {map(players, (info, name) => {
+              if (sharedDevice) {
+                return (
+                  <div
+                    onClick={() => {
+                      if (sharedDevice) {
+                        this.props.handlePlayerClick(name)
+                      }
+                    }}
+                    key={name}
+                    className="col s4 valign-wrapper"
+                  >
+                    <div className={'shared-player player-name' + info.color}>
+                      <p className="center-align">{info.score}</p>
+                    </div>
+                  </div>
+                )
+              }
               return (
                 <div key={name} className="col s4 m3">
                   <span className={'player-name' + info.color}>
