@@ -37,6 +37,11 @@ nav .brand-logo {
 .shared-player {
   width: 120px;
   height: 120px;
+  outline: 2px solid white;
+
+  &.active-player {
+    outline-color: black;
+  }
 
   p {
     font-size: 2em;

@@ -159,7 +159,6 @@ class SharedDevice extends Component {
   handlePlayerClick = (clickerName) => {
     const { declarer } = this.state
     if (declarer === null) {
-      console.log(clickerName)
       this.performDeclare(clickerName)
     }
   }

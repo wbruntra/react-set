@@ -78,30 +78,34 @@ class Board extends Component {
         ) : (
           <Fragment>
             <div className="player-buttons-container">
-                {topPlayers.map((info) => {
-                  return (
-                    <div
-                      className={'shared-player player-name' + info.color}
-                      onClick={() => {
-                        this.props.handlePlayerClick(info.name)
-                      }}
-                      key={info.name}
-                    >
-                      <p className="center-align">{info.score}</p>
-                    </div>
-                  )
-                })}
+              {topPlayers.map((info) => {
+                return (
+                  <div
+                    className={`shared-player player-name ${info.color} ${
+                      info.name == declarer ? 'active-player' : ''
+                    }`}
+                    onClick={() => {
+                      this.props.handlePlayerClick(info.name)
+                    }}
+                    key={info.name}
+                  >
+                    <p className="center-align">{info.name == declarer ? 'SET!' : info.score}</p>
+                  </div>
+                )
+              })}
               <div className="player-buttons-container bottom">
                 {bottomPlayers.map((info) => {
                   return (
                     <div
-                      className={'shared-player player-name' + info.color}
+                      className={`shared-player player-name ${info.color} ${
+                        info.name == declarer ? 'active-player' : ''
+                      }`}
                       onClick={() => {
                         this.props.handlePlayerClick(info.name)
                       }}
                       key={info.name}
                     >
-                      <p className="center-align">{info.score}</p>
+                      <p className="center-align">{info.name == declarer ? 'SET!' : info.score}</p>
                     </div>
                   )
                 })}
