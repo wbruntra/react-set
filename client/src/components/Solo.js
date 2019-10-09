@@ -24,7 +24,7 @@ const config = {
 }
 
 const calculateIntervalFromDifficulty = (d) => {
-  return 1200 / (2.5 * Number(d))
+  return 12000 / (2.5 * Number(d))
 }
 
 const createGameState = () => {
