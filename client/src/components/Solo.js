@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { Link } from 'react-router-dom'
 import Board from './Board'
 import {
   makeDeck,
@@ -22,8 +23,8 @@ const config = {
   cpuDelay: 1200,
 }
 
-const calculateIntervalFromDifficulty = d => {
-  return 12000 / (2.5 * Number(d))
+const calculateIntervalFromDifficulty = (d) => {
+  return 1200 / (2.5 * Number(d))
 }
 
 const createGameState = () => {
@@ -74,7 +75,7 @@ class Solo extends Component {
     }
   }
 
-  handleStartGame = e => {
+  handleStartGame = (e) => {
     e.preventDefault()
     this.setState({
       gameStarted: true,
@@ -159,7 +160,7 @@ class Solo extends Component {
     }
   }
 
-  markPointForDeclarer = declarer => {
+  markPointForDeclarer = (declarer) => {
     const [newPlayers, newScore] = this.updatePlayerScore(declarer, 1)
     const gameOver = newScore >= config.playingTo && declarer
     const newState = {
@@ -169,7 +170,7 @@ class Solo extends Component {
     this.setState(newState)
   }
 
-  performDeclare = declarer => {
+  performDeclare = (declarer) => {
     if (!this.state.declarer) {
       const timeNow = new Date().getTime()
       const update = {
@@ -199,7 +200,7 @@ class Solo extends Component {
     this.setState(newState)
   }
 
-  handleCardClick = card => {
+  handleCardClick = (card) => {
     const { setFound, declarer, name } = this.state
     if (!setFound && declarer !== 'cpu') {
       const newSelected = cardToggle(card, this.state.selected)
@@ -258,7 +259,7 @@ class Solo extends Component {
             <div className="col s8 m4">
               <form onSubmit={this.handleStartGame}>
                 <Slider
-                  ref={input => {
+                  ref={(input) => {
                     this.difficultyInput = input
                   }}
                   min={1}
@@ -266,7 +267,7 @@ class Solo extends Component {
                   orientation="horizontal"
                   tooltip={true}
                   value={this.state.difficulty}
-                  onChange={difficulty => {
+                  onChange={(difficulty) => {
                     const cpuTurnInterval = calculateIntervalFromDifficulty(difficulty)
                     this.setState({
                       cpuTurnInterval,
@@ -276,6 +277,16 @@ class Solo extends Component {
                 />
                 <input type="submit" value="Start" className="btn" />
               </form>
+            </div>
+            <div className="row">
+              <div style={{marginTop: "48px"}} className="col s12">
+                <p>
+                  <Link to="/local">Play Multiplayer</Link>
+                </p>
+                <p>
+                  <Link to="/">Back to Main Menu</Link>
+                </p>
+              </div>
             </div>
           </div>
         </div>

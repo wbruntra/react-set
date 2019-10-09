@@ -53,28 +53,63 @@ class Board extends Component {
     if (gameOver) {
       return <GameOver gameOver={gameOver} myName={myName} />
     }
+    const playersArray = map(players, (info, name) => {
+      return {
+        name,
+        ...info,
+      }
+    })
+    const topBoxes = Math.ceil(playersArray.length / 2)
+    const topPlayers = playersArray.slice(0, topBoxes)
+    const bottomPlayers = playersArray.slice(topBoxes)
     return (
       <Fragment>
-        <div className="navbar-fixed">
-          <nav>
-            <div className="nav-wrapper">
-              {declarer ? (
-                <a href="#!" className="brand-logo">
-                  SET! {declarer}
-                </a>
-              ) : (
-                <a href="#!" className="brand-logo">
-                  Sets: {sets}
-                </a>
-              )}
-              <ul className="right hide-on-med-and-down">
-                <li>
-                  <a href="badges.html">Cards Left: {deck.length}</a>
-                </li>
-              </ul>
+        {!sharedDevice ? (
+          <div className="navbar-fixed">
+            <nav>
+              <div className="nav-wrapper">
+                {declarer ? <>SET! {declarer}</> : <>Sets: {sets}</>}
+                <ul className="right hide-on-med-and-down">
+                  <li>Cards Left: {deck.length}</li>
+                </ul>
+              </div>
+            </nav>
+          </div>
+        ) : (
+          <Fragment>
+            <div className="player-buttons-container">
+                {topPlayers.map((info) => {
+                  return (
+                    <div
+                      className={'shared-player player-name' + info.color}
+                      onClick={() => {
+                        this.props.handlePlayerClick(info.name)
+                      }}
+                      key={info.name}
+                    >
+                      <p className="center-align">{info.score}</p>
+                    </div>
+                  )
+                })}
+              <div className="player-buttons-container bottom">
+                {bottomPlayers.map((info) => {
+                  return (
+                    <div
+                      className={'shared-player player-name' + info.color}
+                      onClick={() => {
+                        this.props.handlePlayerClick(info.name)
+                      }}
+                      key={info.name}
+                    >
+                      <p className="center-align">{info.score}</p>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
-          </nav>
-        </div>
+          </Fragment>
+        )}
+
         <div className="container" style={{ maxWidth: 0.95 * window.innerHeight }}>
           <div className="row">
             {board.map((card) => {
@@ -99,30 +134,15 @@ class Board extends Component {
           </div>
           <div className="row">
             {map(players, (info, name) => {
-              if (sharedDevice) {
+              if (!sharedDevice) {
                 return (
-                  <div
-                    onClick={() => {
-                      if (sharedDevice) {
-                        this.props.handlePlayerClick(name)
-                      }
-                    }}
-                    key={name}
-                    className="col s4 valign-wrapper"
-                  >
-                    <div className={'shared-player player-name' + info.color}>
-                      <p className="center-align">{info.score}</p>
-                    </div>
+                  <div key={name} className="col s4 m3">
+                    <span className={'player-name' + info.color}>
+                      {name}: {info.score}
+                    </span>
                   </div>
                 )
               }
-              return (
-                <div key={name} className="col s4 m3">
-                  <span className={'player-name' + info.color}>
-                    {name}: {info.score}
-                  </span>
-                </div>
-              )
             })}
           </div>
           <div className="row">

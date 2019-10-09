@@ -19,7 +19,8 @@ class App extends Component {
             <Route path="/host" component={Host} />
             <Route path="/lobby" component={Lobby} />
             <Route path="/guest/:gameName" component={Guest} />
-            <Route path="/solo" component={SharedDevice} />
+            <Route path="/solo" component={Solo} />
+            <Route path="/local" component={SharedDevice} />
             <Route path="/rules" component={Rules} />
           </Switch>
         </Router>

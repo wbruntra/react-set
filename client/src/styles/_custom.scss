@@ -42,3 +42,23 @@ nav .brand-logo {
     font-size: 2em;
   }
 }
+
+.navbar-fixed {
+  .nav-wrapper {
+    font-size: 1.4em;
+    padding: 0 12px;
+  }
+}
+
+.player-buttons-container { 
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+
+  & .bottom {
+    flex-direction: row-reverse;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+  }
+}
