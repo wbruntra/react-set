@@ -155,9 +155,7 @@ class Host extends React.Component {
 
   setAndSendState = (update) => {
     this.setState(update)
-    this.gameRef.update({
-      ...update,
-    })
+    this.gameRef.update(update)
   }
 
   triggerFoundSequence = (selected, name) => {}
