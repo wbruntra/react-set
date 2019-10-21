@@ -34,7 +34,17 @@ class Board extends Component {
   }
 
   render() {
-    const { board, selected, deck, declarer, players, gameOver, myName, setFound } = this.props
+    const {
+      board,
+      selected,
+      deck,
+      declarer,
+      players,
+      gameOver,
+      myName,
+      setFound,
+      sharedDevice,
+    } = this.props
     if (isEmpty(players) || !Object.keys(players).includes(myName)) {
       return null
     }
@@ -43,35 +53,74 @@ class Board extends Component {
     if (gameOver) {
       return <GameOver gameOver={gameOver} myName={myName} />
     }
+    const playersArray = map(players, (info, name) => {
+      return {
+        name,
+        ...info,
+      }
+    })
+    const topBoxes = Math.ceil(playersArray.length / 2)
+    const topPlayers = playersArray.slice(0, topBoxes)
+    const bottomPlayers = playersArray.slice(topBoxes)
     return (
       <Fragment>
-        <div className="navbar-fixed">
-          <nav>
-            <div className="nav-wrapper">
-              {declarer ? (
-                <a href="#!" className="brand-logo">
-                  SET! {declarer}
-                </a>
-              ) : (
-                <a href="#!" className="brand-logo">
-                  Sets: {sets}
-                </a>
-              )}
-              <ul className="right hide-on-med-and-down">
-                <li>
-                  <a href="badges.html">Cards Left: {deck.length}</a>
-                </li>
-              </ul>
+        {!sharedDevice ? (
+          <div className="navbar-fixed">
+            <nav>
+              <div className="nav-wrapper">
+                {declarer ? <>SET! {declarer}</> : <>Sets: {sets}</>}
+                <ul className="right hide-on-med-and-down">
+                  <li>Cards Left: {deck.length}</li>
+                </ul>
+              </div>
+            </nav>
+          </div>
+        ) : (
+          <Fragment>
+            <div className="player-buttons-container">
+              {topPlayers.map((info) => {
+                return (
+                  <div
+                    className={`shared-player player-name ${info.color} ${
+                      info.name == declarer ? 'active-player' : ''
+                    }`}
+                    onClick={() => {
+                      this.props.handlePlayerClick(info.name)
+                    }}
+                    key={info.name}
+                  >
+                    <p className="center-align">{info.name == declarer ? 'SET!' : info.score}</p>
+                  </div>
+                )
+              })}
+              <div className="player-buttons-container bottom">
+                {bottomPlayers.map((info) => {
+                  return (
+                    <div
+                      className={`shared-player player-name ${info.color} ${
+                        info.name == declarer ? 'active-player' : ''
+                      }`}
+                      onClick={() => {
+                        this.props.handlePlayerClick(info.name)
+                      }}
+                      key={info.name}
+                    >
+                      <p className="center-align">{info.name == declarer ? 'SET!' : info.score}</p>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
-          </nav>
-        </div>
+          </Fragment>
+        )}
+
         <div className="container" style={{ maxWidth: 0.95 * window.innerHeight }}>
           <div className="row">
-            {board.map(card => {
+            {board.map((card) => {
               return (
                 <div
                   key={card}
-                  className={'col s4' + (selected.includes(card) ? borderColor : '')}
+                  className={`col s4 ${selected.includes(card) ? borderColor : ''}`}
                   onClick={() => {
                     this.props.handleCardClick(card)
                   }}
@@ -89,13 +138,15 @@ class Board extends Component {
           </div>
           <div className="row">
             {map(players, (info, name) => {
-              return (
-                <div key={name} className="col s4 m3">
-                  <span className={'player-name' + info.color}>
-                    {name}: {info.score}
-                  </span>
-                </div>
-              )
+              if (!sharedDevice) {
+                return (
+                  <div key={name} className="col s4 m3">
+                    <span className={`player-name ${info.color}`}>
+                      {name}: {info.score}
+                    </span>
+                  </div>
+                )
+              }
             })}
           </div>
           <div className="row">

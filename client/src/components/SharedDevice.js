@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import { Link } from 'react-router-dom'
 import Board from './Board'
 import {
   makeDeck,
@@ -17,14 +16,10 @@ import Slider from 'react-rangeslider'
 const debugging = false
 
 const config = {
-  turnTime: 4000,
+  declareTime: 5000,
   colors,
   playingTo: 6,
   cpuDelay: 1200,
-}
-
-const calculateIntervalFromDifficulty = (d) => {
-  return 12000 / (2.5 * Number(d))
 }
 
 const createGameState = () => {
@@ -38,25 +33,22 @@ const createGameState = () => {
   }
 }
 
-const logTime = (msg = '') => {
-  const d = new Date()
-  const s = (d.getTime() % 10 ** 6) / 1000
-  console.log(msg, s.toFixed(1))
+const createPlayers = (num) => {
+  const players = {}
+  for (let i = 0; i < num; i++) {
+    players[i] = {
+      score: 0,
+      color: config.colors[i],
+    }
+  }
+  return players
 }
 
 const initialState = {
-  players: {
-    you: {
-      score: 0,
-      color: config.colors[0],
-    },
-    cpu: {
-      score: 0,
-      color: config.colors[1],
-    },
-  },
+  numPlayers: null,
+  players: createPlayers(2),
   gameStarted: false,
-  name: 'you',
+  name: '1',
   setFound: false,
   declarer: null,
   timeDeclared: null,
@@ -66,7 +58,7 @@ const initialState = {
   cpuFound: [],
 }
 
-class Solo extends Component {
+class SharedDevice extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -75,66 +67,17 @@ class Solo extends Component {
     }
   }
 
-  handleStartGame = (e) => {
-    e.preventDefault()
+  handleStartGame = (numPlayers) => {
+    this.setState({
+      numPlayers,
+      players: createPlayers(numPlayers),
+    })
     this.setState({
       gameStarted: true,
     })
-    console.log(`Turns every ${this.state.cpuTurnInterval} ms`)
-    setTimeout(() => {
-      this.cpuTimer = setInterval(this.cpuTurn, this.state.cpuTurnInterval)
-    }, config.cpuDelay)
   }
 
-  componentDidMount = () => {
-    const { difficulty } = this.state
-    const cpuTurnInterval = calculateIntervalFromDifficulty(difficulty)
-    this.setState({
-      cpuTurnInterval,
-    })
-  }
-
-  componentWillUnmount = () => {
-    clearInterval(this.cpuTimer)
-  }
-
-  cpuTurn = () => {
-    const { board, declarer, gameOver } = this.state
-    if (declarer || gameOver) {
-      return
-    }
-    if (debugging) {
-      logTime('Guess')
-    }
-    const [a, b] = shuffle(board).slice(0, 2)
-    const c = nameThird(a, b)
-    if (board.includes(c)) {
-      this.setState({
-        declarer: 'cpu',
-        selected: [a],
-        cpuFound: [b, c],
-        setFound: true,
-      })
-      clearInterval(this.cpuTimer)
-      this.cpuAnimation = setInterval(this.animateCpuChoice, 1000)
-    }
-  }
-
-  animateCpuChoice = () => {
-    const { selected, cpuFound } = this.state
-    const cpuCopy = [...cpuFound]
-    const newSelected = [...selected, cpuCopy.pop()]
-    this.setState({
-      cpuFound: cpuCopy,
-      selected: newSelected,
-    })
-    if (newSelected.length === 3) {
-      clearInterval(this.cpuAnimation)
-      this.updateSelected(newSelected, 'cpu')
-    }
-  }
-
-  updatePlayerScore = (name: string, delta: number) => {
+  updatePlayerScore = (name, delta) => {
     const { players } = this.state
     const newScore = players[name].score + delta
     const newPlayers = update(players, {
@@ -181,11 +124,11 @@ class Solo extends Component {
 
       this.undeclareID = setTimeout(() => {
         this.expireDeclare()
-      }, config.turnTime)
+      }, config.declareTime)
     }
   }
 
-  updateSelected = (newSelected: Array<string>, declarer: string) => {
+  updateSelected = (newSelected, declarer) => {
     const newState = {
       setFound: isSet(newSelected),
       selected: newSelected,
@@ -201,18 +144,22 @@ class Solo extends Component {
   }
 
   handleCardClick = (card) => {
-    const { setFound, declarer, name } = this.state
-    if (!setFound && declarer !== 'cpu') {
+    const { setFound, declarer } = this.state
+    if (!setFound && declarer !== null) {
       const newSelected = cardToggle(card, this.state.selected)
-      if (!declarer) {
-        this.performDeclare(name)
-      }
       this.setState({
         selected: newSelected,
       })
       if (isSet(newSelected)) {
-        this.updateSelected(newSelected, 'you')
+        this.updateSelected(newSelected, declarer)
       }
+    }
+  }
+
+  handlePlayerClick = (clickerName) => {
+    const { declarer } = this.state
+    if (declarer === null) {
+      this.performDeclare(clickerName)
     }
   }
 
@@ -250,43 +197,27 @@ class Solo extends Component {
   }
 
   render() {
-    const { board, deck, selected, declarer, players, gameStarted, setFound } = this.state
-    if (!gameStarted) {
+    const { board, deck, selected, declarer, players, numPlayers, setFound } = this.state
+    if (!numPlayers) {
       return (
         <div className="container">
-          <h4>Choose difficulty</h4>
+          <h4>Choose Number of Players</h4>
           <div className="row">
-            <div className="col s8 m4">
-              <form onSubmit={this.handleStartGame}>
-                <Slider
-                  ref={(input) => {
-                    this.difficultyInput = input
-                  }}
-                  min={1}
-                  max={5}
-                  orientation="horizontal"
-                  tooltip={true}
-                  value={this.state.difficulty}
-                  onChange={(difficulty) => {
-                    const cpuTurnInterval = calculateIntervalFromDifficulty(difficulty)
-                    this.setState({
-                      cpuTurnInterval,
-                      difficulty,
-                    })
-                  }}
-                />
-                <input type="submit" value="Start" className="btn" />
-              </form>
-            </div>
-            <div className="row">
-              <div style={{marginTop: "48px"}} className="col s12">
-                <p>
-                  <Link to="/local">Play Multiplayer</Link>
-                </p>
-                <p>
-                  <Link to="/">Back to Main Menu</Link>
-                </p>
-              </div>
+            <div className="col s12">
+              {[...Array(6).keys()].map((i) => {
+                return (
+                  <div key={`players-${i}`} className="col s4 player-number">
+                    <div
+                      onClick={() => {
+                        this.handleStartGame(i + 1)
+                      }}
+                      className="btn-large"
+                    >
+                      {i + 1}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>
@@ -300,18 +231,19 @@ class Solo extends Component {
           selected={selected}
           declarer={declarer}
           handleCardClick={this.handleCardClick}
+          handlePlayerClick={this.handlePlayerClick}
           handleDeclare={this.handleDeclare}
-          handleRedeal={this.handleRedeal}
           players={players}
           setFound={this.state.setFound}
           gameOver={this.state.gameOver}
           myName={this.state.name}
           resetGame={this.resetGame}
           solo={true}
+          sharedDevice={true}
         />
       </React.Fragment>
     )
   }
 }
 
-export default Solo
+export default SharedDevice

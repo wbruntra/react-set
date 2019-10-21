@@ -38,5 +38,6 @@ module.exports = {
    * - true - enable additional logging
    * - false - disable additional logging
    */
-  rcVerbose: true
-};
+  rcVerbose: true,
+  arrowParens: 'always',
+}

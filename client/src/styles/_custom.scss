@@ -29,3 +29,40 @@ nav .brand-logo {
 .player-name {
   padding: 4px;
 }
+
+.player-number {
+  margin-bottom: 36px;
+}
+
+.shared-player {
+  width: 12vh;
+  outline: 2px solid white;
+
+  &.active-player {
+    outline-color: black;
+  }
+
+  p {
+    font-size: 2em;
+  }
+}
+
+.navbar-fixed {
+  .nav-wrapper {
+    font-size: 1.4em;
+    padding: 0 12px;
+  }
+}
+
+.player-buttons-container { 
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+
+  & .bottom {
+    flex-direction: row-reverse;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+  }
+}

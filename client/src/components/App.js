@@ -7,6 +7,7 @@ import Lobby from './Lobby'
 import Solo from './Solo'
 import Main from './Main'
 import Rules from './Rules'
+import SharedDevice from './SharedDevice'
 
 class App extends Component {
   render() {
@@ -19,6 +20,7 @@ class App extends Component {
             <Route path="/lobby" component={Lobby} />
             <Route path="/guest/:gameName" component={Guest} />
             <Route path="/solo" component={Solo} />
+            <Route path="/local" component={SharedDevice} />
             <Route path="/rules" component={Rules} />
           </Switch>
         </Router>

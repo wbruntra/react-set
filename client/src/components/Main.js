@@ -16,7 +16,7 @@ class Main extends Component {
                 <Card desc="0012" />
               </div>
             </Link>
-            <p className="center-align">Play Solo</p>
+            <p className="center-align">Solo/Local</p>
           </div>
           <div className="col s8 offset-s2 m3">
             <Link to="/lobby">
