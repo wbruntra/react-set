@@ -16,7 +16,7 @@ import Slider from 'react-rangeslider'
 const debugging = false
 
 const config = {
-  declareTime: 4000,
+  declareTime: 5000,
   colors,
   playingTo: 6,
   cpuDelay: 1200,

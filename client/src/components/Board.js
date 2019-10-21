@@ -120,7 +120,7 @@ class Board extends Component {
               return (
                 <div
                   key={card}
-                  className={'col s4' + (selected.includes(card) ? borderColor : '')}
+                  className={`col s4 ${selected.includes(card) ? borderColor : ''}`}
                   onClick={() => {
                     this.props.handleCardClick(card)
                   }}
@@ -141,7 +141,7 @@ class Board extends Component {
               if (!sharedDevice) {
                 return (
                   <div key={name} className="col s4 m3">
-                    <span className={'player-name' + info.color}>
+                    <span className={`player-name ${info.color}`}>
                       {name}: {info.score}
                     </span>
                   </div>
