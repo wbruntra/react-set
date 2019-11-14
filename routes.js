@@ -55,6 +55,24 @@ router.get('/user/:uid', (req, res) => {
   })
 })
 
+router.get('/user/stats/:uid', (req, res) => {
+  const uid = req.params.uid
+  let sql = `
+SELECT Count(*)        AS games_played, 
+       Sum(player_won) AS games_won, 
+       difficulty_level 
+FROM   game_info 
+WHERE  player_uid = ? 
+GROUP  BY difficulty_level `
+  db.all(sql, [uid], function(err, rows) {
+    if (err) {
+      console.log(err)
+      return res.send('Error')
+    }
+    res.send(rows)
+  })
+})
+
 router.post('/user', (req, res) => {
   const sql = `INSERT INTO user_info(uid, email, info) VALUES (?, ?, ?)`
   const { uid } = req.body
@@ -75,7 +93,6 @@ router.post('/user', (req, res) => {
 router.get('/games', (req, res) => {
   const sql = `SELECT * FROM game_info`
   db.all(sql, (err, rows) => {
-    console.log(err, rows)
     return res.send(rows)
   })
 })

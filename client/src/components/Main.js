@@ -34,11 +34,18 @@ function Main() {
           <p className="center-align">Host Game</p>
         </div>
       </div>
-      {/* <ul className="collection">
-        <li className="collection-item">
+      {/* <div>
+        <hr />
+          <p>
           <Link to="/rules">Rules</Link>
-        </li>
-      </ul> */}
+
+          </p>
+          <p>
+          <Link to="/stats">Statistics</Link>
+
+          </p>
+
+      </div> */}
     </div>
   )
 }

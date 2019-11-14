@@ -9,6 +9,7 @@ import Main from './Main'
 import Rules from './Rules'
 import Login from './Login'
 import SharedDevice from './SharedDevice'
+import Stats from './Stats'
 
 class Routes extends Component {
   render() {
@@ -24,6 +25,7 @@ class Routes extends Component {
             <Route path="/local" component={SharedDevice} />
             <Route path="/rules" component={Rules} />
             <Route path="/login" component={Login} />
+            <Route path="/stats" component={Stats} />
           </Switch>
         </Router>
       </Fragment>
