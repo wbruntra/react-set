@@ -13,18 +13,20 @@ import { shuffle, cloneDeep } from 'lodash'
 import { colors } from '../config'
 import update from 'immutability-helper'
 import Slider from 'react-rangeslider'
+import axios from 'axios'
+import { connect } from 'react-redux'
 
 const debugging = false
 
 const config = {
   turnTime: 4000,
   colors,
-  playingTo: 6,
+  playingTo: 3,
   cpuDelay: 1200,
 }
 
 const calculateIntervalFromDifficulty = (d) => {
-  return 12000 / (2.5 * Number(d))
+  return 24000 / (5 * Number(d))
 }
 
 const createGameState = () => {
@@ -61,9 +63,9 @@ const initialState = {
   declarer: null,
   timeDeclared: null,
   gameOver: false,
-  difficulty: 2,
   cpuTurnInterval: 1000,
   cpuFound: [],
+  startTime: null,
 }
 
 class Solo extends Component {
@@ -79,7 +81,9 @@ class Solo extends Component {
     e.preventDefault()
     this.setState({
       gameStarted: true,
+      startTime: new Date(),
     })
+
     console.log(`Turns every ${this.state.cpuTurnInterval} ms`)
     setTimeout(() => {
       this.cpuTimer = setInterval(this.cpuTurn, this.state.cpuTurnInterval)
@@ -87,9 +91,10 @@ class Solo extends Component {
   }
 
   componentDidMount = () => {
-    const { difficulty } = this.state
+    const difficulty = window.localStorage.getItem('soloDifficulty') || this.state.difficulty
     const cpuTurnInterval = calculateIntervalFromDifficulty(difficulty)
     this.setState({
+      difficulty,
       cpuTurnInterval,
     })
   }
@@ -116,7 +121,7 @@ class Solo extends Component {
         setFound: true,
       })
       clearInterval(this.cpuTimer)
-      this.cpuAnimation = setInterval(this.animateCpuChoice, 1000)
+      this.cpuAnimation = setInterval(this.animateCpuChoice, 900)
     }
   }
 
@@ -166,6 +171,21 @@ class Solo extends Component {
     const newState = {
       players: newPlayers,
       gameOver,
+    }
+    if (gameOver && this.props.user !== null) {
+      const player_won = declarer == 'you' ? 1 : 0
+      const total_time = Math.round((new Date().getTime() - this.state.startTime.getTime()) / 1000)
+      axios
+        .post('/api/game', {
+          uid: this.props.user.uid,
+          total_time,
+          player_won,
+          difficulty_level: this.state.difficulty,
+          winning_score: newScore,
+        })
+        .then(() => {
+          console.log('Game sent')
+        })
     }
     this.setState(newState)
   }
@@ -266,9 +286,10 @@ class Solo extends Component {
                   max={5}
                   orientation="horizontal"
                   tooltip={true}
-                  value={this.state.difficulty}
+                  value={Number(this.state.difficulty)}
                   onChange={(difficulty) => {
                     const cpuTurnInterval = calculateIntervalFromDifficulty(difficulty)
+                    window.localStorage.setItem('soloDifficulty', difficulty)
                     this.setState({
                       cpuTurnInterval,
                       difficulty,
@@ -279,7 +300,7 @@ class Solo extends Component {
               </form>
             </div>
             <div className="row">
-              <div style={{marginTop: "48px"}} className="col s12">
+              <div style={{ marginTop: '48px' }} className="col s12">
                 <p>
                   <Link to="/local">Play Multiplayer</Link>
                 </p>
@@ -314,4 +335,8 @@ class Solo extends Component {
   }
 }
 
-export default Solo
+const mapStateToProps = (state) => ({
+  user: state.user.user,
+})
+
+export default connect(mapStateToProps)(Solo)

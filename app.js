@@ -1,34 +1,34 @@
-var createError = require("http-errors");
-var express = require("express");
-var path = require("path");
-var logger = require("morgan");
-var socket_io = require("socket.io");
+var createError = require('http-errors')
+var express = require('express')
+var path = require('path')
+var logger = require('morgan')
+// var socket_io = require("socket.io");
 
-var app = express();
-var io = socket_io();
-const { guestAction } = require("./socket-events");
-app.io = io;
+var cookieSession = require('cookie-session')
 
-// socket.io events
-io.on("connection", function(socket) {
-  socket.on("guest", action => {
-    const data = guestAction(action);
-    io.emit("host", data);
-  });
+var app = express()
 
-  socket.on("host", data => {
-    io.emit("guest", data);
-  });
-});
+app.use(
+  cookieSession({
+    name: 'session',
+    keys: ['changeme'],
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+  }),
+)
 
-app.use(logger("dev"));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, 'client', 'build')));
+var routes = require('./routes')
+
+
+app.use(logger('dev'))
+app.use(express.json())
+app.use(express.urlencoded({ extended: false }))
+app.use(express.static(path.join(__dirname, 'client', 'build')))
+
+app.use('/api', routes)
 
 if (process.env.NODE_ENV === 'production') {
   app.use('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'client','build','index.html'))
+    res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'))
   })
 }
 
@@ -36,4 +36,4 @@ if (process.env.NODE_ENV === 'production') {
 //   res.send("OK");
 // });
 
-module.exports = app;
+module.exports = app

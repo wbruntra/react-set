@@ -11,7 +11,7 @@ import {
 import { shuffle, cloneDeep } from 'lodash'
 import { colors } from '../config'
 import update from 'immutability-helper'
-import Slider from 'react-rangeslider'
+import { Link } from 'react-router-dom'
 
 const debugging = false
 
@@ -218,6 +218,11 @@ class SharedDevice extends Component {
                   </div>
                 )
               })}
+            </div>
+            <div>
+              <p>
+                <Link to="/solo">Back</Link>
+              </p>
             </div>
           </div>
         </div>
