@@ -17,6 +17,7 @@ function Board(props) {
     myName,
     setFound,
     sharedDevice,
+    solo,
   } = props
 
   useEffect(() => {
@@ -42,7 +43,7 @@ function Board(props) {
   const borderColor = declarer ? players[declarer].color : players[myName].color
 
   if (gameOver) {
-    return <GameOver gameOver={gameOver} myName={myName} />
+    return <GameOver gameOver={gameOver} myName={myName} solo={solo} />
   }
 
   const playersArray = map(players, (info, name) => {

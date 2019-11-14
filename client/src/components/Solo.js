@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component, Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import Board from './Board'
 import {
@@ -8,6 +8,7 @@ import {
   removeSelected as removeSelectedCards,
   isSet,
   nameThird,
+  handleGoogleRedirect,
 } from '../utils/helpers'
 import { shuffle, cloneDeep } from 'lodash'
 import { colors } from '../config'
@@ -15,6 +16,7 @@ import update from 'immutability-helper'
 import Slider from 'react-rangeslider'
 import axios from 'axios'
 import { connect } from 'react-redux'
+import Signout from './Signout'
 
 const debugging = false
 
@@ -167,17 +169,18 @@ class Solo extends Component {
 
   markPointForDeclarer = (declarer) => {
     const [newPlayers, newScore] = this.updatePlayerScore(declarer, 1)
+    const { user } = this.props.userReducer
     const gameOver = newScore >= config.playingTo && declarer
     const newState = {
       players: newPlayers,
       gameOver,
     }
-    if (gameOver && this.props.user !== null) {
+    if (gameOver && user !== null) {
       const player_won = declarer == 'you' ? 1 : 0
       const total_time = Math.round((new Date().getTime() - this.state.startTime.getTime()) / 1000)
       axios
         .post('/api/game', {
-          uid: this.props.user.uid,
+          uid: user.uid,
           total_time,
           player_won,
           difficulty_level: this.state.difficulty,
@@ -271,10 +274,17 @@ class Solo extends Component {
 
   render() {
     const { board, deck, selected, declarer, players, gameStarted, setFound } = this.state
+    const { userReducer } = this.props
+    const { user } = userReducer
+    if (userReducer.loading) {
+      return 'Loading...'
+    }
     if (!gameStarted) {
       return (
         <div className="container">
-          <h4>Choose difficulty</h4>
+          {user !== null && <Signout />}
+          <h3>Solo Play vs. Computer</h3>
+          <h4 className="orange-text text-darken-4">Choose difficulty level:</h4>
           <div className="row">
             <div className="col s8 m4">
               <form onSubmit={this.handleStartGame}>
@@ -302,11 +312,23 @@ class Solo extends Component {
             <div className="row">
               <div style={{ marginTop: '48px' }} className="col s12">
                 <p>
-                  <Link to="/local">Play Multiplayer</Link>
+                  <Link to="/local">Local Multiplayer</Link>
                 </p>
-                <p>
+                <p style={{ marginTop: '36px' }}>
                   <Link to="/">Back to Main Menu</Link>
                 </p>
+                {!user && (
+                  <Fragment>
+                    <hr />
+                    <p>To save your stats, sign in with your Google account.</p>
+
+                    <p>
+                      <button onClick={handleGoogleRedirect} className="btn">
+                        Sign in
+                      </button>
+                    </p>
+                  </Fragment>
+                )}
               </div>
             </div>
           </div>
@@ -336,7 +358,7 @@ class Solo extends Component {
 }
 
 const mapStateToProps = (state) => ({
-  user: state.user.user,
+  userReducer: state.user,
 })
 
 export default connect(mapStateToProps)(Solo)
