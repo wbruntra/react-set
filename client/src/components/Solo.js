@@ -21,7 +21,7 @@ const debugging = false
 const config = {
   turnTime: 4000,
   colors,
-  playingTo: 3,
+  playingTo: 7,
   cpuDelay: 1200,
 }
 
