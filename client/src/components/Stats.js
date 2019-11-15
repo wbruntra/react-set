@@ -48,9 +48,9 @@ function Stats(props) {
 
         <tbody>
           {stats &&
-            stats.map((row) => {
+            stats.map((row, i) => {
               return (
-                <tr>
+                <tr key={`stats-${i}`}>
                   <td>{row.difficulty_level}</td>
                   <td>{row.games_played}</td>
                   <td>{Math.round(100 * (row.games_won / row.games_played))}</td>
