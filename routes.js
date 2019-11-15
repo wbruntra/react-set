@@ -12,11 +12,6 @@ router.get('/', function(req, res) {
   res.send({ msg: 'Ping pong' })
 })
 
-router.post('/counter', (req, res) => {
-  console.log('Counter activated')
-  res.sendStatus(200)
-})
-
 router.get('/users', (req, res) => {
   let sql = `SELECT * FROM user_info`
   db.all(sql, function(err, rows) {
@@ -63,7 +58,7 @@ SELECT Count(*)        AS games_played,
        difficulty_level 
 FROM   game_info 
 WHERE  player_uid = ? 
-GROUP  BY difficulty_level `
+GROUP  BY difficulty_level`
   db.all(sql, [uid], function(err, rows) {
     if (err) {
       console.log(err)
