@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/static/css/main.06aa800f.chunk.css",
-    "main.js": "/static/js/main.b30e82e8.chunk.js",
-    "main.js.map": "/static/js/main.b30e82e8.chunk.js.map",
+    "main.js": "/static/js/main.53b4ebff.chunk.js",
+    "main.js.map": "/static/js/main.53b4ebff.chunk.js.map",
     "runtime-main.js": "/static/js/runtime-main.e077b804.js",
     "runtime-main.js.map": "/static/js/runtime-main.e077b804.js.map",
     "static/js/2.386b0adb.chunk.js": "/static/js/2.386b0adb.chunk.js",
     "static/js/2.386b0adb.chunk.js.map": "/static/js/2.386b0adb.chunk.js.map",
     "index.html": "/index.html",
-    "precache-manifest.69a82d6ac18ffa1477bf7d8b8054e9b1.js": "/precache-manifest.69a82d6ac18ffa1477bf7d8b8054e9b1.js",
+    "precache-manifest.4a9aa7786e73df1fc94d91c944635fc5.js": "/precache-manifest.4a9aa7786e73df1fc94d91c944635fc5.js",
     "service-worker.js": "/service-worker.js",
     "static/css/main.06aa800f.chunk.css.map": "/static/css/main.06aa800f.chunk.css.map",
     "static/media/applause.mp3": "/static/media/applause.c2030d5b.mp3",
@@ -18,6 +18,6 @@
     "static/js/runtime-main.e077b804.js",
     "static/js/2.386b0adb.chunk.js",
     "static/css/main.06aa800f.chunk.css",
-    "static/js/main.b30e82e8.chunk.js"
+    "static/js/main.53b4ebff.chunk.js"
   ]
 }
