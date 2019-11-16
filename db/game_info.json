@@ -1,0 +1,65 @@
+[
+    {
+        "difficulty_level": "2",
+        "player_uid": "1sGkH0ebN1TF9Wk9cB3m3BoB2s72",
+        "player_won": "1",
+        "total_time": "120",
+        "winning_score": "2"
+    },
+    {
+        "difficulty_level": "2",
+        "player_uid": "1sGkH0ebN1TF9Wk9cB3m3BoB2s72",
+        "player_won": "1",
+        "total_time": "24",
+        "winning_score": "2"
+    },
+    {
+        "difficulty_level": "4",
+        "player_uid": "1sGkH0ebN1TF9Wk9cB3m3BoB2s72",
+        "player_won": "1",
+        "total_time": "36",
+        "winning_score": "3"
+    },
+    {
+        "difficulty_level": "5",
+        "player_uid": "1sGkH0ebN1TF9Wk9cB3m3BoB2s72",
+        "player_won": "0",
+        "total_time": "24",
+        "winning_score": "3"
+    },
+    {
+        "difficulty_level": "5",
+        "player_uid": "1sGkH0ebN1TF9Wk9cB3m3BoB2s72",
+        "player_won": "0",
+        "total_time": "45",
+        "winning_score": "3"
+    },
+    {
+        "difficulty_level": "5",
+        "player_uid": "1sGkH0ebN1TF9Wk9cB3m3BoB2s72",
+        "player_won": "0",
+        "total_time": "32",
+        "winning_score": "3"
+    },
+    {
+        "difficulty_level": "3",
+        "player_uid": "1sGkH0ebN1TF9Wk9cB3m3BoB2s72",
+        "player_won": "0",
+        "total_time": "35",
+        "winning_score": "3"
+    },
+    {
+        "difficulty_level": "5",
+        "player_uid": "1sGkH0ebN1TF9Wk9cB3m3BoB2s72",
+        "player_won": "0",
+        "total_time": "21",
+        "winning_score": "2"
+    },
+    {
+        "difficulty_level": "5",
+        "player_uid": "1sGkH0ebN1TF9Wk9cB3m3BoB2s72",
+        "player_won": "0",
+        "total_time": "142",
+        "winning_score": "7"
+    }
+]
