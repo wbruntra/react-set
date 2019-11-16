@@ -10,6 +10,7 @@ import Rules from './Rules'
 import Login from './Login'
 import SharedDevice from './SharedDevice'
 import Stats from './Stats'
+import Puzzle from './Puzzle'
 
 class Routes extends Component {
   render() {
@@ -26,6 +27,7 @@ class Routes extends Component {
             <Route path="/rules" component={Rules} />
             <Route path="/login" component={Login} />
             <Route path="/stats" component={Stats} />
+            <Route path="/puzzle" component={Puzzle} />
           </Switch>
         </Router>
       </Fragment>

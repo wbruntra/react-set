@@ -121,23 +121,17 @@ export const cardToggle = (card: string, selected: Array<string>): Array<string>
   }
 }
 
-export const reshuffle = ({
-  board,
-  deck,
-}: {
-  board: Array<string>,
-  deck: Array<string>,
-}): { board: Array<string>, deck: Array<string> } => {
+export const reshuffle = ({ board, deck }, { cards = 12 } = {}) => {
   let newDeck = shuffle([...board, ...deck])
   while (
-    countSets(newDeck.slice(0, 12), { returnWhenFound: true }) === 0 &&
+    countSets(newDeck.slice(0, cards), { returnWhenFound: true }) === 0 &&
     countSets(newDeck, { returnWhenFound: true }) > 0
   ) {
     newDeck = shuffle(newDeck)
   }
   return {
-    deck: newDeck.slice(12),
-    board: newDeck.slice(0, 12),
+    deck: newDeck.slice(cards),
+    board: newDeck.slice(0, cards),
   }
 }
 
