@@ -23,7 +23,7 @@ const debugging = false
 const config = {
   turnTime: 4000,
   colors,
-  playingTo: 6,
+  playingTo: 2,
   cpuDelay: 1200,
 }
 
@@ -180,12 +180,13 @@ class Solo extends Component {
       players: newPlayers,
       gameOver,
     }
-    if (gameOver && user !== null) {
+    if (gameOver) {
+      const uid = user && user.uid || 'anonymous'
       const player_won = declarer == 'you' ? 1 : 0
       const total_time = Math.round((new Date().getTime() - this.state.startTime.getTime()) / 1000)
       axios
         .post('/api/game', {
-          uid: user.uid,
+          uid,
           total_time,
           player_won,
           difficulty_level: this.state.difficulty,
@@ -193,6 +194,9 @@ class Solo extends Component {
         })
         .then(() => {
           console.log('Game sent')
+        })
+        .catch((err) => {
+          console.log('Error sending game')
         })
     }
     this.setState(newState)
