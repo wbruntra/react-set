@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import Routes from './Routes'
-import { UserProvider } from './UserContext'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 // import 'firebase/firestore'
@@ -34,7 +33,7 @@ function App(props) {
             console.log('User is registered')
           })
           .catch((err) => {
-            if (err.response.status === 404) {
+            if (err.response && err.response.status === 404) {
               console.log('User not registered')
               axios
                 .post('/api/user', {

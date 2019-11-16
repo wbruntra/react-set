@@ -39,14 +39,6 @@ router.get('/user/:uid', (req, res) => {
   // })
 })
 
-const getItemSaleCount = () =>
-  SaleItem.findAll({
-    attributes: ['itemId', [sequelize.fn('count', sequelize.col('itemId')), 'count']],
-    group: ['SaleItem.itemId'],
-    raw: true,
-    order: sequelize.literal('count DESC'),
-  })
-
 router.get('/user/stats/:uid', (req, res) => {
   const uid = req.params.uid
   const attributes = [
@@ -60,12 +52,14 @@ router.get('/user/stats/:uid', (req, res) => {
     },
     group: ['difficulty_level'],
     attributes,
-  }).then((rows) => {
-    res.send(rows)
-  }).catch((err) => {
-    console.log(err)
-    res.sendStatus(500)
   })
+    .then((rows) => {
+      res.send(rows)
+    })
+    .catch((err) => {
+      console.log(err)
+      res.sendStatus(500)
+    })
   //   let sql = `
   // SELECT Count(*)        AS games_played,
   //        Sum(player_won) AS games_won,
