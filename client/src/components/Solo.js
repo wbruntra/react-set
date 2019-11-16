@@ -181,7 +181,7 @@ class Solo extends Component {
       gameOver,
     }
     if (gameOver) {
-      const uid = user && user.uid || 'anonymous'
+      const uid = (user && user.uid) || 'anonymous'
       const player_won = declarer == 'you' ? 1 : 0
       const total_time = Math.round((new Date().getTime() - this.state.startTime.getTime()) / 1000)
       axios
@@ -317,6 +317,7 @@ class Solo extends Component {
                 />
                 <input type="submit" value="Start" className="btn" />
               </form>
+              <p style={{marginTop:'24px'}}>First to {config.playingTo} points is the winner</p>
             </div>
             <div className="row">
               <div style={{ marginTop: '48px' }} className="col s12">
