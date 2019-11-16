@@ -23,7 +23,7 @@ const debugging = false
 const config = {
   turnTime: 4000,
   colors,
-  playingTo: 7,
+  playingTo: 6,
   cpuDelay: 1200,
 }
 
@@ -157,7 +157,7 @@ class Solo extends Component {
   expireDeclare = () => {
     const { declarer, selected } = this.state
     if (!isSet(selected)) {
-      const [newPlayers] = this.updatePlayerScore(declarer, -1)
+      const [newPlayers] = this.updatePlayerScore(declarer, -.5)
       this.setState({
         players: newPlayers,
         declarer: null,
