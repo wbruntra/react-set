@@ -28,7 +28,12 @@ const config = {
 }
 
 const calculateIntervalFromDifficulty = (d) => {
-  return 24000 / (5 * Number(d))
+  let diff = Number(d)
+  if (Number.isNaN(diff)) {
+    diff = 1
+  }
+  const interval = 24000 / (5 * diff)
+  return interval
 }
 
 const createGameState = () => {
@@ -157,7 +162,7 @@ class Solo extends Component {
   expireDeclare = () => {
     const { declarer, selected } = this.state
     if (!isSet(selected)) {
-      const [newPlayers] = this.updatePlayerScore(declarer, -.5)
+      const [newPlayers] = this.updatePlayerScore(declarer, -0.5)
       this.setState({
         players: newPlayers,
         declarer: null,
