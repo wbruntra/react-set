@@ -93,7 +93,7 @@ class Solo extends Component {
   }
 
   componentDidMount = () => {
-    const difficulty = window.localStorage.getItem('soloDifficulty') || this.state.difficulty
+    const difficulty = window.localStorage.getItem('soloDifficulty') || '2'
     const cpuTurnInterval = calculateIntervalFromDifficulty(difficulty)
     this.setState({
       difficulty,
