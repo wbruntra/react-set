@@ -1,8 +1,6 @@
-var createError = require('http-errors')
 var express = require('express')
 var path = require('path')
 var logger = require('morgan')
-// var socket_io = require("socket.io");
 
 var cookieSession = require('cookie-session')
 
@@ -18,7 +16,6 @@ app.use(
 
 var routes = require('./routes')
 
-
 app.use(logger('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
@@ -31,9 +28,5 @@ if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'))
   })
 }
-
-// app.use("/", (req, res) => {
-//   res.send("OK");
-// });
 
 module.exports = app
