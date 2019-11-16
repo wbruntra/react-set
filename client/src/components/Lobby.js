@@ -20,9 +20,9 @@ class Lobby extends Component {
   componentDidMount() {
     this.gamesRef = firestore.collection('games')
 
-    this.unsubscribe = this.gamesRef.onSnapshot(snapshot => {
+    this.unsubscribe = this.gamesRef.onSnapshot((snapshot) => {
       const newGames = []
-      snapshot.forEach(doc => {
+      snapshot.forEach((doc) => {
         newGames.push({
           name: doc.id,
           ...doc.data(),
@@ -39,7 +39,7 @@ class Lobby extends Component {
     this.unsubscribe()
   }
 
-  addGame = e => {
+  addGame = (e) => {
     e.preventDefault()
     const { newGame } = this.state
     this.gamesRef.doc(newGame).set({
@@ -52,7 +52,7 @@ class Lobby extends Component {
     if (!init) {
       return null
     }
-    const activeGames = games.filter(g => {
+    const activeGames = games.filter((g) => {
       const { lastUpdate } = g
       if (!lastUpdate) {
         return false
@@ -71,7 +71,12 @@ class Lobby extends Component {
                 <div className="card-panel teal" style={{ marginTop: window.innerHeight * 0.2 }}>
                   <span className="white-text">There are currently no active games.</span>
                 </div>
-                <Link to="/">Back</Link>
+                <p>
+                  Click <Link to="/host">here</Link> to host one
+                </p>
+                <p>
+                  <Link to="/">Back</Link>
+                </p>
               </div>
             </div>
           </Fragment>
@@ -88,6 +93,9 @@ class Lobby extends Component {
                   </div>
                 )
               })}
+              <p>
+                <Link to="/">Back</Link>
+              </p>
             </div>
           </Fragment>
         )}
