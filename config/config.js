@@ -1,6 +1,6 @@
 let dbConnection
 
-switch (NODE_ENV) {
+switch (process.env.NODE_ENV) {
   case 'production':
     dbConnection = 'mariadb://pi:curses@127.0.0.1:3306/reactdb'
     break
