@@ -110,7 +110,13 @@ router.post('/user', (req, res) => {
 })
 
 router.get('/games', (req, res) => {
-  Game.findAll({ raw: true })
+  Game.findAll({
+    group: ['player_uid'], 
+    attributes: [
+      'player_uid',
+      [sequelize.fn('count', sequelize.col('*')), 'games_played']
+    ],
+    raw: true })
     .then((games) => {
       return res.json(games)
     })
