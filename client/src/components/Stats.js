@@ -53,7 +53,7 @@ function Stats(props) {
                 <tr key={`stats-${i}`}>
                   <td>{row.difficulty_level}</td>
                   <td>{row.games_played}</td>
-                  <td>{Math.round(100 * (row.games_won / row.games_played))}</td>
+                  <td>{Math.round(100 * (row.games_won / row.games_played))}%</td>
                 </tr>
               )
             })}
