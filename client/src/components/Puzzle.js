@@ -4,6 +4,8 @@ import { shuffle, cloneDeep, isEqual } from 'lodash'
 import { connect } from 'react-redux'
 import update from 'immutability-helper'
 import axios from 'axios'
+import Slider from 'react-rangeslider'
+import Modal from './Modal'
 
 import {
   makeDeck,
@@ -28,13 +30,20 @@ const config = {
   cpuDelay: 1200,
 }
 
-const createGameState = (cards = 12) => {
+const createGameState = (cardsOnBoard) => {
+  const getMinSets = (cardsOnBoard) => {
+    return Math.round((cardsOnBoard - 3) / 3)
+  }
+
+  const minSets = getMinSets(cardsOnBoard)
   const initialDeck = makeDeck()
   return {
-    ...reshuffle({
-      deck: initialDeck.slice(cards),
-      board: initialDeck.slice(0, cards),
-    }),
+    ...reshuffle(
+      {
+        deck: initialDeck,
+      },
+      { boardSize: cardsOnBoard, minimumSets: minSets },
+    ),
     selected: [],
   }
 }
@@ -57,8 +66,12 @@ const initialState = {
   setFound: false,
   gameOver: false,
   startTime: null,
+  elapsedTime: null,
   setsFound: [],
   setsOnBoard: null,
+  cardsOnBoard: 12,
+  popupVisible: false,
+  popUpText: 'SET!'
 }
 
 const sortSet = (set) => {
@@ -68,20 +81,29 @@ const sortSet = (set) => {
 class Puzzle extends Component {
   constructor(props) {
     super(props)
-    const game = createGameState()
     this.state = {
       ...cloneDeep(initialState),
-      ...game,
-      setsOnBoard: countSets(game.board),
     }
   }
 
   handleStartGame = (e) => {
     e.preventDefault()
+    const { cardsOnBoard } = this.state
+    const gameState = createGameState(cardsOnBoard)
+    const startTime = new Date()
     this.setState({
       gameStarted: true,
-      startTime: new Date(),
+      startTime,
+      elapsedTime: 0,
+      ...gameState,
+      setsOnBoard: countSets(gameState.board),
     })
+    window.timeId = setInterval(() => {
+      const elapsedTime = Math.round((new Date().getTime() - startTime.getTime()) / 1000)
+      this.setState({
+        elapsedTime,
+      })
+    }, 1000)
   }
 
   componentDidMount = () => {}
@@ -153,8 +175,11 @@ class Puzzle extends Component {
         console.log('Set found')
         this.setState((currentState) => {
           window.setTimeout(() => {
+            this.setState({
+              popupVisible: false
+            })
             this.resetLocalSelected(true)
-          }, 3000)
+          }, 2000)
           const { setsFound } = currentState
           const isNewSet = setsFound
             .map((set) => {
@@ -162,13 +187,17 @@ class Puzzle extends Component {
               return !result
             })
             .every((result) => result)
-          console.log('Is new?', isNewSet)
           if (!isNewSet) {
-            return
+            return {
+              popupVisible: true,
+              popUpText: 'Already found!'
+            }
           }
           const newSetsFound = [...setsFound, newSelected.sort()]
           return {
             setsFound: newSetsFound,
+            popupVisible: true,
+            popUpText: 'SET!'
           }
         })
       } else {
@@ -227,8 +256,8 @@ class Puzzle extends Component {
       gameStarted,
       setFound,
       setsFound,
+      popupVisible
     } = this.state
-    console.log(setsFound)
     const { userReducer } = this.props
     const { user } = userReducer
     if (userReducer.loading) {
@@ -242,6 +271,23 @@ class Puzzle extends Component {
           <p>Find as many sets as you can</p>
           <div className="row">
             <div className="col s8 m4">
+              <Slider
+                ref={(input) => {
+                  this.difficultyInput = input
+                }}
+                min={2}
+                max={4}
+                orientation="horizontal"
+                tooltip={true}
+                // labels={{ 2: 6, 3: 9, 4: 12 }}
+                format={(v) => 3 * v}
+                value={Number(this.state.cardsOnBoard) / 3}
+                onChange={(cards) => {
+                  this.setState({
+                    cardsOnBoard: cards * 3,
+                  })
+                }}
+              />
               <form onSubmit={this.handleStartGame}>
                 <input type="submit" value="Start" className="btn" />
               </form>
@@ -271,6 +317,9 @@ class Puzzle extends Component {
     }
     return (
       <React.Fragment>
+        <Modal visible={popupVisible}>
+          <p className="flow-text center-align">{this.state.popUpText}</p>
+        </Modal>
         <Board
           board={board}
           deck={deck}
@@ -278,16 +327,17 @@ class Puzzle extends Component {
           declarer={declarer}
           handleCardClick={this.handleCardClick}
           handleDeclare={this.handleDeclare}
-          handleRedeal={this.handleRedeal}
           players={players}
           setFound={this.state.setFound}
           gameOver={this.state.gameOver}
           myName={this.state.name}
           resetGame={this.resetGame}
           solo={true}
+          gameMode="puzzle"
+          setsFound={setsFound}
+          startTime={this.state.startTime}
+          elapsedTime={this.state.elapsedTime}
         />
-        <p>Sets on Board: {this.state.setsOnBoard}</p>
-        <p>Sets founds: {this.state.setsFound.length}</p>
       </React.Fragment>
     )
   }
