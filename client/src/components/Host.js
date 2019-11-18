@@ -310,6 +310,7 @@ function Host(props) {
       setFound={state.setFound}
       gameOver={state.gameOver}
       myName={state.myName}
+      gameMode="versus"
     />
   )
 }

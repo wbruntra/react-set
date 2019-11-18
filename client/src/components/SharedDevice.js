@@ -93,7 +93,7 @@ class SharedDevice extends Component {
   expireDeclare = () => {
     const { declarer, selected } = this.state
     if (!isSet(selected)) {
-      const [newPlayers] = this.updatePlayerScore(declarer, -.5)
+      const [newPlayers] = this.updatePlayerScore(declarer, -0.5)
       this.setState({
         players: newPlayers,
         declarer: null,
@@ -245,6 +245,7 @@ class SharedDevice extends Component {
           resetGame={this.resetGame}
           solo={true}
           sharedDevice={true}
+          gameMode="shared-device"
         />
       </React.Fragment>
     )
