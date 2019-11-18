@@ -119,7 +119,7 @@ const Shape = ({ shape, fill, color }) => {
 class Card extends Component {
   colors = {
     0: '#00A91D',
-    1: '#3E009E',
+    1: '#311b92',
     2: '#FF0000',
     white: '#fff',
   }

@@ -1,8 +1,9 @@
 import React, { useEffect, useState, Component, Fragment } from 'react'
-import { isEmpty, map, debounce } from 'lodash'
+import { isEmpty, map, debounce, get } from 'lodash'
 import { countSets } from '../utils/helpers'
 import Card from './Card'
 import GameOver from './GameOver'
+import TopBar from './TopBar'
 
 function Board(props) {
   const [sets, setSets] = useState(null)
@@ -18,6 +19,7 @@ function Board(props) {
     setFound,
     sharedDevice,
     solo,
+    gameMode,
   } = props
 
   useEffect(() => {
@@ -40,7 +42,14 @@ function Board(props) {
     return null
   }
 
-  const borderColor = declarer ? players[declarer].color : players[myName].color
+  const getBorderColor = ({ declarer, players }) => {
+    if (declarer) {
+      return get(players, `${declarer}.color`, '')
+    }
+    return get(players, `${myName}.color`, '')
+  }
+
+  const borderColor = getBorderColor(props)
 
   if (gameOver) {
     return <GameOver gameOver={gameOver} myName={myName} solo={solo} />
@@ -59,18 +68,8 @@ function Board(props) {
 
   return (
     <Fragment>
-      {!sharedDevice ? (
-        <div className="navbar-fixed">
-          <nav>
-            <div className="nav-wrapper">
-              {declarer ? <>SET! {declarer}</> : <>Sets: {sets}</>}
-              <ul className="right hide-on-med-and-down">
-                <li>Cards Left: {deck.length}</li>
-              </ul>
-            </div>
-          </nav>
-        </div>
-      ) : (
+      <TopBar {...props} />
+      {sharedDevice && (
         <Fragment>
           <div className="player-buttons-container">
             {topPlayers.map((info) => {
@@ -109,7 +108,7 @@ function Board(props) {
         </Fragment>
       )}
 
-      <div className="container" style={{ maxWidth: 0.95 * window.innerHeight }}>
+      <div className="container" style={{ maxWidth: window.innerHeight - 48 }}>
         <div className="row">
           {board.map((card) => {
             return (
@@ -131,9 +130,9 @@ function Board(props) {
             )
           })}
         </div>
-        <div className="row">
-          {map(players, (info, name) => {
-            if (!sharedDevice) {
+        {!sharedDevice && gameMode !== 'puzzle' && (
+          <div className="row">
+            {map(players, (info, name) => {
               return (
                 <div key={name} className="col s4 m3">
                   <span className={`player-name ${info.color}`}>
@@ -141,16 +140,17 @@ function Board(props) {
                   </span>
                 </div>
               )
-            }
-          })}
-        </div>
-        <div className="row">
-          {props.handleRedeal && (
+            })}
+          </div>
+        )}
+
+        {props.handleRedeal && (
+          <div className="row">
             <button onClick={props.handleRedeal} className="btn">
               Shuffle
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </Fragment>
   )
