@@ -185,6 +185,7 @@ function Guest(props) {
         gameOver={state.gameOver}
         // syncing={this.state.syncing}
         myName={myName}
+        gameMode="versus"
       />
     </React.Fragment>
   )

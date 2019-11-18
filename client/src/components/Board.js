@@ -108,7 +108,7 @@ function Board(props) {
         </Fragment>
       )}
 
-      <div className="container" style={{ maxWidth: 0.95 * window.innerWidth }}>
+      <div className="container" style={{ maxWidth: window.innerHeight - 48 }}>
         <div className="row">
           {board.map((card) => {
             return (
@@ -130,29 +130,27 @@ function Board(props) {
             )
           })}
         </div>
-        {gameMode !== 'puzzle' && (
+        {!sharedDevice && gameMode !== 'puzzle' && (
           <div className="row">
             {map(players, (info, name) => {
-              if (!sharedDevice) {
-                return (
-                  <div key={name} className="col s4 m3">
-                    <span className={`player-name ${info.color}`}>
-                      {name}: {info.score}
-                    </span>
-                  </div>
-                )
-              }
+              return (
+                <div key={name} className="col s4 m3">
+                  <span className={`player-name ${info.color}`}>
+                    {name}: {info.score}
+                  </span>
+                </div>
+              )
             })}
           </div>
         )}
 
-        <div className="row">
-          {props.handleRedeal && (
+        {props.handleRedeal && (
+          <div className="row">
             <button onClick={props.handleRedeal} className="btn">
               Shuffle
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </Fragment>
   )

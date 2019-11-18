@@ -27,7 +27,7 @@ function TopBar({
   switch (gameMode) {
     case 'shared-device':
       return null
-    case 'solo-vs-cpu':
+    case 'versus':
       return (
         <div className="navbar-fixed">
           <nav className={`orange ${declarer ? 'lighten-1' : 'darken-1'}`}>

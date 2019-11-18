@@ -356,7 +356,7 @@ class Solo extends Component {
           myName={this.state.name}
           resetGame={this.resetGame}
           solo={true}
-          gameMode='solo-vs-cpu'
+          gameMode='versus'
         />
       </React.Fragment>
     )
