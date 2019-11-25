@@ -21,6 +21,7 @@ import {
   isSet,
 } from '../utils/helpers'
 import { colors } from '../config'
+import PlayerList from './PlayerList'
 
 const config = {
   turnTime: 5000,
@@ -47,6 +48,7 @@ function Host(props) {
     players: {},
     gameTitle: '',
     created: false,
+    started: false,
     myName: '',
     inputName: '',
     setFound: false,
@@ -230,7 +232,7 @@ function Host(props) {
     }
   }
 
-  const { board, deck, selected, declarer, players, gameTitle, created, myName } = state
+  const { board, deck, selected, declarer, players, gameTitle, created, started, myName } = state
 
   if (userLoading) {
     return 'Loading...'
@@ -283,6 +285,7 @@ function Host(props) {
         <h4>Name your game:</h4>
         <form onSubmit={handleCreateGame}>
           <input
+            autoFocus
             placeholder={`${myName}'s game`}
             onChange={(e) => {
               setState({ gameTitle: e.target.value })
@@ -295,6 +298,10 @@ function Host(props) {
         </form>
       </div>
     )
+  }
+
+  if (!started) {
+    return <PlayerList isHost={true} players={players} setState={setAndSendState} />
   }
 
   return (
