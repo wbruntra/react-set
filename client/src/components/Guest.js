@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { isEmpty } from 'lodash'
 import { Link } from 'react-router-dom'
@@ -11,6 +11,7 @@ import firestore from '../firestore'
 import Modal from './Modal'
 import Signout from './Signout'
 import Board from './Board'
+import PlayerList from './PlayerList'
 
 function Guest(props) {
   const userReducer = useSelector((state) => state.user)
@@ -26,23 +27,28 @@ function Guest(props) {
     deck: [],
     board: [],
     selected: [],
+    pending: null,
+    started: false,
   })
   const [myName, setMyName] = useState('')
   const [firebaseRefs, setFirebaseRefs] = useState({})
 
+  const currentState = useRef(state)
+  currentState.current = state
+
   const setState = (update) => {
     setFullState({
-      ...state,
+      ...currentState.current,
       ...update,
     })
   }
 
   const handleCardClick = (card) => {
-    const { declarer } = state
+    const { declarer, selected } = currentState.current
     if (declarer) {
       return
     }
-    const newSelected = cardToggle(card, state.selected)
+    const newSelected = cardToggle(card, selected)
     const newState = {}
     if (newSelected.length === 3) {
       if (isSet(newSelected)) {
@@ -90,23 +96,21 @@ function Guest(props) {
   }
 
   const sendAction = (action) => {
-    firebaseRefs.actions.add({
-      ...action,
-      created: firebase.firestore.FieldValue.serverTimestamp(),
-    })
+    firebaseRefs.actions
+      .add({
+        ...action,
+        created: firebase.firestore.FieldValue.serverTimestamp(),
+      })
+      .then(function(docRef) {
+        if (action.type === 'found') {
+          const docId = docRef.id
+          console.log('Document written with ID: ', docId)
+          setState({
+            pending: docId,
+          })
+        }
+      })
   }
-
-  const togglePopup = () => {
-    setState((state) => ({
-      popupVisible: !state.popupVisible,
-    }))
-  }
-
-  useEffect(() => {
-    setState({
-      popupVisible: false,
-    })
-  }, [state.declarer])
 
   useEffect(() => {
     const { gameName } = props.match.params
@@ -116,6 +120,20 @@ function Guest(props) {
     })
     firebaseRefs.actions = firebaseRefs.game.collection('actions')
 
+    firebaseRefs.actions.onSnapshot((snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'removed') {
+          const { pending } = currentState.current
+          if (pending === change.doc.id) {
+            console.log('Pending action removed!')
+            setState({
+              pending: null,
+            })
+          }
+        }
+      })
+    })
+
     // return function cleanup() {
     //   if (firebaseRefs.game) {
     //     firebaseRefs.game()
@@ -123,7 +141,7 @@ function Guest(props) {
     // }
   }, [])
 
-  const { board, deck, selected, declarer, players, popupVisible } = state
+  const { board, deck, selected, declarer, players, popupVisible, started } = state
   if (userReducer.loading) {
     return 'Loading...'
   }
@@ -165,9 +183,13 @@ function Guest(props) {
     )
   }
 
+  if (!started) {
+    return <PlayerList players={players} isHost={false} />
+  }
+
   return (
     <React.Fragment>
-      <Modal visible={popupVisible}>
+      <Modal visible={state.pending && popupVisible}>
         <p className="flow-text center-align">SET!</p>
         <div className="progress">
           <div className="indeterminate" style={{ width: '30%' }} />
