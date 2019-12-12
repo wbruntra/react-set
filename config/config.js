@@ -4,7 +4,7 @@ const getConfig = () => {
   switch (process.env.NODE_ENV) {
     case 'production':
       return {
-        dbConnection: `mariadb://pi:${DB_PASSWORD}@127.0.0.1:3306/${DB_NAME}`,
+        dbConnection: `mariadb://${DB_USER}:${DB_PASSWORD}@127.0.0.1:3306/${DB_NAME}`,
       }
     default:
       return {
