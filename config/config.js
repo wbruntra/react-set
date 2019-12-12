@@ -1,5 +1,5 @@
 const getConfig = () => {
-  const { DB_NAME, DB_PASSWORD } = process.env
+  const { DB_NAME, DB_PASSWORD, DB_USER } = process.env
 
   switch (process.env.NODE_ENV) {
     case 'production':
