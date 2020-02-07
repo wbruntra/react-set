@@ -317,7 +317,7 @@ class Solo extends Component {
                 />
                 <input type="submit" value="Start" className="btn" />
               </form>
-              <p style={{marginTop:'24px'}}>First to {config.playingTo} points is the winner</p>
+              <p style={{ marginTop: '24px' }}>First to {config.playingTo} points is the winner</p>
             </div>
             <div className="row">
               <div style={{ marginTop: '48px' }} className="col s12">
@@ -361,7 +361,7 @@ class Solo extends Component {
           myName={this.state.name}
           resetGame={this.resetGame}
           solo={true}
-          gameMode='versus'
+          gameMode="versus"
         />
       </React.Fragment>
     )

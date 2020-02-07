@@ -1,4 +1,3 @@
-// @flow
 import { shuffle } from 'lodash'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
@@ -121,7 +120,7 @@ export const cardToggle = (card, selected) => {
   }
 }
 
-export const reshuffle = ({ deck, board = []}, { boardSize = 12, minimumSets = 1 } = {}) => {
+export const reshuffle = ({ deck, board = [] }, { boardSize = 12, minimumSets = 1 } = {}) => {
   let newDeck = shuffle([...board, ...deck])
   while (
     countSets(newDeck.slice(0, boardSize)) < minimumSets &&

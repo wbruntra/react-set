@@ -14,15 +14,7 @@ const formatTime = (seconds) => {
   return `${mm}:${pad(ss)}`
 }
 
-function TopBar({
-  gameMode,
-  deck,
-  board,
-  declarer,
-  setsFound,
-  startTime,
-  elapsedTime,
-}) {
+function TopBar({ gameMode, deck, board, declarer, setsFound, startTime, elapsedTime }) {
   const sets = countSets(board)
   switch (gameMode) {
     case 'shared-device':

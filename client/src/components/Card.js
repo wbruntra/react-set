@@ -38,11 +38,16 @@ const Squiggle = ({ fill, color }) => {
     <svg width="120" height="200" xmlns="http://www.w3.org/2000/svg">
       <g>
         <rect fill="#fff" id="canvas_background" height="202" width="122" y="-1" x="-1" />
-        <g display="none" overflow="visible" y="0" x="0" height="100%" width="100%" id="canvasGrid">
-          <rect 
-          fill="#fff"
-          strokeWidth="0" 
-          y="0" x="0" height="100%" width="100%" />
+        <g
+          display="none"
+          overflow="visible"
+          y="0"
+          x="0"
+          height="100%"
+          width="100%"
+          id="canvasGrid"
+        >
+          <rect fill="#fff" strokeWidth="0" y="0" x="0" height="100%" width="100%" />
         </g>
       </g>
       <g>
@@ -66,7 +71,7 @@ const Squiggle = ({ fill, color }) => {
           0,-63.59
           z
           "
-        fillOpacity="null"
+          fillOpacity="null"
           strokeOpacity="null"
           strokeWidth={strokeWidth}
           fill={fill}
@@ -180,7 +185,7 @@ class Card extends Component {
           </pattern>
         </svg>
 
-        {range(Number(number) + 1).map(i => {
+        {range(Number(number) + 1).map((i) => {
           return (
             <svg
               key={i}
