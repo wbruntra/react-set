@@ -1,6 +1,5 @@
 import { shuffle } from 'lodash'
 import * as firebase from 'firebase/app'
-import 'firebase/auth'
 
 export const range = (n: number) => {
   return [...Array(n).keys()]
@@ -33,9 +32,9 @@ const displaySet = (tuple: Array<number>, rowSize: number = 3) => {
 }
 
 export const serializeGame = (state: {
-  board: Array<string>,
-  deck: Array<string>,
-  selected: Array<string>,
+  board: Array<string>
+  deck: Array<string>
+  selected: Array<string>
 }) => {
   const status = JSON.stringify({
     board: state.board,
@@ -45,7 +44,7 @@ export const serializeGame = (state: {
   return status
 }
 
-export const countSets = (board, { debug = false, returnWhenFound = false } = {}) => {
+export const countSets = (board: string[], { debug = false, returnWhenFound = false } = {}) => {
   let count = 0
   let candidate = []
   for (let a = 0; a < board.length - 2; a++) {
@@ -67,8 +66,8 @@ export const countSets = (board, { debug = false, returnWhenFound = false } = {}
   return count
 }
 
-export const makeDeck = (): Array<string> => {
-  let deck = []
+export const makeDeck = (): string[] => {
+  let deck: string[] = []
   range(3).forEach((c) => {
     range(3).forEach((n) => {
       range(3).forEach((s) => {
@@ -112,7 +111,7 @@ export const nameThird = (a: string, b: string) => {
   return result.trim()
 }
 
-export const cardToggle = (card, selected) => {
+export const cardToggle = (card: string, selected: string[]) => {
   if (selected.includes(card)) {
     return selected.filter((c) => c !== card)
   } else {
@@ -120,8 +119,18 @@ export const cardToggle = (card, selected) => {
   }
 }
 
-export const reshuffle = ({ deck, board = [] }, { boardSize = 12, minimumSets = 1 } = {}) => {
-  let newDeck = shuffle([...board, ...deck])
+interface GameState {
+  deck: string[]
+  board: string[]
+}
+
+interface GameSettings {
+  boardSize: number
+  minimumSets: number
+}
+
+export const reshuffle = (state: GameState, boardSize: number = 12, minimumSets: number = 1) => {
+  let newDeck = shuffle([...state.board, ...state.deck])
   while (
     countSets(newDeck.slice(0, boardSize)) < minimumSets &&
     countSets(newDeck, { returnWhenFound: true }) > 0
@@ -134,19 +143,27 @@ export const reshuffle = ({ deck, board = [] }, { boardSize = 12, minimumSets = 
   }
 }
 
-export const noSetsRemain = (board, deck) => {
+/*
+export const reshuffle = ({ deck:string[], board:string[] = [] }, boardSize:number = 12, minimumSets:number = 1 } = {}) => {
+  let newDeck = shuffle([...board, ...deck])
+  while (
+    countSets(newDeck.slice(0, boardSize)) < minimumSets &&
+    countSets(newDeck, { returnWhenFound: true }) > 0
+  ) {
+    newDeck = shuffle(newDeck)
+  }
+  return {
+    deck: newDeck.slice(boardSize),
+    board: newDeck.slice(0, boardSize),
+  }
+}
+*/
+
+export const noSetsRemain = (board: string[], deck: string[]) => {
   return countSets([...board, ...deck], { returnWhenFound: true })
 }
 
-export const removeSelected = (state: {
-  board: Array<string>,
-  deck: Array<string>,
-  selected: Array<string>,
-}): {
-  board: Array<string>,
-  deck: Array<string>,
-  selected: Array<string>,
-} => {
+export const removeSelected = (state: { board: string[]; deck: string[]; selected: string[] }) => {
   const { board, deck, selected } = state
   const newCards = deck.slice(0, 3)
   let newBoard = [...board]
@@ -176,7 +193,8 @@ export const handleGoogleSignIn = () => {
     .signInWithPopup(provider)
     .then(function(result) {
       // This gives you a Google Access Token. You can use it to access the Google API.
-      var token = result.credential.accessToken
+      const credential = result.credential as firebase.auth.OAuthCredential
+      var token = credential.accessToken
       // The signed-in user info.
       var user = result.user
       console.log(token, user)
@@ -195,24 +213,5 @@ export const handleGoogleSignIn = () => {
 
 export const handleGoogleRedirect = () => {
   const provider = new firebase.auth.GoogleAuthProvider()
-  firebase
-    .auth()
-    .signInWithRedirect(provider)
-    .then(function(result) {
-      // This gives you a Google Access Token. You can use it to access the Google API.
-      var token = result.credential.accessToken
-      // The signed-in user info.
-      var user = result.user
-      console.log(token, user)
-    })
-    .catch(function(error) {
-      // Handle Errors here.
-      var errorCode = error.code
-      var errorMessage = error.message
-      // The email of the user's account used.
-      var email = error.email
-      // The firebase.auth.AuthCredential type that was used.
-      var credential = error.credential
-      // ...
-    })
+  firebase.auth().signInWithRedirect(provider)
 }

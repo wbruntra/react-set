@@ -29,11 +29,12 @@
     "socket.io": "^2.3.0"
   },
   "devDependencies": {
-    "husky": "^4.2.1"
+    "husky": "^4.2.1",
+    "pretty-quick": "^2.0.1"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run format --prefix client"
+      "pre-commit": "pretty-quick --staged"
     }
   }
 }

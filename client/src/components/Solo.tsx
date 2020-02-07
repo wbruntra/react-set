@@ -27,7 +27,7 @@ const config = {
   cpuDelay: 1200,
 }
 
-const calculateIntervalFromDifficulty = (d) => {
+const calculateIntervalFromDifficulty = (d: number) => {
   let diff = Number(d)
   if (Number.isNaN(diff)) {
     diff = 1
@@ -38,12 +38,13 @@ const calculateIntervalFromDifficulty = (d) => {
 
 const createGameState = () => {
   const initialDeck = makeDeck()
+  const selected: string[] = []
   return {
     ...reshuffle({
       deck: initialDeck.slice(12),
       board: initialDeck.slice(0, 12),
     }),
-    selected: [],
+    selected,
   }
 }
 
@@ -51,6 +52,19 @@ const logTime = (msg = '') => {
   const d = new Date()
   const s = (d.getTime() % 10 ** 6) / 1000
   console.log(msg, s.toFixed(1))
+}
+
+interface PlayerInfo {
+  score: number
+  color: string
+}
+
+interface Players {
+  [key: string]: PlayerInfo
+}
+
+interface IProps {
+  handleSearchTyping(event: React.FormEvent<HTMLInputElement>): void
 }
 
 const initialState = {
@@ -72,19 +86,43 @@ const initialState = {
   gameOver: false,
   cpuTurnInterval: 1000,
   cpuFound: [],
-  startTime: null,
+  startTime: new Date(),
+  cpuTimer: null,
+  undeclareId: null,
 }
 
-class Solo extends Component {
-  constructor(props) {
+interface State {
+  players: Players
+  board: string[]
+  deck: string[]
+  selected: string[]
+  cpuTimer: null | number
+  gameStarted: boolean
+  name: string
+  setFound: boolean
+  declarer: null | string
+  timeDeclared: null | number
+  gameOver: boolean
+  cpuTurnInterval: number
+  cpuFound: string[]
+  startTime: Date
+  undeclareId: null | number
+  difficulty: null | number
+  cpuAnimation: null | number
+}
+
+class Solo extends Component<any, State> {
+  constructor(props: any) {
     super(props)
     this.state = {
       ...cloneDeep(initialState),
       ...createGameState(),
+      difficulty: 2,
+      cpuAnimation: null,
     }
   }
 
-  handleStartGame = (e) => {
+  handleStartGame = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault()
     this.setState({
       gameStarted: true,
@@ -93,12 +131,16 @@ class Solo extends Component {
 
     console.log(`Turns every ${this.state.cpuTurnInterval} ms`)
     setTimeout(() => {
-      this.cpuTimer = setInterval(this.cpuTurn, this.state.cpuTurnInterval)
+      const cpuTimer = window.setInterval(this.cpuTurn, this.state.cpuTurnInterval)
+      this.setState({
+        cpuTimer,
+      })
     }, config.cpuDelay)
   }
 
   componentDidMount = () => {
-    const difficulty = window.localStorage.getItem('soloDifficulty') || '2'
+    const savedDifficulty = window.localStorage.getItem('soloDifficulty')
+    let difficulty = savedDifficulty ? Number(savedDifficulty) : 2
     const cpuTurnInterval = calculateIntervalFromDifficulty(difficulty)
     this.setState({
       difficulty,
@@ -107,7 +149,9 @@ class Solo extends Component {
   }
 
   componentWillUnmount = () => {
-    clearInterval(this.cpuTimer)
+    if (this.state.cpuTimer !== null) {
+      window.clearInterval(this.state.cpuTimer)
+    }
   }
 
   cpuTurn = () => {
@@ -127,26 +171,35 @@ class Solo extends Component {
         cpuFound: [b, c],
         setFound: true,
       })
-      clearInterval(this.cpuTimer)
-      this.cpuAnimation = setInterval(this.animateCpuChoice, 900)
+      if (this.state.cpuTimer !== null) {
+        clearInterval(this.state.cpuTimer)
+      }
+      this.setState({
+        cpuAnimation: window.setInterval(this.animateCpuChoice, 900),
+      })
     }
   }
 
   animateCpuChoice = () => {
     const { selected, cpuFound } = this.state
     const cpuCopy = [...cpuFound]
-    const newSelected = [...selected, cpuCopy.pop()]
+    if (cpuCopy.length === 0) {
+      return
+    }
+    const newSelected = [...selected, cpuCopy.pop() as string]
     this.setState({
       cpuFound: cpuCopy,
       selected: newSelected,
     })
     if (newSelected.length === 3) {
-      clearInterval(this.cpuAnimation)
+      if (this.state.cpuAnimation !== null) {
+        clearInterval(this.state.cpuAnimation)
+      }
       this.updateSelected(newSelected, 'cpu')
     }
   }
 
-  updatePlayerScore = (name: string, delta: number) => {
+  updatePlayerScore = (name: string, delta: number): [Players, number] => {
     const { players } = this.state
     const newScore = players[name].score + delta
     const newPlayers = update(players, {
@@ -161,7 +214,7 @@ class Solo extends Component {
 
   expireDeclare = () => {
     const { declarer, selected } = this.state
-    if (!isSet(selected)) {
+    if (declarer && !isSet(selected)) {
       const [newPlayers] = this.updatePlayerScore(declarer, -0.5)
       this.setState({
         players: newPlayers,
@@ -172,10 +225,10 @@ class Solo extends Component {
     }
   }
 
-  markPointForDeclarer = (declarer) => {
+  markPointForDeclarer = (declarer: string) => {
     const [newPlayers, newScore] = this.updatePlayerScore(declarer, 1)
     const { user } = this.props.userReducer
-    const gameOver = newScore >= config.playingTo && declarer
+    const gameOver = !!(newScore >= config.playingTo && declarer)
     const newState = {
       players: newPlayers,
       gameOver,
@@ -200,9 +253,10 @@ class Solo extends Component {
         })
     }
     this.setState(newState)
+    return newState
   }
 
-  performDeclare = (declarer) => {
+  performDeclare = (declarer: string) => {
     if (!this.state.declarer) {
       const timeNow = new Date().getTime()
       const update = {
@@ -210,10 +264,11 @@ class Solo extends Component {
         timeDeclared: timeNow,
       }
       this.setState(update)
-
-      this.undeclareID = setTimeout(() => {
-        this.expireDeclare()
-      }, config.turnTime)
+      this.setState({
+        undeclareId: window.setTimeout(() => {
+          this.expireDeclare()
+        }, config.turnTime),
+      })
     }
   }
 
@@ -224,7 +279,7 @@ class Solo extends Component {
       declarer,
     }
     if (newState.setFound) {
-      clearTimeout(this.undeclareID)
+      this.state.undeclareId && clearTimeout(this.state.undeclareId)
       setTimeout(() => {
         this.removeSet()
       }, 2000)
@@ -232,7 +287,7 @@ class Solo extends Component {
     this.setState(newState)
   }
 
-  handleCardClick = (card) => {
+  handleCardClick = (card: string) => {
     const { setFound, declarer, name } = this.state
     if (!setFound && declarer !== 'cpu') {
       const newSelected = cardToggle(card, this.state.selected)
@@ -255,11 +310,10 @@ class Solo extends Component {
 
   removeSet = () => {
     const { declarer, selected } = this.state
-    if (isSet(selected)) {
+    if (declarer && isSet(selected)) {
       console.log('Set found, removing')
-      const newScores = this.markPointForDeclarer(declarer)
+      this.markPointForDeclarer(declarer)
       const newState = {
-        ...newScores,
         setFound: false,
         declarer: null,
         timeDeclared: null,
@@ -267,14 +321,17 @@ class Solo extends Component {
       }
       this.setState(newState)
     }
-    clearInterval(this.cpuTimer)
+    this.state.cpuTimer && clearInterval(this.state.cpuTimer)
     setTimeout(() => {
-      this.cpuTimer = setInterval(this.cpuTurn, this.state.cpuTurnInterval)
+      const cpuTimer = window.setInterval(this.cpuTurn, this.state.cpuTurnInterval)
+      this.setState({
+        cpuTimer,
+      })
     }, config.cpuDelay)
   }
 
   resetGame = () => {
-    clearInterval(this.cpuTimer)
+    this.state.cpuTimer && window.clearInterval(this.state.cpuTimer)
     this.setState({
       ...cloneDeep(initialState),
       ...createGameState(),
@@ -298,9 +355,6 @@ class Solo extends Component {
             <div className="col s8 m4">
               <form onSubmit={this.handleStartGame}>
                 <Slider
-                  ref={(input) => {
-                    this.difficultyInput = input
-                  }}
                   min={1}
                   max={5}
                   orientation="horizontal"
@@ -308,7 +362,7 @@ class Solo extends Component {
                   value={Number(this.state.difficulty)}
                   onChange={(difficulty) => {
                     const cpuTurnInterval = calculateIntervalFromDifficulty(difficulty)
-                    window.localStorage.setItem('soloDifficulty', difficulty)
+                    window.localStorage.setItem('soloDifficulty', difficulty.toString())
                     this.setState({
                       cpuTurnInterval,
                       difficulty,
@@ -353,7 +407,7 @@ class Solo extends Component {
           selected={selected}
           declarer={declarer}
           handleCardClick={this.handleCardClick}
-          handleDeclare={this.handleDeclare}
+          handleDeclare={() => {}}
           handleRedeal={this.handleRedeal}
           players={players}
           setFound={this.state.setFound}
@@ -368,7 +422,7 @@ class Solo extends Component {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: any) => ({
   userReducer: state.user,
 })
 
