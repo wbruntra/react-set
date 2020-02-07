@@ -71,7 +71,7 @@ const initialState = {
   setsOnBoard: null,
   cardsOnBoard: 12,
   popupVisible: false,
-  popUpText: 'SET!'
+  popUpText: 'SET!',
 }
 
 const sortSet = (set) => {
@@ -176,7 +176,7 @@ class Puzzle extends Component {
         this.setState((currentState) => {
           window.setTimeout(() => {
             this.setState({
-              popupVisible: false
+              popupVisible: false,
             })
             this.resetLocalSelected(true)
           }, 2000)
@@ -190,14 +190,14 @@ class Puzzle extends Component {
           if (!isNewSet) {
             return {
               popupVisible: true,
-              popUpText: 'Already found!'
+              popUpText: 'Already found!',
             }
           }
           const newSetsFound = [...setsFound, newSelected.sort()]
           return {
             setsFound: newSetsFound,
             popupVisible: true,
-            popUpText: 'SET!'
+            popUpText: 'SET!',
           }
         })
       } else {
@@ -256,7 +256,7 @@ class Puzzle extends Component {
       gameStarted,
       setFound,
       setsFound,
-      popupVisible
+      popupVisible,
     } = this.state
     const { userReducer } = this.props
     const { user } = userReducer

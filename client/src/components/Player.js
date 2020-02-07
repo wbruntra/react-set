@@ -14,7 +14,6 @@ const config = {
 }
 
 class Player extends React.Component {
-
   constructor() {
     super(props)
     const initialDeck = makeDeck()
@@ -130,7 +129,7 @@ class Player extends React.Component {
               ref={this.nameInputRef}
               placeholder="hostname"
               value={inputName}
-              onChange={e => {
+              onChange={(e) => {
                 this.setState({ inputName: e.target.value })
               }}
             />
@@ -147,7 +146,7 @@ class Player extends React.Component {
           <h4>Name your game:</h4>
           <form onSubmit={this.handleCreateGame}>
             <input
-              onChange={e => {
+              onChange={(e) => {
                 this.setState({ gameTitle: e.target.value })
               }}
               value={gameTitle}

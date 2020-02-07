@@ -31,7 +31,7 @@ class Cards extends Component {
     console.log(this.state.board)
     return (
       <div>
-        {this.state.board.map(desc => {
+        {this.state.board.map((desc) => {
           return <Card key={desc} desc={desc} />
         })}
       </div>

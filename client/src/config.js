@@ -5,4 +5,4 @@ export const colors = [
   ' purple darken-1',
   ' light-green lighten-1',
   ' orange accent-2',
-];
+]

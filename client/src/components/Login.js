@@ -6,7 +6,6 @@ import { handleGoogleRedirect } from '../utils/helpers'
 import * as firebase from 'firebase/app'
 import 'firebase/auth'
 
-
 function Login(props) {
   const user = useSelector((state) => state.user)
 

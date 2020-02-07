@@ -27,14 +27,12 @@ function GameOver(props) {
           </div>
           <div className="card-action">
             <p>
-              <Link to="/" style={{marginRight: '48px'}}>
+              <Link to="/" style={{ marginRight: '48px' }}>
                 Main Menu
               </Link>
               {solo && user !== null && (
                 <span className="right-align">
-                  <Link to="/stats">
-                    View Stats
-                  </Link>
+                  <Link to="/stats">View Stats</Link>
                 </span>
               )}
             </p>
