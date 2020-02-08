@@ -50,7 +50,6 @@ function Host() {
   }
 
   const [gameInProgress, setGameInProgress] = useState()
-  const [rejectedResume, setRejectedResume] = useState(false)
 
   const [state, setFullState] = useState({
     players: {},
@@ -58,9 +57,7 @@ function Host() {
     created: false,
     started: false,
     myName: '',
-    inputName: '',
     setFound: false,
-    autoplay: false,
     declarer: null,
     gameOver: false,
     ...initialGameState,
@@ -91,6 +88,18 @@ function Host() {
       ...currentState.current,
       ...update,
     })
+  }
+
+  const handleRejectResume = () => {
+    const { gameTitle } = gameInProgress
+    firestore
+      .collection('games')
+      .doc(gameTitle)
+      .delete()
+      .then(() => {
+        console.log('Deleted old game')
+        setGameInProgress(undefined)
+      })
   }
 
   const handleCardClick = (card) => {
@@ -244,7 +253,7 @@ function Host() {
 
   const processAction = (action) => {
     const { type, payload } = action
-    const { players, declarer } = currentState.current
+    const { players, declarer, board } = currentState.current
     switch (type) {
       case 'join':
         if (Object.keys(players).includes(payload.name)) {
@@ -262,7 +271,7 @@ function Host() {
         setAndSendState({ players: newPlayers })
         break
       case 'found':
-        if (!declarer) {
+        if (!declarer && verifySelectedOnBoard(board, payload.selected)) {
           updateSelected(payload.selected, payload.name)
         }
         break
@@ -291,13 +300,16 @@ function Host() {
     firebaseRefs.game.update(update)
   }
 
-  const updateSelected = (newSelected, declarer) => {
-    const { board } = currentState.current
-    for (let i = 0; i < newSelected.length; i++) {
-      if (!board.includes(newSelected[i])) {
+  const verifySelectedOnBoard = (board, selected) => {
+    for (let i = 0; i < selected.length; i++) {
+      if (!board.includes(selected[i])) {
         return false
       }
     }
+    return true
+  }
+
+  const updateSelected = (newSelected, declarer) => {
     const newState = {
       setFound: isSet(newSelected),
       selected: newSelected,
@@ -309,7 +321,6 @@ function Host() {
         removeSet(newSelected, declarer)
       }, 4000)
     }
-    return true
   }
 
   const { board, deck, selected, declarer, players, gameTitle, created, started, myName } = state
@@ -331,15 +342,15 @@ function Host() {
     )
   }
 
-  if (gameInProgress && !rejectedResume && !state.created) {
+  if (gameInProgress && !state.created) {
     return (
       <div className="container">
         <p>You are already hosting a game. Return to it?</p>
         <button className="btn" onClick={() => reloadGame(gameInProgress)}>
           YES!
         </button>
-        <button className="btn" onClick={() => setRejectedResume(true)}>
-          NO!
+        <button className="btn" onClick={handleRejectResume}>
+          No, remove it
         </button>
       </div>
     )

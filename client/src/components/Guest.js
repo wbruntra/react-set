@@ -31,6 +31,7 @@ function Guest(props) {
     started: false,
   })
   const [myName, setMyName] = useState('')
+  const [modalDelayMsg, setDelayMsg] = useState()
 
   const myFire = useRef({})
   const firebaseRefs = myFire.current
@@ -111,6 +112,7 @@ function Guest(props) {
           setState({
             pending: docId,
           })
+          // TODO: Trigger message if action isnt processed in reasonable time
         }
       })
   }
