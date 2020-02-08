@@ -1,5 +1,6 @@
 import { shuffle } from 'lodash'
 import * as firebase from 'firebase/app'
+import { GameState } from './models'
 
 export const range = (n: number) => {
   return [...Array(n).keys()]
@@ -119,32 +120,7 @@ export const cardToggle = (card: string, selected: string[]) => {
   }
 }
 
-interface GameState {
-  deck: string[]
-  board: string[]
-}
-
-interface GameSettings {
-  boardSize: number
-  minimumSets: number
-}
-
-export const reshuffle = (state: GameState, boardSize: number = 12, minimumSets: number = 1) => {
-  let newDeck = shuffle([...state.board, ...state.deck])
-  while (
-    countSets(newDeck.slice(0, boardSize)) < minimumSets &&
-    countSets(newDeck, { returnWhenFound: true }) > 0
-  ) {
-    newDeck = shuffle(newDeck)
-  }
-  return {
-    deck: newDeck.slice(boardSize),
-    board: newDeck.slice(0, boardSize),
-  }
-}
-
-/*
-export const reshuffle = ({ deck:string[], board:string[] = [] }, boardSize:number = 12, minimumSets:number = 1 } = {}) => {
+export const reshuffle = ({ board = [], deck }: GameState, boardSize = 12, minimumSets = 1) => {
   let newDeck = shuffle([...board, ...deck])
   while (
     countSets(newDeck.slice(0, boardSize)) < minimumSets &&
@@ -156,11 +132,6 @@ export const reshuffle = ({ deck:string[], board:string[] = [] }, boardSize:numb
     deck: newDeck.slice(boardSize),
     board: newDeck.slice(0, boardSize),
   }
-}
-*/
-
-export const noSetsRemain = (board: string[], deck: string[]) => {
-  return countSets([...board, ...deck], { returnWhenFound: true })
 }
 
 export const removeSelected = (state: { board: string[]; deck: string[]; selected: string[] }) => {

@@ -22,6 +22,7 @@ import {
 } from '../utils/helpers'
 import { colors } from '../config'
 import PlayerList from './PlayerList'
+import { findKey, isEmpty } from 'lodash'
 
 const config = {
   turnTime: 5000,
@@ -29,12 +30,15 @@ const config = {
   playingTo: 6,
 }
 
-const firebaseRefs = {}
+// const firebaseRefs = {}
 
-function Host(props) {
+function Host() {
   const userReducer = useSelector((state) => state.user)
   const { user, loading: userLoading } = userReducer
   const dispatch = useDispatch()
+
+  const myFire = useRef({})
+  const firebaseRefs = myFire.current
 
   const initialDeck = makeDeck()
   const initialGameState = {
@@ -44,6 +48,10 @@ function Host(props) {
     }),
     selected: [],
   }
+
+  const [gameInProgress, setGameInProgress] = useState()
+  const [rejectedResume, setRejectedResume] = useState(false)
+
   const [state, setFullState] = useState({
     players: {},
     gameTitle: '',
@@ -60,6 +68,23 @@ function Host(props) {
 
   const currentState = useRef(state)
   currentState.current = state
+
+  useEffect(() => {
+    if (!isEmpty(user.uid)) {
+      firestore
+        .collection('games')
+        .where('creator_uid', '==', user.uid)
+        .get()
+        .then(function(querySnapshot) {
+          querySnapshot.forEach(function(doc) {
+            setGameInProgress({ gameTitle: doc.id, ...doc.data() })
+          })
+        })
+        .catch(function(error) {
+          console.log('Error getting documents: ', error)
+        })
+    }
+  }, [user])
 
   const setState = (update) => {
     setFullState({
@@ -86,15 +111,59 @@ function Host(props) {
     setAndSendState(newState)
   }
 
+  const subscribeToGame = (gameTitle) => {
+    firebaseRefs.game = firestore.collection('games').doc(gameTitle)
+    window.activeGameUpdater = window.setInterval(() => {
+      firebaseRefs.game.update({
+        lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
+      })
+    }, 30000)
+    firebaseRefs.actions = firebaseRefs.game.collection('actions')
+    firebaseRefs.actions.get().then((snapshot) => {
+      snapshot.forEach((doc) => {
+        console.log(doc.id, '=>', doc.data())
+      })
+    })
+    firebaseRefs.actions.onSnapshot((snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'added') {
+          const action = change.doc.data()
+          console.log(action)
+          processAction(action)
+          firebaseRefs.actions.doc(change.doc.id).delete()
+        }
+        if (change.type === 'removed') {
+          console.log('Removed action: ', change.doc.data())
+        }
+      })
+    })
+  }
+
+  const reloadGame = (game) => {
+    console.log(game)
+    const host = findKey(game.players, (player) => player.host)
+
+    const { gameTitle } = game
+    subscribeToGame(gameTitle)
+    setState({
+      myName: host,
+      created: true,
+      ...game,
+      lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
+    })
+  }
+
   const handleCreateGame = (e) => {
     e.preventDefault()
-    const { myName, board, deck, selected } = state
-    let gameTitle = state.gameTitle
+    const { myName, board, deck, selected, players } = state
+    let gameTitle = currentState.current.gameTitle
     if (gameTitle === '') {
       gameTitle = `${myName}'s game`
     }
     firebaseRefs.game = firestore.collection('games').doc(gameTitle)
     firebaseRefs.game.set({
+      creator_uid: user.uid,
+      players,
       board,
       deck,
       selected,
@@ -137,6 +206,8 @@ function Host(props) {
       myName: user.nickname,
       players: {
         [user.nickname]: {
+          host: true,
+          uid: user.uid,
           score: 0,
           color: config.colors[0],
         },
@@ -182,6 +253,8 @@ function Host(props) {
         const newPlayers = {
           ...players,
           [payload.name]: {
+            host: false,
+            uid: payload.uid,
             score: 0,
             color: config.colors[Object.keys(players).length],
           },
@@ -219,6 +292,12 @@ function Host(props) {
   }
 
   const updateSelected = (newSelected, declarer) => {
+    const { board } = currentState.current
+    for (let i = 0; i < newSelected.length; i++) {
+      if (!board.includes(newSelected[i])) {
+        return false
+      }
+    }
     const newState = {
       setFound: isSet(newSelected),
       selected: newSelected,
@@ -230,6 +309,7 @@ function Host(props) {
         removeSet(newSelected, declarer)
       }, 4000)
     }
+    return true
   }
 
   const { board, deck, selected, declarer, players, gameTitle, created, started, myName } = state
@@ -238,7 +318,7 @@ function Host(props) {
     return 'Loading...'
   }
 
-  if (!user) {
+  if (isEmpty(user)) {
     return (
       <div className="container">
         <p>To host a game, sign in with your Google account.</p>
@@ -247,6 +327,20 @@ function Host(props) {
             Sign in
           </button>
         </p>
+      </div>
+    )
+  }
+
+  if (gameInProgress && !rejectedResume && !state.created) {
+    return (
+      <div className="container">
+        <p>You are already hosting a game. Return to it?</p>
+        <button className="btn" onClick={() => reloadGame(gameInProgress)}>
+          YES!
+        </button>
+        <button className="btn" onClick={() => setRejectedResume(true)}>
+          NO!
+        </button>
       </div>
     )
   }

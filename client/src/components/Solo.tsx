@@ -18,6 +18,8 @@ import axios from 'axios'
 import { connect } from 'react-redux'
 import Signout from './Signout'
 
+import { Players, GameState } from '../utils/models'
+
 const debugging = false
 
 const config = {
@@ -54,19 +56,6 @@ const logTime = (msg = '') => {
   console.log(msg, s.toFixed(1))
 }
 
-interface PlayerInfo {
-  score: number
-  color: string
-}
-
-interface Players {
-  [key: string]: PlayerInfo
-}
-
-interface IProps {
-  handleSearchTyping(event: React.FormEvent<HTMLInputElement>): void
-}
-
 const initialState = {
   players: {
     you: {
@@ -82,33 +71,27 @@ const initialState = {
   name: 'you',
   setFound: false,
   declarer: null,
-  timeDeclared: null,
   gameOver: false,
   cpuTurnInterval: 1000,
-  cpuFound: [],
   startTime: new Date(),
-  cpuTimer: null,
-  undeclareId: null,
 }
 
-interface State {
+interface State extends GameState {
   players: Players
-  board: string[]
-  deck: string[]
   selected: string[]
-  cpuTimer: null | number
+  cpuTimer?: number
   gameStarted: boolean
   name: string
   setFound: boolean
   declarer: null | string
-  timeDeclared: null | number
+  timeDeclared?: number
   gameOver: boolean
   cpuTurnInterval: number
-  cpuFound: string[]
+  cpuFound?: string[]
   startTime: Date
-  undeclareId: null | number
-  difficulty: null | number
-  cpuAnimation: null | number
+  undeclareId?: number
+  difficulty?: number
+  cpuAnimation?: number
 }
 
 class Solo extends Component<any, State> {
@@ -117,8 +100,6 @@ class Solo extends Component<any, State> {
     this.state = {
       ...cloneDeep(initialState),
       ...createGameState(),
-      difficulty: 2,
-      cpuAnimation: null,
     }
   }
 
@@ -219,7 +200,7 @@ class Solo extends Component<any, State> {
       this.setState({
         players: newPlayers,
         declarer: null,
-        timeDeclared: null,
+        timeDeclared: undefined,
         selected: [],
       })
     }
@@ -316,7 +297,7 @@ class Solo extends Component<any, State> {
       const newState = {
         setFound: false,
         declarer: null,
-        timeDeclared: null,
+        timeDeclared: undefined,
         ...removeSelectedCards(this.state),
       }
       this.setState(newState)

@@ -13,11 +13,11 @@ nav .brand-logo {
 }
 
 .card {
-  transition: filter linear .2s;
+  transition: filter linear 0.2s;
 }
 
 .blurry {
-  filter: grayscale(.9) blur(7px);
+  filter: grayscale(0.9) blur(7px);
 }
 
 .popup-message {
@@ -54,7 +54,7 @@ nav .brand-logo {
   }
 }
 
-.player-buttons-container { 
+.player-buttons-container {
   width: 100%;
   display: flex;
   justify-content: space-between;
@@ -65,4 +65,8 @@ nav .brand-logo {
     left: 0;
     bottom: 0;
   }
+}
+
+.btn + .btn {
+  margin-left: 24px;
 }

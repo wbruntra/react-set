@@ -15,7 +15,7 @@ import PlayerList from './PlayerList'
 
 function Guest(props) {
   const userReducer = useSelector((state) => state.user)
-  const { user } = userReducer
+  const { user, loading: userLoading } = userReducer
   const dispatch = useDispatch()
 
   const [state, setFullState] = useState({
@@ -31,7 +31,10 @@ function Guest(props) {
     started: false,
   })
   const [myName, setMyName] = useState('')
-  const [firebaseRefs, setFirebaseRefs] = useState({})
+
+  const myFire = useRef({})
+  const firebaseRefs = myFire.current
+  // const [firebaseRefs, setFirebaseRefs] = useState({})
 
   const currentState = useRef(state)
   currentState.current = state
@@ -79,7 +82,7 @@ function Guest(props) {
     setMyName(nameInput)
     sendAction({
       type: 'join',
-      payload: { name: nameInput },
+      payload: { name: nameInput, uid: user.uid },
     })
   }
 
@@ -115,12 +118,12 @@ function Guest(props) {
   useEffect(() => {
     const { gameName } = props.match.params
     firebaseRefs.game = firestore.collection('games').doc(gameName)
-    firebaseRefs.game.onSnapshot((doc) => {
+    const unsubGames = firebaseRefs.game.onSnapshot((doc) => {
       processUpdate(doc)
     })
     firebaseRefs.actions = firebaseRefs.game.collection('actions')
 
-    firebaseRefs.actions.onSnapshot((snapshot) => {
+    const unsubActions = firebaseRefs.actions.onSnapshot((snapshot) => {
       snapshot.docChanges().forEach((change) => {
         if (change.type === 'removed') {
           const { pending } = currentState.current
@@ -134,18 +137,23 @@ function Guest(props) {
       })
     })
 
-    // return function cleanup() {
-    //   if (firebaseRefs.game) {
-    //     firebaseRefs.game()
-    //   }
-    // }
+    return function cleanup() {
+      if (firebaseRefs.game) {
+        unsubGames()
+      }
+      if (firebaseRefs.actions) {
+        unsubActions()
+      }
+    }
   }, [])
 
   const { board, deck, selected, declarer, players, popupVisible, started } = state
+
   if (userReducer.loading) {
-    return 'Loading...'
+    return 'Loading profile...'
   }
-  if (!user) {
+
+  if (isEmpty(user)) {
     return (
       <div className="container">
         <p>To join a game, sign in with your Google account.</p>

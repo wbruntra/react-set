@@ -1,7 +1,9 @@
 import React from 'react'
-import { map } from 'lodash'
+import { map, findKey } from 'lodash'
 
 function PlayerList({ isHost, players, setState }) {
+  const host = findKey(players, (player) => player.host)
+
   return (
     <div className="container">
       <h4>Players:</h4>
@@ -9,7 +11,9 @@ function PlayerList({ isHost, players, setState }) {
         {map(players, (info, name) => {
           return (
             <li key={name} className="collection-item">
-              <span className={`player-name`}>{name}</span>
+              <span className={`player-name`}>
+                {name} {info.host && '(host)'}
+              </span>
             </li>
           )
         })}
