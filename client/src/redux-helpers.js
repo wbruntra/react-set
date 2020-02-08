@@ -20,7 +20,7 @@ export const updateNickname = (nickname) => ({
   payload: nickname,
 })
 
-export const defaultUser = { loading: true, user: null }
+export const defaultUser = { loading: true, user: {} }
 
 const userReducer = (state = defaultUser, action) => {
   switch (action.type) {

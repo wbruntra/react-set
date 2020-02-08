@@ -30,7 +30,7 @@ function Signout() {
   }
 
   return (
-    <div style={{ marginBottom: '16px' }}>
+    <div style={{ cursor: 'pointer', marginBottom: '16px' }}>
       <p className="right-align">
         <a onClick={signOut}>Sign Out</a>
       </p>

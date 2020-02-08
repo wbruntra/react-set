@@ -39,14 +39,6 @@ class Lobby extends Component {
     this.unsubscribe()
   }
 
-  addGame = (e) => {
-    e.preventDefault()
-    const { newGame } = this.state
-    this.gamesRef.doc(newGame).set({
-      host: 'bill',
-    })
-  }
-
   render() {
     const { games, init } = this.state
     if (!init) {
