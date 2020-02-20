@@ -1,6 +1,10 @@
-import { shuffle } from 'lodash'
+import { shuffle, find, isNil } from 'lodash'
 import * as firebase from 'firebase/app'
-import { GameState } from './models'
+import { GameState, Player } from './models'
+
+import 'firebase/auth'
+import 'firebase/firestore'
+import firestore from '../firestore'
 
 export const range = (n: number) => {
   return [...Array(n).keys()]
@@ -185,4 +189,38 @@ export const handleGoogleSignIn = () => {
 export const handleGoogleRedirect = () => {
   const provider = new firebase.auth.GoogleAuthProvider()
   firebase.auth().signInWithRedirect(provider)
+}
+
+export const updateGame = (id: string, data: any) => {
+  const game = firestore.collection('games').doc(id)
+  game.update({
+    ...data,
+    lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
+  })
+}
+
+export const sendAction = (gameId: string, action: any) => {
+  const actions = firestore
+    .collection('games')
+    .doc(gameId)
+    .collection('actions')
+  actions
+    .add({
+      ...action,
+      created: firebase.firestore.FieldValue.serverTimestamp(),
+    })
+    .then(function(docRef) {
+      if (action.type === 'found') {
+        const docId = docRef.id
+        console.log('Document written with ID: ', docId)
+        const pendingActionId = docId
+        return pendingActionId
+        // TODO: Trigger message if action isnt processed in reasonable time
+      }
+    })
+}
+
+export const playerNotRegistered = (players: Player[], name: string) => {
+  const player = find(players, ['name', name])
+  return isNil(player)
 }
