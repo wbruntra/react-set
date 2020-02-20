@@ -6,7 +6,7 @@ import firebase from 'firebase/app'
 import 'firebase/firestore'
 
 import { updateNickname } from '../redux-helpers'
-import { cardToggle, isSet, handleGoogleSignIn } from '../utils/helpers'
+import { cardToggle, isSet, handleGoogleSignIn, handleGoogleRedirect } from '../utils/helpers'
 import firestore from '../firestore'
 import Modal from './Modal'
 import Signout from './Signout'
@@ -160,7 +160,7 @@ function Guest(props) {
       <div className="container">
         <p>To join a game, sign in with your Google account.</p>
         <p>
-          <button onClick={handleGoogleSignIn} className="btn">
+          <button onClick={handleGoogleRedirect} className="btn">
             Sign in
           </button>
         </p>

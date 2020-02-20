@@ -19,10 +19,12 @@ import {
   reshuffle,
   removeSelected,
   isSet,
+  updateGame,
 } from '../utils/helpers'
 import { colors } from '../config'
 import PlayerList from './PlayerList'
 import { findKey, isEmpty } from 'lodash'
+import { Action, MultiState } from '../utils/models'
 
 const config = {
   turnTime: 5000,
@@ -33,7 +35,7 @@ const config = {
 // const firebaseRefs = {}
 
 function Host() {
-  const userReducer = useSelector((state) => state.user)
+  const userReducer = useSelector((state: any) => state.user)
   const { user, loading: userLoading } = userReducer
   const dispatch = useDispatch()
 
@@ -41,7 +43,11 @@ function Host() {
   const firebaseRefs = myFire.current
 
   const initialDeck = makeDeck()
-  const initialGameState = {
+  const initialGameState: {
+    deck: string[]
+    board: string[]
+    selected: string[]
+  } = {
     ...reshuffle({
       deck: initialDeck.slice(12),
       board: initialDeck.slice(0, 12),
@@ -50,10 +56,13 @@ function Host() {
   }
 
   const [gameInProgress, setGameInProgress] = useState()
+  const [gameTitle, setGameTitle] = useState('')
+  const [activeGameUpdater, setActiveGameUpdater] = useState()
+  const [gameSubscription, setGameSubscription] = useState()
+  const [actionsSubscription, setActionSubscription] = useState()
 
-  const [state, setFullState] = useState({
+  const [state, setFullState] = useState<MultiState>({
     players: {},
-    gameTitle: '',
     created: false,
     started: false,
     myName: '',
@@ -74,7 +83,13 @@ function Host() {
         .get()
         .then(function(querySnapshot) {
           querySnapshot.forEach(function(doc) {
-            setGameInProgress({ gameTitle: doc.id, ...doc.data() })
+            console.log(doc.id)
+            const oldGame = {
+              ...doc.data(),
+              gameTitle: doc.id,
+            }
+            console.log('Old game: ', oldGame)
+            setGameInProgress(oldGame)
           })
         })
         .catch(function(error) {
@@ -83,7 +98,24 @@ function Host() {
     }
   }, [user])
 
-  const setState = (update) => {
+  useEffect(() => {
+    return () => {
+      if (actionsSubscription) {
+        actionsSubscription()
+      }
+      if (gameSubscription) {
+        gameSubscription()
+      }
+    }
+  }, [actionsSubscription])
+
+  useEffect(() => {
+    return function() {
+      window.clearInterval(activeGameUpdater)
+    }
+  }, [activeGameUpdater])
+
+  const setState = (update: Partial<MultiState>) => {
     setFullState({
       ...currentState.current,
       ...update,
@@ -102,7 +134,7 @@ function Host() {
       })
   }
 
-  const handleCardClick = (card) => {
+  const handleCardClick = (card: string) => {
     const { myName } = state
     if (!state.declarer) {
       const newSelected = cardToggle(card, state.selected)
@@ -120,26 +152,18 @@ function Host() {
     setAndSendState(newState)
   }
 
-  const subscribeToGame = (gameTitle) => {
-    firebaseRefs.game = firestore.collection('games').doc(gameTitle)
-    window.activeGameUpdater = window.setInterval(() => {
-      firebaseRefs.game.update({
-        lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
-      })
-    }, 30000)
-    firebaseRefs.actions = firebaseRefs.game.collection('actions')
-    firebaseRefs.actions.get().then((snapshot) => {
-      snapshot.forEach((doc) => {
-        console.log(doc.id, '=>', doc.data())
-      })
-    })
-    firebaseRefs.actions.onSnapshot((snapshot) => {
+  const actionsSubscribe = (id: string) => {
+    const actions = firestore
+      .collection('games')
+      .doc(id)
+      .collection('actions')
+    return actions.onSnapshot((snapshot) => {
       snapshot.docChanges().forEach((change) => {
         if (change.type === 'added') {
-          const action = change.doc.data()
+          const action = change.doc.data() as Action
           console.log(action)
           processAction(action)
-          firebaseRefs.actions.doc(change.doc.id).delete()
+          actions.doc(change.doc.id).delete()
         }
         if (change.type === 'removed') {
           console.log('Removed action: ', change.doc.data())
@@ -148,29 +172,41 @@ function Host() {
     })
   }
 
-  const reloadGame = (game) => {
-    console.log(game)
-    const host = findKey(game.players, (player) => player.host)
+  const subscribeToGame = (gameTitle: string) => {
+    const game = firestore.collection('games').doc(gameTitle)
+    const gameUpdateId = window.setInterval(() => {
+      game.update({
+        lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
+      })
+    }, 30000)
+    setActiveGameUpdater(gameUpdateId)
 
-    const { gameTitle } = game
+    const unsubscribe = actionsSubscribe(gameTitle)
+    setActionSubscription(unsubscribe)
+  }
+
+  const reloadGame = () => {
+    console.log(gameInProgress)
+    const host = findKey(gameInProgress.players, (player) => player.host)
+
+    const { gameTitle } = gameInProgress
+    setGameTitle(gameTitle)
     subscribeToGame(gameTitle)
     setState({
       myName: host,
       created: true,
-      ...game,
+      ...gameInProgress,
       lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
     })
   }
 
-  const handleCreateGame = (e) => {
+  const handleCreateGame = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const { myName, board, deck, selected, players } = state
-    let gameTitle = currentState.current.gameTitle
-    if (gameTitle === '') {
-      gameTitle = `${myName}'s game`
-    }
-    firebaseRefs.game = firestore.collection('games').doc(gameTitle)
-    firebaseRefs.game.set({
+    const officialTitle = !isEmpty(gameTitle) ? gameTitle : `${myName}'s game`
+    setGameTitle(officialTitle)
+    const game = firestore.collection('games').doc(officialTitle)
+    game.set({
       creator_uid: user.uid,
       players,
       board,
@@ -178,38 +214,22 @@ function Host() {
       selected,
       lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
     })
-    window.activeGameUpdater = window.setInterval(() => {
-      firebaseRefs.game.update({
+    const updateId = window.setInterval(() => {
+      game.update({
         lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
       })
     }, 30000)
-    firebaseRefs.actions = firebaseRefs.game.collection('actions')
-    firebaseRefs.actions.get().then((snapshot) => {
-      snapshot.forEach((doc) => {
-        console.log(doc.id, '=>', doc.data())
-      })
-    })
+    setActiveGameUpdater(updateId)
 
-    firebaseRefs.actions.onSnapshot((snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === 'added') {
-          const action = change.doc.data()
-          console.log(action)
-          processAction(action)
-          firebaseRefs.actions.doc(change.doc.id).delete()
-        }
-        if (change.type === 'removed') {
-          console.log('Removed action: ', change.doc.data())
-        }
-      })
-    })
+    const unsubscribe = actionsSubscribe(officialTitle)
+    setActionSubscription(unsubscribe)
 
     setState({
       created: true,
     })
   }
 
-  const handleSetName = (e) => {
+  const handleSetName = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setState({
       myName: user.nickname,
@@ -224,7 +244,7 @@ function Host() {
     })
   }
 
-  const markPointForDeclarer = (declarer) => {
+  const markPointForDeclarer = (declarer: string) => {
     if (!declarer) {
       return {}
     }
@@ -237,11 +257,14 @@ function Host() {
         },
       },
     })
-    const gameOver = newScore >= config.playingTo && declarer
+    const gameOver = !!(newScore >= config.playingTo && declarer)
     if (gameOver) {
       window.setTimeout(() => {
-        firebaseRefs.game.delete()
-        clearInterval(window.activeGameUpdater)
+        firestore
+          .collection('games')
+          .doc(gameTitle)
+          .delete()
+        clearInterval(activeGameUpdater)
       }, 3000)
     }
 
@@ -251,7 +274,7 @@ function Host() {
     }
   }
 
-  const processAction = (action) => {
+  const processAction = (action: Action) => {
     const { type, payload } = action
     const { players, declarer, board } = currentState.current
     switch (type) {
@@ -280,14 +303,13 @@ function Host() {
     }
   }
 
-  const removeSet = (selected, declarer) => {
+  const removeSet = (selected: string[], declarer: string) => {
     if (isSet(selected)) {
       const newScores = markPointForDeclarer(declarer)
-      const newState = {
+      const newState: Partial<MultiState> = {
         ...currentState.current,
         setFound: false,
         declarer: null,
-        timeDeclared: null,
         ...newScores,
         ...removeSelected(currentState.current),
       }
@@ -295,12 +317,12 @@ function Host() {
     }
   }
 
-  const setAndSendState = (update) => {
+  const setAndSendState = (update: Partial<MultiState>) => {
     setState(update)
-    firebaseRefs.game.update(update)
+    updateGame(gameTitle, update)
   }
 
-  const verifySelectedOnBoard = (board, selected) => {
+  const verifySelectedOnBoard = (board: string[], selected: string[]) => {
     for (let i = 0; i < selected.length; i++) {
       if (!board.includes(selected[i])) {
         return false
@@ -309,7 +331,7 @@ function Host() {
     return true
   }
 
-  const updateSelected = (newSelected, declarer) => {
+  const updateSelected = (newSelected: string[], declarer: string) => {
     const newState = {
       setFound: isSet(newSelected),
       selected: newSelected,
@@ -323,7 +345,7 @@ function Host() {
     }
   }
 
-  const { board, deck, selected, declarer, players, gameTitle, created, started, myName } = state
+  const { board, deck, selected, declarer, players, created, started, myName } = state
 
   if (userLoading) {
     return 'Loading...'
@@ -346,7 +368,7 @@ function Host() {
     return (
       <div className="container">
         <p>You are already hosting a game. Return to it?</p>
-        <button className="btn" onClick={() => reloadGame(gameInProgress)}>
+        <button className="btn" onClick={() => reloadGame()}>
           YES!
         </button>
         <button className="btn" onClick={handleRejectResume}>
@@ -393,7 +415,7 @@ function Host() {
             autoFocus
             placeholder={`${myName}'s game`}
             onChange={(e) => {
-              setState({ gameTitle: e.target.value })
+              setGameTitle(e.target.value)
             }}
             value={gameTitle}
           />

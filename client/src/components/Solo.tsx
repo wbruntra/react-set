@@ -68,7 +68,7 @@ const initialState = {
     },
   },
   gameStarted: false,
-  name: 'you',
+  myName: 'you',
   setFound: false,
   declarer: null,
   gameOver: false,
@@ -81,7 +81,7 @@ interface State extends GameState {
   selected: string[]
   cpuTimer?: number
   gameStarted: boolean
-  name: string
+  myName: string
   setFound: boolean
   declarer: null | string
   timeDeclared?: number
@@ -180,11 +180,11 @@ class Solo extends Component<any, State> {
     }
   }
 
-  updatePlayerScore = (name: string, delta: number): [Players, number] => {
+  updatePlayerScore = (myName: string, delta: number): [Players, number] => {
     const { players } = this.state
-    const newScore = players[name].score + delta
+    const newScore = players[myName].score + delta
     const newPlayers = update(players, {
-      [name]: {
+      [myName]: {
         $merge: {
           score: newScore,
         },
@@ -269,11 +269,11 @@ class Solo extends Component<any, State> {
   }
 
   handleCardClick = (card: string) => {
-    const { setFound, declarer, name } = this.state
+    const { setFound, declarer, myName } = this.state
     if (!setFound && declarer !== 'cpu') {
       const newSelected = cardToggle(card, this.state.selected)
       if (!declarer) {
-        this.performDeclare(name)
+        this.performDeclare(myName)
       }
       this.setState({
         selected: newSelected,
@@ -393,7 +393,7 @@ class Solo extends Component<any, State> {
           players={players}
           setFound={this.state.setFound}
           gameOver={this.state.gameOver}
-          myName={this.state.name}
+          myName={this.state.myName}
           resetGame={this.resetGame}
           solo={true}
           gameMode="versus"
