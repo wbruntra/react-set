@@ -51,7 +51,7 @@ function Board(props) {
 
   const borderColor = getBorderColor(props)
 
-  if (gameOver) {
+  if (gameOver !== '') {
     return <GameOver gameOver={gameOver} myName={myName} solo={solo} />
   }
 
@@ -75,7 +75,7 @@ function Board(props) {
             {topPlayers.map((info) => {
               return (
                 <div
-                  className={`shared-player player-name ${info.color} ${
+                  className={`shared-player player-name bg-${info.color} ${
                     info.name == declarer ? 'active-player' : ''
                   }`}
                   onClick={() => {
@@ -91,7 +91,7 @@ function Board(props) {
               {bottomPlayers.map((info) => {
                 return (
                   <div
-                    className={`shared-player player-name ${info.color} ${
+                    className={`shared-player player-name bg-${info.color} ${
                       info.name == declarer ? 'active-player' : ''
                     }`}
                     onClick={() => {
@@ -108,34 +108,38 @@ function Board(props) {
         </Fragment>
       )}
 
-      <div className="container" style={{ maxWidth: window.innerHeight - 48 }}>
+      <div className="board container" style={{ maxWidth: window.innerHeight - 48 }}>
         <div className="row">
           {board.map((card) => {
             return (
               <div
                 key={card}
-                className={`col s4 ${selected.includes(card) ? borderColor : ''}`}
+                className={`card-column col-4`}
                 onClick={() => {
                   props.handleCardClick(card)
                 }}
               >
                 <div
-                  className={`card ${
-                    setFound && selected.length === 3 && !selected.includes(card) ? 'blurry' : ''
-                  }`}
+                  className={`card-holder ${selected.includes(card) ? `bg-${borderColor}` : ''}`}
                 >
-                  <Card desc={card} />
+                  <div
+                    className={`card ${
+                      setFound && selected.length === 3 && !selected.includes(card) ? 'blurry' : ''
+                    }`}
+                  >
+                    <Card desc={card} />
+                  </div>
                 </div>
               </div>
             )
           })}
         </div>
         {!sharedDevice && gameMode !== 'puzzle' && (
-          <div className="row">
+          <div className="row text-center my-3">
             {map(players, (info, name) => {
               return (
                 <div key={name} className="col s4 m3">
-                  <span className={`player-name ${info.color}`}>
+                  <span className={`player-name bg-${info.color}`}>
                     {name}: {info.score}
                   </span>
                 </div>
@@ -146,9 +150,11 @@ function Board(props) {
 
         {props.handleRedeal && (
           <div className="row">
-            <button onClick={props.handleRedeal} className="btn">
-              Shuffle
-            </button>
+            <div className="col mt-3 mt-md-4">
+              <button onClick={props.handleRedeal} className="btn btn-primary">
+                Shuffle
+              </button>
+            </div>
           </div>
         )}
       </div>

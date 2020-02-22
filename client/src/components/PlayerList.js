@@ -5,7 +5,7 @@ function PlayerList({ isHost, players, setState }) {
   const host = findKey(players, (player) => player.host)
 
   return (
-    <div className="container">
+    <div className="container mt-4">
       <h4>Players:</h4>
       <ul className="collection">
         {map(players, (info, name) => {
@@ -20,7 +20,7 @@ function PlayerList({ isHost, players, setState }) {
       </ul>
       {isHost ? (
         <button
-          className="btn"
+          className="btn btn-primary"
           onClick={() => {
             setState({
               started: true,

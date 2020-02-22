@@ -21,14 +21,11 @@ function TopBar({ gameMode, deck, board, declarer, setsFound, startTime, elapsed
       return null
     case 'versus':
       return (
-        <div className="navbar-fixed">
-          <nav className={`orange ${declarer ? 'lighten-1' : 'darken-1'}`}>
-            <div
-              className="nav-wrapper"
-              style={{ display: 'flex', justifyContent: 'space-between' }}
-            >
-              <div>Sets: {sets}</div>
-              <div>{declarer && <>SET! {declarer}</>}</div>
+        <div className={`topbar py-2 bg-${declarer ? 'light' : 'dark'}-orange`}>
+          <nav className="container text-white">
+            <div className="row justify-content-between text-center">
+              <div className="col">Sets: {sets}</div>
+              <div className="col">{declarer && <>SET! {declarer}</>}</div>
             </div>
           </nav>
         </div>

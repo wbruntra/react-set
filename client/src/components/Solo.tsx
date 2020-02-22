@@ -17,6 +17,7 @@ import Slider from 'react-rangeslider'
 import axios from 'axios'
 import { connect } from 'react-redux'
 import Signout from './Signout'
+import InputRange from 'react-input-range'
 
 import { Players, GameState } from '../utils/models'
 
@@ -71,7 +72,7 @@ const initialState = {
   myName: 'you',
   setFound: false,
   declarer: null,
-  gameOver: false,
+  gameOver: '',
   cpuTurnInterval: 1000,
   startTime: new Date(),
 }
@@ -85,12 +86,12 @@ interface State extends GameState {
   setFound: boolean
   declarer: null | string
   timeDeclared?: number
-  gameOver: boolean
+  gameOver: string
   cpuTurnInterval: number
   cpuFound?: string[]
   startTime: Date
   undeclareId?: number
-  difficulty?: number
+  difficulty: number
   cpuAnimation?: number
 }
 
@@ -100,6 +101,7 @@ class Solo extends Component<any, State> {
     this.state = {
       ...cloneDeep(initialState),
       ...createGameState(),
+      difficulty: 2,
     }
   }
 
@@ -209,12 +211,12 @@ class Solo extends Component<any, State> {
   markPointForDeclarer = (declarer: string) => {
     const [newPlayers, newScore] = this.updatePlayerScore(declarer, 1)
     const { user } = this.props.userReducer
-    const gameOver = !!(newScore >= config.playingTo && declarer)
+    const gameOver = newScore >= config.playingTo ? declarer : ''
     const newState = {
       players: newPlayers,
       gameOver,
     }
-    if (gameOver) {
+    if (gameOver !== '') {
       const uid = (user && user.uid) || 'anonymous'
       const player_won = declarer == 'you' ? 1 : 0
       const total_time = Math.round((new Date().getTime() - this.state.startTime.getTime()) / 1000)
@@ -327,54 +329,61 @@ class Solo extends Component<any, State> {
       return 'Loading...'
     }
     if (!gameStarted) {
+      // GameSettings
       return (
-        <div className="container">
+        <div className="container main-content">
           {user !== null && <Signout />}
-          <h3>Solo Play vs. Computer</h3>
-          <h4 className="orange-text text-darken-4">Choose difficulty level:</h4>
+          <h3 className="text-center mb-4">Solo Play vs. Computer</h3>
+          <h4 className="mb-4">Choose difficulty level:</h4>
           <div className="row">
-            <div className="col s8 m4">
+            <div className="col-12">
               <form onSubmit={this.handleStartGame}>
-                <Slider
-                  min={1}
-                  max={5}
-                  orientation="horizontal"
-                  tooltip={true}
-                  value={Number(this.state.difficulty)}
-                  onChange={(difficulty) => {
-                    const cpuTurnInterval = calculateIntervalFromDifficulty(difficulty)
-                    window.localStorage.setItem('soloDifficulty', difficulty.toString())
-                    this.setState({
-                      cpuTurnInterval,
-                      difficulty,
-                    })
-                  }}
-                />
-                <input type="submit" value="Start" className="btn" />
+                <div className="col-10 col-md-6 mb-5">
+                  <InputRange
+                    maxValue={6}
+                    minValue={1}
+                    //@ts-ignore
+                    value={this.state.difficulty}
+                    //@ts-ignore
+                    onChange={(difficulty) => {
+                      //@ts-ignore
+                      const cpuTurnInterval = calculateIntervalFromDifficulty(difficulty)
+                      window.localStorage.setItem('soloDifficulty', difficulty.toString())
+                      //@ts-ignore
+                      this.setState({
+                        cpuTurnInterval,
+                        difficulty,
+                      })
+                    }}
+                  />
+                </div>
+                <input type="submit" value="Start" className="btn btn-primary" />
               </form>
               <p style={{ marginTop: '24px' }}>First to {config.playingTo} points is the winner</p>
             </div>
-            <div className="row">
-              <div style={{ marginTop: '48px' }} className="col s12">
-                <p>
+            <div className="row mt-4">
+              <ul style={{ listStyleType: 'none' }}>
+                <li className="mb-4">
                   <Link to="/local">Local Multiplayer</Link>
-                </p>
-                <p style={{ marginTop: '36px' }}>
+                </li>
+                <li>
                   <Link to="/">Back to Main Menu</Link>
-                </p>
-                {!user && (
-                  <Fragment>
-                    <hr />
-                    <p>To save your stats, sign in with your Google account.</p>
+                </li>
+              </ul>
+              <p className="mb-4"></p>
+              <p></p>
+              {!user && (
+                <Fragment>
+                  <hr />
+                  <p>To save your stats, sign in with your Google account.</p>
 
-                    <p>
-                      <button onClick={handleGoogleRedirect} className="btn">
-                        Sign in
-                      </button>
-                    </p>
-                  </Fragment>
-                )}
-              </div>
+                  <p>
+                    <button onClick={handleGoogleRedirect} className="btn">
+                      Sign in
+                    </button>
+                  </p>
+                </Fragment>
+              )}
             </div>
           </div>
         </div>
