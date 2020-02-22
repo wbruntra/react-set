@@ -52,7 +52,7 @@ const initialState = {
   setFound: false,
   declarer: null,
   timeDeclared: null,
-  gameOver: false,
+  gameOver: '',
   difficulty: 2,
   cpuTurnInterval: 1000,
   cpuFound: [],
@@ -105,7 +105,7 @@ class SharedDevice extends Component {
 
   markPointForDeclarer = (declarer) => {
     const [newPlayers, newScore] = this.updatePlayerScore(declarer, 1)
-    const gameOver = newScore >= config.playingTo && declarer
+    const gameOver = newScore >= config.playingTo ? declarer : ''
     const newState = {
       players: newPlayers,
       gameOver,
@@ -198,6 +198,7 @@ class SharedDevice extends Component {
 
   render() {
     const { board, deck, selected, declarer, players, numPlayers, setFound } = this.state
+    console.log(players)
     if (!numPlayers) {
       return (
         <div className="container">
