@@ -3,6 +3,7 @@ import Routes from './Routes'
 import { updateUser, updateNickname } from '../redux-helpers'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
+import { handleGoogleRedirect } from '../utils/helpers'
 
 import axios from 'axios'
 
@@ -29,7 +30,16 @@ function Stats(props) {
   }
 
   if (user === null) {
-    return <div>Sign in to view stats</div>
+    return (
+      <div className="container mt-4">
+        <p>Sign in to view stats</p>
+        <p>
+          <button onClick={handleGoogleRedirect} className="btn btn-info">
+            Sign in
+          </button>
+        </p>
+      </div>
+    )
   }
 
   return (

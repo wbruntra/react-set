@@ -1,1 +1,1 @@
-export const colors = ['light-blue', 'pink', 'amber', 'purple', 'light-green', 'orange']
+export const colors = ['light-blue', 'pink', 'amber', 'light-green', 'purple', 'orange']

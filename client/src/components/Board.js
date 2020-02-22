@@ -5,6 +5,26 @@ import Card from './Card'
 import GameOver from './GameOver'
 import TopBar from './TopBar'
 
+function SharedPlayersDisplay({ players, declarer, handlePlayerClick }) {
+  return (
+    <div className="row my-4 text-center justify-content-between">
+      {players.map((info) => {
+        return (
+          <div
+            className={`col-2 bg-${info.color} ${info.name == declarer ? 'active-player' : ''}`}
+            onClick={() => {
+              handlePlayerClick(info.name)
+            }}
+            key={info.name}
+          >
+            <p className="my-2 align-middle">{info.name == declarer ? 'SET!' : info.score}</p>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 function Board(props) {
   const [sets, setSets] = useState(null)
   const [windowHeight, setWindowHeight] = useState(window.innerHeight)
@@ -69,94 +89,75 @@ function Board(props) {
   return (
     <Fragment>
       <TopBar {...props} />
-      {sharedDevice && (
-        <Fragment>
-          <div className="player-buttons-container">
-            {topPlayers.map((info) => {
+      <div className="container">
+        {sharedDevice && (
+          <SharedPlayersDisplay
+            players={topPlayers}
+            declarer={declarer}
+            handlePlayerClick={props.handlePlayerClick}
+          />
+        )}
+
+        <div className="board">
+          <div className="row">
+            {board.map((card) => {
               return (
                 <div
-                  className={`shared-player player-name bg-${info.color} ${
-                    info.name == declarer ? 'active-player' : ''
-                  }`}
+                  key={card}
+                  className={`card-column col-4`}
                   onClick={() => {
-                    props.handlePlayerClick(info.name)
+                    props.handleCardClick(card)
                   }}
-                  key={info.name}
                 >
-                  <p className="center-align">{info.name == declarer ? 'SET!' : info.score}</p>
+                  <div
+                    className={`card-holder ${selected.includes(card) ? `bg-${borderColor}` : ''}`}
+                  >
+                    <div
+                      className={`card ${
+                        setFound && selected.length === 3 && !selected.includes(card)
+                          ? 'blurry'
+                          : ''
+                      }`}
+                    >
+                      <Card desc={card} />
+                    </div>
+                  </div>
                 </div>
               )
             })}
-            <div className="player-buttons-container bottom">
-              {bottomPlayers.map((info) => {
+          </div>
+          {!sharedDevice && gameMode !== 'puzzle' && (
+            <div className="row text-center my-3">
+              {map(players, (info, name) => {
                 return (
-                  <div
-                    className={`shared-player player-name bg-${info.color} ${
-                      info.name == declarer ? 'active-player' : ''
-                    }`}
-                    onClick={() => {
-                      props.handlePlayerClick(info.name)
-                    }}
-                    key={info.name}
-                  >
-                    <p className="center-align">{info.name == declarer ? 'SET!' : info.score}</p>
+                  <div key={name} className="col s4 m3">
+                    <span className={`player-name bg-${info.color}`}>
+                      {name}: {info.score}
+                    </span>
                   </div>
                 )
               })}
             </div>
-          </div>
-        </Fragment>
-      )}
+          )}
 
-      <div className="board container" style={{ maxWidth: window.innerHeight - 48 }}>
-        <div className="row">
-          {board.map((card) => {
-            return (
-              <div
-                key={card}
-                className={`card-column col-4`}
-                onClick={() => {
-                  props.handleCardClick(card)
-                }}
-              >
-                <div
-                  className={`card-holder ${selected.includes(card) ? `bg-${borderColor}` : ''}`}
-                >
-                  <div
-                    className={`card ${
-                      setFound && selected.length === 3 && !selected.includes(card) ? 'blurry' : ''
-                    }`}
-                  >
-                    <Card desc={card} />
-                  </div>
-                </div>
+          {sharedDevice && (
+            <SharedPlayersDisplay
+              players={bottomPlayers}
+              declarer={declarer}
+              handlePlayerClick={props.handlePlayerClick}
+            />
+          )}
+
+          {props.handleRedeal && (
+            <div className="row">
+              <div className="col mt-3 mt-md-4">
+                <button onClick={props.handleRedeal} className="btn btn-primary">
+                  Shuffle
+                </button>
               </div>
-            )
-          })}
-        </div>
-        {!sharedDevice && gameMode !== 'puzzle' && (
-          <div className="row text-center my-3">
-            {map(players, (info, name) => {
-              return (
-                <div key={name} className="col s4 m3">
-                  <span className={`player-name bg-${info.color}`}>
-                    {name}: {info.score}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-        )}
-
-        {props.handleRedeal && (
-          <div className="row">
-            <div className="col mt-3 mt-md-4">
-              <button onClick={props.handleRedeal} className="btn btn-primary">
-                Shuffle
-              </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </Fragment>
   )

@@ -17,7 +17,7 @@ function GameOver(props) {
     <div className="game-over container mt-5">
       {finalSound()}
       <div className="row justify-content-center">
-        <div className="col col-md-5">
+        <div className="col col-md-6">
           <div className="card shadow">
             <h3 className="text-center mt-3">GAME OVER!</h3>
             <p className="text-center mb-4">Winner: {gameOver} </p>

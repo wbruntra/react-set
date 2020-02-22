@@ -88,3 +88,9 @@ body {
     padding-right: 12px;
   }
 }
+
+@include media-breakpoint-up(xl) {
+  .container {
+    max-width: 960px;
+  }
+}

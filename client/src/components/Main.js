@@ -2,48 +2,55 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import Card from './Card'
 
-function Main() {
+function MenuItem(props) {
+  const { url, cardName, description } = props
   return (
-    <div className="container mt-md-5">
-      <h1 className="text-center mb-3 mb-md-5">Main Menu</h1>
+    <div className="col-9 col-md-4">
+      <Link to={url}>
+        <div className="card shadow-sm mb-3 mb-md-4">
+          <Card desc={cardName} />
+        </div>
+      </Link>
+      <p className="text-center">{description}</p>
+    </div>
+  )
+}
+
+function Main() {
+  const menuItems = [
+    {
+      url: '/solo',
+      cardName: '0012',
+      description: 'Solo/Local',
+    },
+    {
+      url: '/lobby',
+      cardName: '1121',
+      description: 'Join Game',
+    },
+    {
+      url: '/host',
+      cardName: '2200',
+      description: 'Host Game',
+    },
+  ]
+  return (
+    <div className="container mt-3 mt-md-5">
+      <h1 className="d-none d-md-block text-center mb-3 mb-md-5">Main Menu</h1>
       <div className="row justify-content-center">
-        <div className="col-9 col-md-4">
-          <Link to="/solo">
-            <div className="card shadow mb-3 mb-md-4">
-              <Card desc="0012" />
-            </div>
-          </Link>
-          <p className="text-center">Solo/Local</p>
-        </div>
-        <div className="col-9 col-md-4">
-          <Link to="/lobby">
-            <div className="card shadow mb-3 mb-md-4">
-              <Card desc="1121" />
-            </div>
-          </Link>
-          <p className="text-center">Join Game</p>
-        </div>
-        <div className="col-9 col-md-4">
-          <Link to="/host">
-            <div className="card shadow mb-3 mb-md-4">
-              <Card desc="2200" />
-            </div>
-          </Link>
-          <p className="text-center">Host Game</p>
-        </div>
+        {menuItems.map((item, i) => {
+          return <MenuItem key={`card-${i}`} {...item} />
+        })}
       </div>
-      {/* <div>
+      <div className="d-none d-md-block">
         <hr />
-          <p>
+        <p>
           <Link to="/rules">Rules</Link>
-
-          </p>
-          <p>
-          <Link to="/stats">Statistics</Link>
-
-          </p>
-
-      </div> */}
+        </p>
+        <p>
+          <Link to="/stats">View Statistics</Link>
+        </p>
+      </div>
     </div>
   )
 }
