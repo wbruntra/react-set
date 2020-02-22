@@ -1,8 +1,1 @@
-export const colors = [
-  ' light-blue lighten-3',
-  ' pink lighten-3',
-  ' amber accent-2',
-  ' purple darken-1',
-  ' light-green lighten-1',
-  ' orange accent-2',
-]
+export const colors = ['light-blue', 'pink', 'amber', 'purple', 'light-green', 'orange']

@@ -201,29 +201,26 @@ class SharedDevice extends Component {
     if (!numPlayers) {
       return (
         <div className="container">
-          <h4>Choose Number of Players</h4>
-          <div className="row">
-            <div className="col s12">
-              {[...Array(6).keys()].map((i) => {
-                return (
-                  <div key={`players-${i}`} className="col s4 player-number">
-                    <div
-                      onClick={() => {
-                        this.handleStartGame(i + 1)
-                      }}
-                      className="btn-large"
-                    >
-                      {i + 1}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-            <div>
-              <p>
-                <Link to="/solo">Back</Link>
-              </p>
-            </div>
+          <h4 className="mb-4">Choose Number of Players</h4>
+          <div className="row text-center">
+            {[...Array(6).keys()].map((i) => {
+              return (
+                <div
+                  key={`players-${i}`}
+                  onClick={() => {
+                    this.handleStartGame(i + 1)
+                  }}
+                  className="mb-3 col-4"
+                >
+                  <button className="btn btn-info">{i + 1}</button>
+                </div>
+              )
+            })}
+          </div>
+          <div>
+            <p>
+              <Link to="/solo">Back</Link>
+            </p>
           </div>
         </div>
       )

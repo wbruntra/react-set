@@ -36,7 +36,7 @@ export interface CommonState extends GameState {
   selected: string[]
   started: boolean
   myName: string
-  gameOver: boolean
+  gameOver: string
   setFound: boolean
   declarer: null | string
   undeclareId?: number

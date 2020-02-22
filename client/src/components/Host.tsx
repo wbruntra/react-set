@@ -68,7 +68,7 @@ function Host() {
     myName: '',
     setFound: false,
     declarer: null,
-    gameOver: false,
+    gameOver: '',
     ...initialGameState,
   })
 
@@ -257,7 +257,7 @@ function Host() {
         },
       },
     })
-    const gameOver = !!(newScore >= config.playingTo && declarer)
+    const gameOver = newScore >= config.playingTo ? declarer : ''
     if (gameOver) {
       window.setTimeout(() => {
         firestore
@@ -368,10 +368,10 @@ function Host() {
     return (
       <div className="container">
         <p>You are already hosting a game. Return to it?</p>
-        <button className="btn" onClick={() => reloadGame()}>
+        <button className="btn btn-primary mr-5" onClick={() => reloadGame()}>
           YES!
         </button>
-        <button className="btn" onClick={handleRejectResume}>
+        <button className="btn btn-danger" onClick={handleRejectResume}>
           No, remove it
         </button>
       </div>
@@ -384,18 +384,24 @@ function Host() {
         <Signout />
         <h4>Enter your nickname:</h4>
         <form onSubmit={handleSetName}>
-          <input
-            autoFocus
-            placeholder="hostname"
-            value={user.nickname}
-            onChange={(e) => {
-              dispatch(updateNickname(e.target.value))
-              window.localStorage.setItem('nickname', e.target.value)
-            }}
-          />
-          <button type="submit" className="btn">
-            Submit
-          </button>
+          <div className="row mb-4">
+            <div className="col-3 mr-4">
+              <input
+                autoFocus
+                placeholder="hostname"
+                value={user.nickname}
+                onChange={(e) => {
+                  dispatch(updateNickname(e.target.value))
+                  window.localStorage.setItem('nickname', e.target.value)
+                }}
+              />
+            </div>
+            <div className="col-3">
+              <button type="submit" className="btn btn-primary">
+                Submit
+              </button>
+            </div>
+          </div>
         </form>
         <div>
           <p>
@@ -408,20 +414,24 @@ function Host() {
 
   if (!created) {
     return (
-      <div className="container">
+      <div className="container mt-4">
         <h4>Name your game:</h4>
         <form onSubmit={handleCreateGame}>
-          <input
-            autoFocus
-            placeholder={`${myName}'s game`}
-            onChange={(e) => {
-              setGameTitle(e.target.value)
-            }}
-            value={gameTitle}
-          />
-          <button type="submit" className="btn">
-            Create
-          </button>
+          <div className="mb-3">
+            <input
+              autoFocus
+              placeholder={`${myName}'s game`}
+              onChange={(e) => {
+                setGameTitle(e.target.value)
+              }}
+              value={gameTitle}
+            />
+          </div>
+          <div>
+            <button type="submit" className="btn btn-primary">
+              Create
+            </button>
+          </div>
         </form>
       </div>
     )
