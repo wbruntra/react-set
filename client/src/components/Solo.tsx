@@ -370,22 +370,21 @@ class Solo extends Component<any, State> {
                   <Link to="/">Back to Main Menu</Link>
                 </li>
               </ul>
-              <p className="mb-4"></p>
-              <p></p>
-              {!user && (
-                <Fragment>
-                  <hr />
-                  <p>To save your stats, sign in with your Google account.</p>
-
-                  <p>
-                    <button onClick={handleGoogleRedirect} className="btn">
-                      Sign in
-                    </button>
-                  </p>
-                </Fragment>
-              )}
             </div>
           </div>
+          {!user && (
+            <div className="row mt-4">
+              <div>
+                <p>To save your game statistics, sign in with your Google account.</p>
+
+                <p>
+                  <button onClick={handleGoogleRedirect} className="btn btn-info">
+                    Sign in
+                  </button>
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       )
     }
