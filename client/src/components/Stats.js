@@ -28,16 +28,14 @@ function Stats(props) {
     return 'Loading...'
   }
 
-  console.log(stats)
-
   if (user === null) {
     return <div>Sign in to view stats</div>
   }
 
   return (
-    <div className="container">
+    <div className="container mt-2 mt-md-4">
       <h3>Statistics</h3>
-      <table className="striped">
+      <table className="table table-striped">
         <thead>
           <tr>
             <th>Difficulty</th>
