@@ -26,6 +26,7 @@
     "mariadb": "^2.1.3",
     "morgan": "^1.9.1",
     "nodemon": "^1.19.4",
+    "react-bootstrap": "^1.0.0-beta.16",
     "sequelize": "^5.21.2",
     "socket.io": "^2.3.0"
   },

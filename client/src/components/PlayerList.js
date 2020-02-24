@@ -23,7 +23,7 @@ function PlayerList({ isHost, players, setState }) {
           className="btn btn-primary"
           onClick={() => {
             setState({
-              started: true,
+              gameStarted: true,
             })
           }}
         >

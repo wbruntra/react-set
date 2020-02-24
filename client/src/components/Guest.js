@@ -12,6 +12,7 @@ import Modal from './Modal'
 import Signout from './Signout'
 import Board from './Board'
 import PlayerList from './PlayerList'
+import ProgressBar from 'react-bootstrap/ProgressBar'
 
 function Guest(props) {
   const userReducer = useSelector((state) => state.user)
@@ -28,7 +29,7 @@ function Guest(props) {
     board: [],
     selected: [],
     pending: null,
-    started: false,
+    gameStarted: false,
   })
   const [myName, setMyName] = useState('')
   const [modalDelayMsg, setDelayMsg] = useState()
@@ -81,10 +82,11 @@ function Guest(props) {
       return
     }
     setMyName(nameInput)
-    sendAction({
+    const action = {
       type: 'join',
       payload: { name: nameInput, uid: user.uid },
-    })
+    }
+    sendAction(action)
   }
 
   const processUpdate = (doc) => {
@@ -93,8 +95,13 @@ function Guest(props) {
       return
     }
     console.log('Updating', updatedState)
+    // Don't mess with selected cards unless necessary
+    const newSelected = isEmpty(updatedState.declarer)
+      ? currentState.current.selected
+      : updatedState.selected
     setState({
       ...updatedState,
+      selected: newSelected,
       popupVisible: false,
     })
   }
@@ -149,7 +156,7 @@ function Guest(props) {
     }
   }, [])
 
-  const { board, deck, selected, declarer, players, popupVisible, started } = state
+  const { board, deck, selected, declarer, players, popupVisible } = state
 
   if (userReducer.loading) {
     return 'Loading profile...'
@@ -160,7 +167,7 @@ function Guest(props) {
       <div className="container">
         <p>To join a game, sign in with your Google account.</p>
         <p>
-          <button onClick={handleGoogleRedirect} className="btn">
+          <button onClick={handleGoogleRedirect} className="btn btn-info">
             Sign in
           </button>
         </p>
@@ -187,22 +194,24 @@ function Guest(props) {
               window.localStorage.setItem('nickname', e.target.value)
             }}
           />
-          <input className="btn" type="submit" value="Join" />
+          <input className="btn btn-primary ml-3" type="submit" value="Join" />
         </form>
       </div>
     )
   }
 
-  if (!started) {
+  const { setFound, gameOver, gameStarted } = currentState.current
+
+  if (!gameStarted) {
     return <PlayerList players={players} isHost={false} />
   }
 
   return (
     <React.Fragment>
       <Modal visible={state.pending && popupVisible}>
-        <p className="flow-text center-align">SET!</p>
-        <div className="progress">
-          <div className="indeterminate" style={{ width: '30%' }} />
+        <p className="text-center">SET!</p>
+        <div>
+          <ProgressBar animated now={100} />
         </div>
       </Modal>
       <Board
@@ -213,8 +222,8 @@ function Guest(props) {
         handleCardClick={handleCardClick}
         // handleDeclare={this.handleDeclare}
         players={players}
-        setFound={state.setFound}
-        gameOver={state.gameOver}
+        setFound={setFound}
+        gameOver={gameOver}
         // syncing={this.state.syncing}
         myName={myName}
         gameMode="versus"

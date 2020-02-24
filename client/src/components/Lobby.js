@@ -41,6 +41,7 @@ class Lobby extends Component {
 
   render() {
     const { games, init } = this.state
+    console.log(games)
     if (!init) {
       return null
     }
@@ -59,7 +60,7 @@ class Lobby extends Component {
         {activeGames.length === 0 ? (
           <Fragment>
             <div className="row">
-              <div className="col s8 offset-s2 m6 offset-m3">
+              <div className="col-8 col-md-6">
                 <div className="card-panel teal" style={{ marginTop: window.innerHeight * 0.2 }}>
                   <span className="white-text">There are currently no active games.</span>
                 </div>
@@ -67,7 +68,9 @@ class Lobby extends Component {
                   Click <Link to="/host">here</Link> to host one
                 </p>
                 <p>
-                  <Link to="/">Back</Link>
+                  <Link className="btn btn-primary" to="/">
+                    Back
+                  </Link>
                 </p>
               </div>
             </div>

@@ -12,7 +12,6 @@ import firestore from '../firestore'
 import Signout from './Signout'
 import Board from './Board'
 import {
-  handleGoogleSignIn,
   handleGoogleRedirect,
   makeDeck,
   cardToggle,
@@ -34,13 +33,18 @@ const config = {
 
 // const firebaseRefs = {}
 
+interface FirebaseRefs {
+  game: any
+  actions: any
+}
+
 function Host() {
   const userReducer = useSelector((state: any) => state.user)
   const { user, loading: userLoading } = userReducer
   const dispatch = useDispatch()
 
   const myFire = useRef({})
-  const firebaseRefs = myFire.current
+  const firebaseRefs = myFire.current as FirebaseRefs
 
   const initialDeck = makeDeck()
   const initialGameState: {
@@ -62,9 +66,10 @@ function Host() {
   const [actionsSubscription, setActionSubscription] = useState()
 
   const [state, setFullState] = useState<MultiState>({
+    gameTitle: '',
     players: {},
     created: false,
-    started: false,
+    gameStarted: false,
     myName: '',
     setFound: false,
     declarer: null,
@@ -76,7 +81,7 @@ function Host() {
   currentState.current = state
 
   useEffect(() => {
-    if (!isEmpty(user.uid)) {
+    if (user && !isEmpty(user.uid)) {
       firestore
         .collection('games')
         .where('creator_uid', '==', user.uid)
@@ -107,7 +112,7 @@ function Host() {
         gameSubscription()
       }
     }
-  }, [actionsSubscription])
+  }, [gameSubscription, actionsSubscription])
 
   useEffect(() => {
     return function() {
@@ -152,13 +157,18 @@ function Host() {
     setAndSendState(newState)
   }
 
-  const actionsSubscribe = (id: string) => {
-    const actions = firestore
-      .collection('games')
-      .doc(id)
-      .collection('actions')
-    return actions.onSnapshot((snapshot) => {
-      snapshot.docChanges().forEach((change) => {
+  const actionsSubscribe = (reference: string | any) => {
+    let doc
+    if (typeof reference === 'string') {
+      doc = firestore.collection('games').doc(reference)
+    } else {
+      doc = reference
+    }
+    const actions = doc.collection('actions')
+    console.log(actions)
+    actions.onSnapshot((snapshot: any) => {
+      console.log('got action snapshot')
+      snapshot.docChanges().forEach((change: any) => {
         if (change.type === 'added') {
           const action = change.doc.data() as Action
           console.log(action)
@@ -170,27 +180,40 @@ function Host() {
         }
       })
     })
+    return actions
+    const actionSubscription = actions.onSnapshot((snapshot: any) => {
+      console.log('got snapshot')
+      snapshot.docChanges().forEach((change: any) => {
+        if (change.type === 'added') {
+          const action = change.doc.data() as Action
+          console.log(action)
+          processAction(action)
+          actions.doc(change.doc.id).delete()
+        }
+        if (change.type === 'removed') {
+          console.log('Removed action: ', change.doc.data())
+        }
+      })
+    })
+    setActionSubscription(actions)
   }
 
-  const subscribeToGame = (gameTitle: string) => {
-    const game = firestore.collection('games').doc(gameTitle)
+  const subscribeToGame = async (gameTitle: string) => {
+    firebaseRefs.game = firestore.collection('games').doc(gameTitle)
     const gameUpdateId = window.setInterval(() => {
-      game.update({
-        lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
-      })
+      updateGame(firebaseRefs.game, {})
     }, 30000)
     setActiveGameUpdater(gameUpdateId)
 
-    const unsubscribe = actionsSubscribe(gameTitle)
+    const unsubscribe = actionsSubscribe(firebaseRefs.game)
     setActionSubscription(unsubscribe)
   }
 
   const reloadGame = () => {
-    console.log(gameInProgress)
     const host = findKey(gameInProgress.players, (player) => player.host)
 
     const { gameTitle } = gameInProgress
-    setGameTitle(gameTitle)
+    setState({ gameTitle })
     subscribeToGame(gameTitle)
     setState({
       myName: host,
@@ -202,27 +225,46 @@ function Host() {
 
   const handleCreateGame = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const { myName, board, deck, selected, players } = state
+    const { myName, board, deck, selected, players, gameOver } = state
     const officialTitle = !isEmpty(gameTitle) ? gameTitle : `${myName}'s game`
-    setGameTitle(officialTitle)
-    const game = firestore.collection('games').doc(officialTitle)
-    game.set({
+    setState({ gameTitle: officialTitle })
+    firebaseRefs.game = firestore.collection('games').doc(officialTitle)
+    firebaseRefs.game.set({
       creator_uid: user.uid,
       players,
       board,
       deck,
       selected,
+      gameOver,
       lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
     })
     const updateId = window.setInterval(() => {
-      game.update({
+      firebaseRefs.game.update({
         lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
       })
     }, 30000)
     setActiveGameUpdater(updateId)
 
-    const unsubscribe = actionsSubscribe(officialTitle)
-    setActionSubscription(unsubscribe)
+    firebaseRefs.actions = actionsSubscribe(officialTitle)
+
+    console.log(firebaseRefs.actions)
+    // firebaseRefs.actions.onSnapshot((snapshot: any) => {
+    //   console.log('got action snapshot')
+    //   snapshot.docChanges().forEach((change: any) => {
+    //     if (change.type === 'added') {
+    //       const action = change.doc.data() as Action
+    //       console.log(action)
+    //       processAction(action)
+    //       firebaseRefs.actions.doc(change.doc.id).delete()
+    //     }
+    //     if (change.type === 'removed') {
+    //       console.log('Removed action: ', change.doc.data())
+    //     }
+    //   })
+    // })
+
+    // const unsubscribe = actionsSubscribe(officialTitle)
+    // setActionSubscription(unsubscribe)
 
     setState({
       created: true,
@@ -318,8 +360,9 @@ function Host() {
   }
 
   const setAndSendState = (update: Partial<MultiState>) => {
+    console.log('updating', currentState.current.gameTitle)
     setState(update)
-    updateGame(gameTitle, update)
+    updateGame(firebaseRefs.game, update)
   }
 
   const verifySelectedOnBoard = (board: string[], selected: string[]) => {
@@ -345,7 +388,7 @@ function Host() {
     }
   }
 
-  const { board, deck, selected, declarer, players, created, started, myName } = state
+  const { board, deck, selected, declarer, players, created, gameStarted, myName } = state
 
   if (userLoading) {
     return 'Loading...'
@@ -353,10 +396,10 @@ function Host() {
 
   if (isEmpty(user)) {
     return (
-      <div className="container">
+      <div className="container mt-4">
         <p>To host a game, sign in with your Google account.</p>
         <p>
-          <button onClick={handleGoogleRedirect} className="btn">
+          <button onClick={handleGoogleRedirect} className="btn btn-info">
             Sign in
           </button>
         </p>
@@ -437,7 +480,7 @@ function Host() {
     )
   }
 
-  if (!started) {
+  if (!gameStarted) {
     return <PlayerList isHost={true} players={players} setState={setAndSendState} />
   }
 

@@ -191,8 +191,13 @@ export const handleGoogleRedirect = () => {
   firebase.auth().signInWithRedirect(provider)
 }
 
-export const updateGame = (id: string, data: any) => {
-  const game = firestore.collection('games').doc(id)
+export const updateGame = (reference: string | any, data: any) => {
+  let game
+  if (typeof reference === 'string') {
+    game = firestore.collection('games').doc(reference)
+  } else {
+    game = reference
+  }
   game.update({
     ...data,
     lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
