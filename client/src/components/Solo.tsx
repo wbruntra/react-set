@@ -10,7 +10,7 @@ import {
   nameThird,
   handleGoogleRedirect,
 } from '../utils/helpers'
-import { shuffle, cloneDeep } from 'lodash'
+import { shuffle, cloneDeep, isEmpty } from 'lodash'
 import { colors } from '../config'
 import update from 'immutability-helper'
 import Slider from 'react-rangeslider'
@@ -216,7 +216,7 @@ class Solo extends Component<any, SoloState> {
       players: newPlayers,
       gameOver,
     }
-    if (gameOver !== '') {
+    if (!isEmpty(gameOver)) {
       const uid = (user && user.uid) || 'anonymous'
       const player_won = declarer == 'you' ? 1 : 0
       const total_time = Math.round((new Date().getTime() - this.state.startTime.getTime()) / 1000)

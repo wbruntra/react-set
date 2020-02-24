@@ -68,7 +68,7 @@ function Board(props) {
 
   const borderColor = getBorderColor(props)
 
-  if (gameOver !== '') {
+  if (!isEmpty(gameOver)) {
     return <GameOver gameOver={gameOver} myName={myName} solo={solo} />
   }
 
