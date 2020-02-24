@@ -19,7 +19,7 @@ import { connect } from 'react-redux'
 import Signout from './Signout'
 import InputRange from 'react-input-range'
 
-import { Players, GameState } from '../utils/models'
+import { Players, GameState, SoloState } from '../utils/models'
 
 const debugging = false
 
@@ -72,30 +72,30 @@ const initialState = {
   myName: 'you',
   setFound: false,
   declarer: null,
-  gameOver: '',
+  gameOver: null,
   cpuTurnInterval: 1000,
   startTime: new Date(),
 }
 
-interface State extends GameState {
-  players: Players
-  selected: string[]
-  cpuTimer?: number
-  gameStarted: boolean
-  myName: string
-  setFound: boolean
-  declarer: null | string
-  timeDeclared?: number
-  gameOver: string
-  cpuTurnInterval: number
-  cpuFound?: string[]
-  startTime: Date
-  undeclareId?: number
-  difficulty: number
-  cpuAnimation?: number
-}
+// interface State extends GameState {
+//   players: Players
+//   selected: string[]
+//   cpuTimer?: number
+//   gameStarted: boolean
+//   myName: string
+//   setFound: boolean
+//   declarer: null | string
+//   timeDeclared?: number
+//   gameOver: string
+//   cpuTurnInterval: number
+//   cpuFound?: string[]
+//   startTime: Date
+//   undeclareId?: number
+//   difficulty: number
+//   cpuAnimation?: number
+// }
 
-class Solo extends Component<any, State> {
+class Solo extends Component<any, SoloState> {
   constructor(props: any) {
     super(props)
     this.state = {

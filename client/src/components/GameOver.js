@@ -27,11 +27,13 @@ function GameOver(props) {
                   <Link to="/">Main</Link>
                 </p>
               </div>
-              <div className="col-4">
-                <p className="text-center">
-                  {solo && user !== null && <Link to="/stats">Stats</Link>}
-                </p>
-              </div>
+              {solo && user !== null && (
+                <div className="col-4">
+                  <p className="text-center">
+                    <Link to="/stats">Stats</Link>
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

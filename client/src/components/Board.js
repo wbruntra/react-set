@@ -4,6 +4,7 @@ import { countSets } from '../utils/helpers'
 import Card from './Card'
 import GameOver from './GameOver'
 import TopBar from './TopBar'
+import Modal from 'react-bootstrap/Modal'
 
 function SharedPlayersDisplay({ players, declarer, handlePlayerClick }) {
   return (
@@ -58,10 +59,6 @@ function Board(props) {
     setSets(countSets(board, { debug: process.env.NODE_ENV !== 'production' }))
   }, [board])
 
-  if (isEmpty(players) || !Object.keys(players).includes(myName)) {
-    return null
-  }
-
   const getBorderColor = ({ declarer, players }) => {
     if (declarer) {
       return get(players, `${declarer}.color`, '')
@@ -88,6 +85,28 @@ function Board(props) {
 
   return (
     <Fragment>
+      {(isEmpty(players) || !Object.keys(players).includes(myName)) && (
+        <Modal show>
+          <Modal.Header>
+            <Modal.Title>Waiting to join...</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <h4>Players:</h4>
+            <ul className="collection">
+              {map(players, (info, name) => {
+                return (
+                  <li key={name} className="collection-item">
+                    <span className={`player-name`}>
+                      {name} {info.host && '(host)'}
+                    </span>
+                  </li>
+                )
+              })}
+            </ul>
+          </Modal.Body>
+        </Modal>
+      )}
+
       <TopBar {...props} />
       <div className="container">
         {sharedDevice && (

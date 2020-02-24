@@ -34,16 +34,16 @@ export interface MultiPlayers {
 
 export interface CommonState extends GameState {
   selected: string[]
-  started: boolean
+  gameStarted: boolean
   myName: string
-  gameOver: string
+  gameOver: string | null
   setFound: boolean
   declarer: null | string
   undeclareId?: number
   timeDeclared?: number
 }
 
-interface SoloState extends CommonState {
+export interface SoloState extends CommonState {
   players: Players
   startTime: Date
   cpuTurnInterval: number
@@ -54,6 +54,7 @@ interface SoloState extends CommonState {
 }
 
 export interface MultiState extends CommonState {
+  gameTitle: string
   players: MultiPlayers
   created: boolean
 }
