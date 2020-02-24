@@ -8,11 +8,13 @@ import 'firebase/firestore'
 import { updateNickname } from '../redux-helpers'
 import { cardToggle, isSet, handleGoogleSignIn, handleGoogleRedirect } from '../utils/helpers'
 import firestore from '../firestore'
-import Modal from './Modal'
+// import Modal from './Modal'
 import Signout from './Signout'
 import Board from './Board'
 import PlayerList from './PlayerList'
+import Modal from 'react-bootstrap/Modal'
 import ProgressBar from 'react-bootstrap/ProgressBar'
+import Spinner from 'react-bootstrap/Spinner'
 
 function Guest(props) {
   const userReducer = useSelector((state) => state.user)
@@ -48,12 +50,24 @@ function Guest(props) {
     })
   }
 
+  const resetLocalSelected = () => {
+    const { declarer, selected } = currentState.current
+    if (isEmpty(declarer) && selected.length === 3 && !isSet(selected)) {
+      setState({
+        selected: [],
+      })
+    }
+  }
+
   const handleCardClick = (card) => {
     const { declarer, selected } = currentState.current
     if (declarer) {
       return
     }
     const newSelected = cardToggle(card, selected)
+    if (newSelected.length > 3) {
+      return
+    }
     const newState = {}
     if (newSelected.length === 3) {
       if (isSet(newSelected)) {
@@ -61,11 +75,12 @@ function Guest(props) {
           type: 'found',
           payload: { selected: newSelected, name: myName },
         }
+        console.log('Found set, sending...')
         sendAction(action)
         newState.popupVisible = true
       } else {
         console.log('Bad set selected!')
-        window.setTimeout(this.resetLocalSelected, 1000)
+        window.setTimeout(resetLocalSelected, 1000)
       }
     }
 
@@ -91,14 +106,15 @@ function Guest(props) {
 
   const processUpdate = (doc) => {
     const updatedState = { ...doc.data() }
+    const { selected: mySelected } = currentState.current
     if (isEmpty(updatedState)) {
       return
     }
     console.log('Updating', updatedState)
     // Don't mess with selected cards unless necessary
-    const newSelected = isEmpty(updatedState.declarer)
-      ? currentState.current.selected
-      : updatedState.selected
+    const newSelected =
+      mySelected.length < 3 && isEmpty(updatedState.declarer) ? mySelected : updatedState.selected
+    console.log('New selected', newSelected)
     setState({
       ...updatedState,
       selected: newSelected,
@@ -107,6 +123,7 @@ function Guest(props) {
   }
 
   const sendAction = (action) => {
+    console.log('Creating on', firebaseRefs.actions)
     firebaseRefs.actions
       .add({
         ...action,
@@ -208,11 +225,16 @@ function Guest(props) {
 
   return (
     <React.Fragment>
-      <Modal visible={state.pending && popupVisible}>
-        <p className="text-center">SET!</p>
-        <div>
-          <ProgressBar animated now={100} />
-        </div>
+      <Modal show={state.pending && popupVisible}>
+        <Modal.Header>
+          <Modal.Title>Submitting action...</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className="text-center">SET!</p>
+          <div className="text-center">
+            <Spinner animation="border" />
+          </div>
+        </Modal.Body>
       </Modal>
       <Board
         board={board}
