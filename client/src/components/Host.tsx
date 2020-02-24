@@ -302,10 +302,7 @@ function Host() {
     const gameOver = newScore >= config.playingTo ? declarer : ''
     if (gameOver) {
       window.setTimeout(() => {
-        firestore
-          .collection('games')
-          .doc(gameTitle)
-          .delete()
+        firebaseRefs.game.delete()
         clearInterval(activeGameUpdater)
       }, 3000)
     }
