@@ -199,19 +199,23 @@ function Guest(props) {
       <div className="container">
         <Signout />
 
-        <h4>Choose nickname</h4>
+        <h4 className="mb-3">Choose your nickname:</h4>
         <form onSubmit={handleSetName}>
-          <input
-            autoFocus
-            type="text"
-            placeholder="your name"
-            value={user.nickname}
-            onChange={(e) => {
-              dispatch(updateNickname(e.target.value))
-              window.localStorage.setItem('nickname', e.target.value)
-            }}
-          />
-          <input className="btn btn-primary ml-3" type="submit" value="Join" />
+          <div className="col-12 col-md-4">
+            <input
+              autoFocus
+              type="text"
+              placeholder="your name"
+              value={user.nickname}
+              onChange={(e) => {
+                dispatch(updateNickname(e.target.value))
+                window.localStorage.setItem('nickname', e.target.value)
+              }}
+            />
+          </div>
+          <div className="col-12 col-md-4">
+            <input className="btn btn-primary mt-3 ml-md-3" type="submit" value="Join" />
+          </div>
         </form>
       </div>
     )

@@ -94,3 +94,9 @@ body {
     max-width: 960px;
   }
 }
+
+.card {
+  &.available-game {
+    min-height: 80px;
+  }
+}
