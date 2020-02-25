@@ -425,7 +425,7 @@ function Host() {
         <h4>Enter your nickname:</h4>
         <form onSubmit={handleSetName}>
           <div className="row mb-4">
-            <div className="col-3 mr-4">
+            <div className="col-md-3 mb-3 mr-md-4">
               <input
                 autoFocus
                 placeholder="hostname"
@@ -436,7 +436,7 @@ function Host() {
                 }}
               />
             </div>
-            <div className="col-3">
+            <div className="col-md-3">
               <button type="submit" className="btn btn-primary">
                 Submit
               </button>

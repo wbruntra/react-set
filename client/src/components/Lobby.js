@@ -77,20 +77,26 @@ class Lobby extends Component {
           </Fragment>
         ) : (
           <Fragment>
-            <h4 className="center-align">Available games</h4>
-            <div className="row center-align">
+            <h4 className="text-center my-4">Available games</h4>
+            <div className="row align-content-center">
               {activeGames.map((game, i) => {
                 return (
-                  <div className="col s6 m4" key={game.name}>
-                    <Link to={`/guest/${game.name}`}>
-                      <div className="card-panel">{game.name}</div>
-                    </Link>
+                  <div className="col-6 col-md-4" key={game.name}>
+                    <div className="card available-game">
+                      <div className="my-auto text-center">
+                        <Link to={`/guest/${game.name}`}>{game.name}</Link>
+                      </div>
+                    </div>
                   </div>
                 )
               })}
-              <p>
-                <Link to="/">Back</Link>
-              </p>
+            </div>
+            <div className="row">
+              <div className="col mt-4">
+                <Link className="btn btn-primary" to="/">
+                  Back
+                </Link>
+              </div>
             </div>
           </Fragment>
         )}
