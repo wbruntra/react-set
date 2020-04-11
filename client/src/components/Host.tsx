@@ -59,7 +59,7 @@ function Host() {
     selected: [],
   }
 
-  const [gameInProgress, setGameInProgress] = useState()
+  const [gameInProgress, setGameInProgress] = useState<object | undefined>()
   const [gameTitle, setGameTitle] = useState('')
   const [activeGameUpdater, setActiveGameUpdater] = useState()
   const [gameSubscription, setGameSubscription] = useState()
@@ -106,9 +106,11 @@ function Host() {
   useEffect(() => {
     return () => {
       if (actionsSubscription) {
+        // @ts-ignore
         actionsSubscription()
       }
       if (gameSubscription) {
+        // @ts-ignore
         gameSubscription()
       }
     }
@@ -128,6 +130,7 @@ function Host() {
   }
 
   const handleRejectResume = () => {
+    // @ts-ignore
     const { gameTitle } = gameInProgress
     firestore
       .collection('games')
@@ -203,6 +206,7 @@ function Host() {
     const gameUpdateId = window.setInterval(() => {
       updateGame(firebaseRefs.game, {})
     }, 30000)
+    // @ts-ignore
     setActiveGameUpdater(gameUpdateId)
 
     const unsubscribe = actionsSubscribe(firebaseRefs.game)
@@ -210,15 +214,18 @@ function Host() {
   }
 
   const reloadGame = () => {
+    // @ts-ignore
     const host = findKey(gameInProgress.players, (player) => player.host)
-
+    // @ts-ignore
     const { gameTitle } = gameInProgress
     setState({ gameTitle })
     subscribeToGame(gameTitle)
+
     setState({
       myName: host,
       created: true,
       ...gameInProgress,
+      // @ts-ignore
       lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
     })
   }
@@ -243,6 +250,8 @@ function Host() {
         lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
       })
     }, 30000)
+    // @ts-ignore
+
     setActiveGameUpdater(updateId)
 
     firebaseRefs.actions = actionsSubscribe(officialTitle)

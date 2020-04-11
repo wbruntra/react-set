@@ -352,6 +352,7 @@ class Solo extends Component<any, SoloState> {
                       //@ts-ignore
                       this.setState({
                         cpuTurnInterval,
+                        // @ts-ignore
                         difficulty,
                       })
                     }}
