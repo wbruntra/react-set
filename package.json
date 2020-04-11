@@ -12,7 +12,7 @@
     "server:flask": "bash ./run-py.sh",
     "server:dev": "cross-env NODE_ENV=local nodemon server.js",
     "predeploy": "cd client && npm run build",
-    "deploy": "gh-pages -d client/build -b rp-pages -e client/build"
+    "deploy": "gh-pages -d client/build -b rp-pages -e client/"
   },
   "keywords": [],
   "author": "",
