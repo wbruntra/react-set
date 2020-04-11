@@ -1,0 +1,10 @@
+.game-card {
+  display: flex;
+  align-items: center;
+}
+
+.shape {
+  width: 33%;
+  height: auto;
+  margin: auto;
+}
