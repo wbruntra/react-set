@@ -1,6 +1,7 @@
 {
   "name": "client",
   "version": "0.1.0",
+  "homepage": "https://set.springleaf.top",
   "private": true,
   "dependencies": {
     "@firebase/util": "^0.2.30",
