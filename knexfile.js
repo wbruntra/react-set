@@ -1,11 +1,11 @@
-// Update with your config settings.
+const secrets = require('./secrets')
 
 module.exports = {
   development: {
     client: 'mysql2',
     connection: {
       database: 'reactdb',
-      user: 'root',
+      user: 'william',
       password: 'battle',
       port: 3366,
     },
@@ -14,28 +14,12 @@ module.exports = {
     },
   },
 
-  staging: {
-    client: 'postgresql',
-    connection: {
-      database: 'my_db',
-      user: 'username',
-      password: 'password',
-    },
-    pool: {
-      min: 2,
-      max: 10,
-    },
-    migrations: {
-      tableName: 'knex_migrations',
-    },
-  },
-
   production: {
-    client: 'postgresql',
+    client: 'mysql2',
     connection: {
-      database: 'my_db',
-      user: 'username',
-      password: 'password',
+      database: secrets.DB_NAME,
+      user: secrets.DB_USER,
+      password: secrets.DB_PASSWORD,
     },
     pool: {
       min: 2,
