@@ -4,11 +4,11 @@ const getConfig = () => {
   switch (process.env.NODE_ENV) {
     case 'local':
       return {
-        dbConnection: 'mariadb://root:devpw@127.0.0.1:3306/reactdb',
+        dbConnection: 'mysql://root:devpw@127.0.0.1:3306/reactdb',
       }
     default:
       return {
-        dbConnection: `mariadb://${DB_USER}:${DB_PASSWORD}@127.0.0.1:3306/${DB_NAME}`,
+        dbConnection: `mysql://${DB_USER}:${DB_PASSWORD}@127.0.0.1:3306/${DB_NAME}`,
       }
   }
 }
