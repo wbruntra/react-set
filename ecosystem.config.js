@@ -3,7 +3,7 @@ const secrets = require('./secrets')
 
 module.exports = {
   name: 'react-set',
-  script: `${BASE}/react-set/server.js`,
+  script: `${BASE}/react-set-server/server.js`,
   instances: 1,
   autorestart: true,
   watch: false,
