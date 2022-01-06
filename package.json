@@ -7,10 +7,8 @@
     "setup": "cd client && yarn install",
     "build": "cd client && npm run build",
     "dev": "concurrently \"npm run start --prefix client\" \"npm run server:dev\"",
-    "server": "dev_appserver.py .",
-    "dev:db": "cd devdb; docker-compose up -d",
-    "server:flask": "bash ./run-py.sh",
-    "server:dev": "cross-env NODE_ENV=local nodemon server.js",
+    "dev:db": "cd db; docker-compose up -d",
+    "server:dev": "nodemon server.js",
     "predeploy": "cd client && npm run build",
     "deploy": "gh-pages -d client/build -b rp-pages -e client/"
   },

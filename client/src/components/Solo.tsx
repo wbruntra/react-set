@@ -340,7 +340,7 @@ class Solo extends Component<any, SoloState> {
               <form onSubmit={this.handleStartGame}>
                 <div className="col-10 col-md-6 mb-5">
                   <InputRange
-                    maxValue={6}
+                    maxValue={8}
                     minValue={1}
                     //@ts-ignore
                     value={this.state.difficulty}

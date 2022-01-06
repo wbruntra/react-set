@@ -30,11 +30,14 @@ router.get('/user/:uid', async (req, res) => {
 router.get('/user/stats/:uid', async (req, res) => {
   const uid = req.params.uid
   try {
-    const rows = await db('games')
+    const q = db('games')
+      .select('difficulty_level')
       .count('*', { as: 'games_played' })
       .sum('player_won', { as: 'games_won' })
       .groupBy('difficulty_level')
       .where({ player_uid: uid })
+    console.log(q.toString())
+    const rows = await q
     return res.send(rows)
   } catch (e) {
     return res.sendStatus(500)
