@@ -6,14 +6,13 @@ exports.up = function(knex) {
     table.integer('difficulty_level')
     table.integer('winning_score')
     table.string('player_uid')
-    table.datetime(`createdAt`).notNullable()
-    table.datetime(`updatedAt`).notNullable()
+    table.datetime('created_at').defaultTo(knex.fn.now())
 
-    table
-      .foreign('player_uid')
-      .references('uid')
-      .inTable('users')
-      .onDelete('CASCADE')
+    //   table
+    //     .foreign('player_uid')
+    //     .references('uid')
+    //     .inTable('users')
+    //     .onDelete('CASCADE')
   })
 }
 

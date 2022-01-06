@@ -7,8 +7,7 @@ exports.up = function(knex) {
     table.string('email').unique()
     table.text('info', 'longtext')
 
-    table.datetime(`createdAt`).notNullable()
-    table.datetime(`updatedAt`).notNullable()
+    table.datetime(`created_at`).defaultTo(knex.fn.now())
   })
 }
 
