@@ -20,7 +20,7 @@
     "frow": "^3.3.2",
     "http-proxy-middleware": "^0.20.0",
     "immutability-helper": "^3.0.1",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "materialize-css": "^1.0.0",
     "prop-types": "^15.7.2",
     "rc-slider": "^8.7.1",
