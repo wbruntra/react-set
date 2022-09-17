@@ -104,12 +104,15 @@ body {
 $rotate-width: 560px;
 $four-col-width: 980px;
 
+$card-green: #61d020;
+$card-blue: #1b2f92;
+
 .board-main-container {
   display: grid;
   grid-template-columns: repeat(3, 120px);
   grid-row-gap: 75px;
   column-gap: 0px;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
 }
 
 .card-holder {
@@ -146,7 +149,7 @@ $four-col-width: 980px;
 
 @media screen and (max-width: $rotate-width) {
   .card-wrapper {
-    transform: rotate(90deg);
+    transform: rotate(90deg) scale(1.15);
     // margin-right: 80px;
   }
 }

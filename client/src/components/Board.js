@@ -118,7 +118,7 @@ function Board(props) {
           />
         )}
 
-        <div className="board">
+        <div className="board d-flex flex-column align-items-center">
           <div className="board-main-container">
             {board.map((card) => {
               return (
