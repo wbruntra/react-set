@@ -1,25 +1,25 @@
 import React, { Component, Fragment } from 'react'
-import { Link } from 'react-router-dom'
-import { shuffle, cloneDeep, isEqual } from 'lodash'
-import { connect } from 'react-redux'
-import update from 'immutability-helper'
-import axios from 'axios'
-import Slider from 'react-rangeslider'
-import Modal from './Modal'
-
 import {
-  makeDeck,
   cardToggle,
-  reshuffle,
-  removeSelected as removeSelectedCards,
-  isSet,
-  nameThird,
   countSets,
   handleGoogleRedirect,
+  isSet,
+  makeDeck,
+  nameThird,
+  removeSelected as removeSelectedCards,
+  reshuffle,
 } from '../utils/helpers'
-import { colors } from '../config'
+import { cloneDeep, isEqual, shuffle } from 'lodash'
+
 import Board from './Board'
+import { Link } from 'react-router-dom'
+// import Slider from 'react-rangeslider'
+import Modal from './Modal'
 import Signout from './Signout'
+import axios from 'axios'
+import { colors } from '../config'
+import { connect } from 'react-redux'
+import update from 'immutability-helper'
 
 const debugging = false
 
@@ -271,7 +271,7 @@ class Puzzle extends Component {
           <p>Find as many sets as you can</p>
           <div className="row">
             <div className="col s8 m4">
-              <Slider
+              {/* <Slider
                 ref={(input) => {
                   this.difficultyInput = input
                 }}
@@ -287,7 +287,7 @@ class Puzzle extends Component {
                     cardsOnBoard: cards * 3,
                   })
                 }}
-              />
+              /> */}
               <form onSubmit={this.handleStartGame}>
                 <input type="submit" value="Start" className="btn" />
               </form>

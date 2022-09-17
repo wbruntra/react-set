@@ -1,10 +1,11 @@
-import React, { useEffect, useState, Component, Fragment } from 'react'
-import { isEmpty, map, debounce, get } from 'lodash'
-import { countSets } from '../utils/helpers'
+import React, { Component, Fragment, useEffect, useState } from 'react'
+import { debounce, get, isEmpty, map } from 'lodash'
+
 import Card from './Card'
 import GameOver from './GameOver'
-import TopBar from './TopBar'
 import Modal from 'react-bootstrap/Modal'
+import TopBar from './TopBar'
+import { countSets } from '../utils/helpers'
 
 function SharedPlayersDisplay({ players, declarer, handlePlayerClick }) {
   return (
@@ -118,12 +119,12 @@ function Board(props) {
         )}
 
         <div className="board">
-          <div className="row">
+          <div className="board-main-container">
             {board.map((card) => {
               return (
                 <div
                   key={card}
-                  className={`card-column col-4`}
+                  className={`card-wrapper`}
                   onClick={() => {
                     props.handleCardClick(card)
                   }}
@@ -146,7 +147,7 @@ function Board(props) {
             })}
           </div>
           {!sharedDevice && gameMode !== 'puzzle' && (
-            <div className="row text-center my-3">
+            <div className="row my-1 text-center fixed-bottom">
               {map(players, (info, name) => {
                 return (
                   <div key={name} className="col s4 m3">
@@ -168,7 +169,7 @@ function Board(props) {
           )}
 
           {props.handleRedeal && (
-            <div className="row">
+            <div className="row mt-3">
               <div className="col mt-3 mt-md-4">
                 <button onClick={props.handleRedeal} className="btn btn-primary">
                   Shuffle

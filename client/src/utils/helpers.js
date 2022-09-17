@@ -1,16 +1,18 @@
-import { shuffle, find, isNil } from 'lodash'
-import * as firebase from 'firebase/app'
-import { GameState, Player } from './models'
-
 import 'firebase/auth'
 import 'firebase/firestore'
+
+import * as firebase from 'firebase/app'
+
+import { GameState, Player } from './models'
+import { find, isNil, shuffle } from 'lodash'
+
 import firestore from '../firestore'
 
-export const range = (n: number) => {
+export const range = (n) => {
   return [...Array(n).keys()]
 }
 
-const displaySet = (tuple: Array<number>, rowSize: number = 3) => {
+const displaySet = (tuple, rowSize = 3) => {
   let matrix
   if (rowSize === 4) {
     matrix = range(3).map((i) => {
@@ -36,11 +38,7 @@ const displaySet = (tuple: Array<number>, rowSize: number = 3) => {
   console.log(matrix.join('\n'))
 }
 
-export const serializeGame = (state: {
-  board: Array<string>
-  deck: Array<string>
-  selected: Array<string>
-}) => {
+export const serializeGame = (state) => {
   const status = JSON.stringify({
     board: state.board,
     deck: state.deck,
@@ -49,7 +47,7 @@ export const serializeGame = (state: {
   return status
 }
 
-export const countSets = (board: string[], { debug = false, returnWhenFound = false } = {}) => {
+export const countSets = (board, { debug = false, returnWhenFound = false } = {}) => {
   let count = 0
   let candidate = []
   for (let a = 0; a < board.length - 2; a++) {
@@ -71,8 +69,8 @@ export const countSets = (board: string[], { debug = false, returnWhenFound = fa
   return count
 }
 
-export const makeDeck = (): string[] => {
-  let deck: string[] = []
+export const makeDeck = () => {
+  let deck = []
   range(3).forEach((c) => {
     range(3).forEach((n) => {
       range(3).forEach((s) => {
@@ -86,7 +84,7 @@ export const makeDeck = (): string[] => {
   return deck
 }
 
-export const isSet = (selected: Array<string>) => {
+export const isSet = (selected) => {
   if (selected.length !== 3) {
     return false
   }
@@ -100,7 +98,7 @@ export const isSet = (selected: Array<string>) => {
   return true
 }
 
-export const nameThird = (a: string, b: string) => {
+export const nameThird = (a, b) => {
   let features
   let missing
   let result = ''
@@ -116,7 +114,7 @@ export const nameThird = (a: string, b: string) => {
   return result.trim()
 }
 
-export const cardToggle = (card: string, selected: string[]) => {
+export const cardToggle = (card, selected) => {
   if (selected.includes(card)) {
     return selected.filter((c) => c !== card)
   } else {
@@ -124,7 +122,7 @@ export const cardToggle = (card: string, selected: string[]) => {
   }
 }
 
-export const reshuffle = ({ board = [], deck }: GameState, boardSize = 12, minimumSets = 1) => {
+export const reshuffle = ({ board = [], deck }, boardSize = 12, minimumSets = 1) => {
   let newDeck = shuffle([...board, ...deck])
   while (
     countSets(newDeck.slice(0, boardSize)) < minimumSets &&
@@ -138,7 +136,7 @@ export const reshuffle = ({ board = [], deck }: GameState, boardSize = 12, minim
   }
 }
 
-export const removeSelected = (state: { board: string[]; deck: string[]; selected: string[] }) => {
+export const removeSelected = (state) => {
   const { board, deck, selected } = state
   const newCards = deck.slice(0, 3)
   let newBoard = [...board]
@@ -168,7 +166,7 @@ export const handleGoogleSignIn = () => {
     .signInWithPopup(provider)
     .then(function(result) {
       // This gives you a Google Access Token. You can use it to access the Google API.
-      const credential = result.credential as firebase.auth.OAuthCredential
+      const credential = result.credential
       var token = credential.accessToken
       // The signed-in user info.
       var user = result.user
@@ -191,7 +189,7 @@ export const handleGoogleRedirect = () => {
   firebase.auth().signInWithRedirect(provider)
 }
 
-export const updateGame = (reference: string | any, data: any) => {
+export const updateGame = (reference, data) => {
   let game
   if (typeof reference === 'string') {
     game = firestore.collection('games').doc(reference)
@@ -204,7 +202,7 @@ export const updateGame = (reference: string | any, data: any) => {
   })
 }
 
-export const sendAction = (gameId: string, action: any) => {
+export const sendAction = (gameId, action) => {
   const actions = firestore
     .collection('games')
     .doc(gameId)
@@ -225,7 +223,7 @@ export const sendAction = (gameId: string, action: any) => {
     })
 }
 
-export const playerNotRegistered = (players: Player[], name: string) => {
+export const playerNotRegistered = (players, name) => {
   const player = find(players, ['name', name])
   return isNil(player)
 }

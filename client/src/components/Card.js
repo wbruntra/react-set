@@ -1,6 +1,8 @@
-import React, { Component, Fragment } from 'react'
-import { range } from '../utils/helpers'
 import './card.css'
+
+import React, { Component, Fragment } from 'react'
+
+import { range } from '../utils/helpers'
 
 const config = {
   width: 120,
@@ -166,7 +168,7 @@ class Card extends Component {
   render() {
     const [number, color, , fill] = this.props.desc.split('')
     return (
-      <div className="game-card">
+      <div className="game-card d-flex justify-content-center">
         <svg width="0" height="0">
           <pattern
             id={`card-${color}-${fill}`}

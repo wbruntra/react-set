@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+
 import { Link } from 'react-router-dom'
-import { countSets } from '../utils/helpers'
 import { colors } from '../config'
+import { countSets } from '../utils/helpers'
 
 const formatTime = (seconds) => {
   const pad = (ss) => {
@@ -22,10 +23,10 @@ function TopBar({ gameMode, deck, board, declarer, setsFound, startTime, elapsed
     case 'versus':
       return (
         <div className={`topbar py-2 bg-${declarer ? 'light' : 'dark'}-orange`}>
-          <nav className="container text-white">
-            <div className="row justify-content-between text-center">
-              <div className="col">Sets: {sets}</div>
-              <div className="col">{declarer && <>SET! {declarer}</>}</div>
+          <nav className="text-white">
+            <div className="d-flex justify-content-around text-center">
+              <div>Sets: {sets}</div>
+              <div>{declarer && <>SET! {declarer}</>}</div>
             </div>
           </nav>
         </div>

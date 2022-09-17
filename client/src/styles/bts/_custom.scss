@@ -8,6 +8,8 @@ $amber: #ffd740;
 $purple: #8e24aa;
 $light-green: #9ccc65;
 
+@import 'bootstrap/scss/bootstrap-grid.scss';
+
 body {
   // background-color: $dark-purple;
   // color: white;
@@ -57,12 +59,6 @@ body {
   }
 }
 
-.card-holder {
-  margin: 4px;
-  padding: 4px;
-  border-radius: 4px;
-}
-
 .card {
   transition: filter linear 0.2s;
 }
@@ -98,5 +94,53 @@ body {
 .card {
   &.available-game {
     min-height: 80px;
+  }
+}
+
+.board {
+  margin-top: 60px;
+}
+
+$rotate-width: 560px;
+$four-col-width: 980px;
+
+.board-main-container {
+  display: grid;
+  grid-template-columns: repeat(3, 120px);
+  grid-row-gap: 75px;
+  column-gap: 0px;
+  margin-bottom: 40px;
+}
+
+@media screen and (min-width: $rotate-width) {
+  .board {
+    margin-top: 20px;
+  }
+
+  .card-holder {
+    margin: 4px;
+    padding: 4px;
+    border-radius: 4px;
+  }
+
+  .board-main-container {
+    grid-template-columns: repeat(3, 200px);
+    row-gap: 20px;
+    column-gap: 20px;
+  }
+}
+
+// @media screen and (min-width: $four-col-width) {
+//   .board-main-container {
+//     grid-template-columns: repeat(4, 200px);
+//     row-gap: 20px;
+//     column-gap: 20px;
+//   }
+// }
+
+@media screen and (max-width: $rotate-width) {
+  .card-wrapper {
+    transform: rotate(90deg);
+    // margin-right: 80px;
   }
 }

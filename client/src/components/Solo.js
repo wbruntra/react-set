@@ -1,25 +1,25 @@
+import { GameState, Players, SoloState } from '../utils/models'
 import React, { Component, Fragment } from 'react'
-import { Link } from 'react-router-dom'
-import Board from './Board'
 import {
-  makeDeck,
   cardToggle,
-  reshuffle,
-  removeSelected as removeSelectedCards,
-  isSet,
-  nameThird,
   handleGoogleRedirect,
+  isSet,
+  makeDeck,
+  nameThird,
+  removeSelected as removeSelectedCards,
+  reshuffle,
 } from '../utils/helpers'
-import { shuffle, cloneDeep, isEmpty } from 'lodash'
-import { colors } from '../config'
-import update from 'immutability-helper'
-import Slider from 'react-rangeslider'
-import axios from 'axios'
-import { connect } from 'react-redux'
-import Signout from './Signout'
-import InputRange from 'react-input-range'
+import { cloneDeep, isEmpty, shuffle } from 'lodash'
 
-import { Players, GameState, SoloState } from '../utils/models'
+import Board from './Board'
+import InputRange from 'react-input-range'
+import { Link } from 'react-router-dom'
+import Signout from './Signout'
+// import Slider from 'react-rangeslider'
+import axios from 'axios'
+import { colors } from '../config'
+import { connect } from 'react-redux'
+import update from 'immutability-helper'
 
 const debugging = false
 
@@ -30,7 +30,7 @@ const config = {
   cpuDelay: 1200,
 }
 
-const calculateIntervalFromDifficulty = (d: number) => {
+const calculateIntervalFromDifficulty = (d) => {
   let diff = Number(d)
   if (Number.isNaN(diff)) {
     diff = 1
@@ -41,7 +41,7 @@ const calculateIntervalFromDifficulty = (d: number) => {
 
 const createGameState = () => {
   const initialDeck = makeDeck()
-  const selected: string[] = []
+  const selected = []
   return {
     ...reshuffle({
       deck: initialDeck.slice(12),
@@ -77,26 +77,8 @@ const initialState = {
   startTime: new Date(),
 }
 
-// interface State extends GameState {
-//   players: Players
-//   selected: string[]
-//   cpuTimer?: number
-//   gameStarted: boolean
-//   myName: string
-//   setFound: boolean
-//   declarer: null | string
-//   timeDeclared?: number
-//   gameOver: string
-//   cpuTurnInterval: number
-//   cpuFound?: string[]
-//   startTime: Date
-//   undeclareId?: number
-//   difficulty: number
-//   cpuAnimation?: number
-// }
-
-class Solo extends Component<any, SoloState> {
-  constructor(props: any) {
+class Solo extends Component {
+  constructor(props) {
     super(props)
     this.state = {
       ...cloneDeep(initialState),
@@ -105,7 +87,7 @@ class Solo extends Component<any, SoloState> {
     }
   }
 
-  handleStartGame = (e: React.FormEvent<HTMLFormElement>): void => {
+  handleStartGame = (e) => {
     e.preventDefault()
     this.setState({
       gameStarted: true,
@@ -169,7 +151,7 @@ class Solo extends Component<any, SoloState> {
     if (cpuCopy.length === 0) {
       return
     }
-    const newSelected = [...selected, cpuCopy.pop() as string]
+    const newSelected = [...selected, cpuCopy.pop()]
     this.setState({
       cpuFound: cpuCopy,
       selected: newSelected,
@@ -182,7 +164,7 @@ class Solo extends Component<any, SoloState> {
     }
   }
 
-  updatePlayerScore = (myName: string, delta: number): [Players, number] => {
+  updatePlayerScore = (myName, delta) => {
     const { players } = this.state
     const newScore = players[myName].score + delta
     const newPlayers = update(players, {
@@ -208,7 +190,7 @@ class Solo extends Component<any, SoloState> {
     }
   }
 
-  markPointForDeclarer = (declarer: string) => {
+  markPointForDeclarer = (declarer) => {
     const [newPlayers, newScore] = this.updatePlayerScore(declarer, 1)
     const { user } = this.props.userReducer
     const gameOver = newScore >= config.playingTo ? declarer : ''
@@ -239,7 +221,7 @@ class Solo extends Component<any, SoloState> {
     return newState
   }
 
-  performDeclare = (declarer: string) => {
+  performDeclare = (declarer) => {
     if (!this.state.declarer) {
       const timeNow = new Date().getTime()
       const update = {
@@ -255,7 +237,7 @@ class Solo extends Component<any, SoloState> {
     }
   }
 
-  updateSelected = (newSelected: Array<string>, declarer: string) => {
+  updateSelected = (newSelected, declarer) => {
     const newState = {
       setFound: isSet(newSelected),
       selected: newSelected,
@@ -270,7 +252,7 @@ class Solo extends Component<any, SoloState> {
     this.setState(newState)
   }
 
-  handleCardClick = (card: string) => {
+  handleCardClick = (card) => {
     const { setFound, declarer, myName } = this.state
     if (!setFound && declarer !== 'cpu') {
       const newSelected = cardToggle(card, this.state.selected)
@@ -412,7 +394,7 @@ class Solo extends Component<any, SoloState> {
   }
 }
 
-const mapStateToProps = (state: any) => ({
+const mapStateToProps = (state) => ({
   userReducer: state.user,
 })
 
