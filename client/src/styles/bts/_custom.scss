@@ -112,6 +112,12 @@ $four-col-width: 980px;
   margin-bottom: 40px;
 }
 
+.card-holder {
+  margin: 0px;
+  padding: 3px;
+  border-radius: 3px;
+}
+
 @media screen and (min-width: $rotate-width) {
   .board {
     margin-top: 20px;
