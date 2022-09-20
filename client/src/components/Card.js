@@ -1,4 +1,4 @@
-import './card.css'
+import './card.scss'
 
 import React, { Component, Fragment } from 'react'
 
@@ -83,7 +83,7 @@ const Squiggle = ({ fill, color }) => {
   )
 }
 
-const Shape = ({ shape, fill, color }) => {
+const Shape = ({ shape, fill, color, num }) => {
   let { padding, height, width, strokeWidth } = config
   if (shape === '0') {
     padding = padding + 1
@@ -142,7 +142,7 @@ class Card extends Component {
   }
 
   drawShape = () => {
-    const [, color, shape, fill] = this.props.desc.split('')
+    const [num, color, shape, fill] = this.props.desc.split('')
     return (
       <Fragment>
         <g>
@@ -160,7 +160,12 @@ class Card extends Component {
             <rect strokeWidth="0" y="0" x="0" height="100%" width="100%" />
           </g>
         </g>
-        <Shape shape={shape} fill={this.getFill(color, fill)} color={this.colors[color]} />
+        <Shape
+          shape={shape}
+          num={num}
+          fill={this.getFill(color, fill)}
+          color={this.colors[color]}
+        />
       </Fragment>
     )
   }
@@ -191,7 +196,7 @@ class Card extends Component {
           return (
             <svg
               key={i}
-              className="shape"
+              className={`shape ${number === '1' ? 'double' : ''}`}
               viewBox={`0 0 ${config.width} ${config.height}`}
               xmlns="http://www.w3.org/2000/svg"
             >

@@ -1,5 +1,8 @@
 .shape {
   width: 33%;
-  height: auto;
   margin: auto;
+
+  &.double {
+    margin: 0 3px;
+  }
 }

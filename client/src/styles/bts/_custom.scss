@@ -109,7 +109,7 @@ $card-blue: #1b2f92;
 
 .board-main-container {
   display: grid;
-  grid-template-columns: repeat(3, 120px);
+  grid-template-columns: repeat(3, 1fr);
   grid-row-gap: 75px;
   column-gap: 0px;
   margin-bottom: 20px;
@@ -133,7 +133,7 @@ $card-blue: #1b2f92;
   }
 
   .board-main-container {
-    grid-template-columns: repeat(3, 200px);
+    grid-template-columns: repeat(3, 1fr);
     row-gap: 20px;
     column-gap: 20px;
   }
