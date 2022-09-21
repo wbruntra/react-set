@@ -6,6 +6,7 @@ import * as firebase from 'firebase/app'
 import { GameState, Player } from './models'
 import { find, isNil, shuffle } from 'lodash'
 
+import _ from 'lodash'
 import firestore from '../firestore'
 
 export const range = (n) => {
@@ -133,6 +134,26 @@ export const reshuffle = ({ board = [], deck }, boardSize = 12, minimumSets = 1)
   return {
     deck: newDeck.slice(boardSize),
     board: newDeck.slice(0, boardSize),
+  }
+}
+
+/**
+ * The first two cards on the board will form a set with some other card
+ */
+
+export const getBoardStartingWithSet = ({ startingSetCards = 2, boardSize = 12 }) => {
+  let deck = _.shuffle(makeDeck())
+  let board = [...deck.slice(0, 2)]
+  const third = nameThird(board[0], board[1])
+  // board.push(third)
+  deck = deck.slice(2)
+  deck = deck.filter((c) => c !== third)
+  let restBoard = _.shuffle([third, ...deck.slice(0, boardSize - 3)])
+  board = [...board, ...restBoard]
+  deck = deck.slice(boardSize - 3)
+  return {
+    board,
+    deck,
   }
 }
 

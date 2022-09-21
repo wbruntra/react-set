@@ -121,6 +121,7 @@ const Shape = ({ shape, fill, color, num }) => {
       </g>
     )
   }
+  return null
 }
 
 class Card extends Component {

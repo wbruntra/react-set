@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { colors } from '../config'
 import { countSets } from '../utils/helpers'
+import useInterval from '../useInterval'
 
 const formatTime = (seconds) => {
   const pad = (ss) => {
@@ -15,8 +16,9 @@ const formatTime = (seconds) => {
   return `${mm}:${pad(ss)}`
 }
 
-function TopBar({ gameMode, deck, board, declarer, setsFound, startTime, elapsedTime }) {
+function TopBar({ gameMode, deck, board, declarer, setsFound, players, elapsedTime, timeLeft }) {
   const sets = countSets(board)
+
   switch (gameMode) {
     case 'shared-device':
       return null
@@ -42,6 +44,19 @@ function TopBar({ gameMode, deck, board, declarer, setsFound, startTime, elapsed
               <div>Total Sets: {sets}</div>
               <div>Remaining: {sets - setsFound.length}</div>
               <div>Time: {formatTime(elapsedTime)}</div>
+            </div>
+          </nav>
+        </div>
+      )
+    case 'training':
+      return (
+        <div className="navbar-fixed">
+          <nav>
+            <div className="nav-wrapper d-flex justify-content-around">
+              <div>Time: {formatTime(elapsedTime)}</div>
+              {/* <div>Hello World!</div> */}
+              <div>Score: {players.you.score}</div>
+              <div>Remaining: {timeLeft >= 0 ? timeLeft : 'X'}</div>
             </div>
           </nav>
         </div>

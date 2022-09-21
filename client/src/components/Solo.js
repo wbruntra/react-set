@@ -345,10 +345,15 @@ class Solo extends Component {
               <p style={{ marginTop: '24px' }}>First to {config.playingTo} points is the winner</p>
             </div>
             <div className="row mt-4">
+              <p>Other Game Options:</p>
               <ul style={{ listStyleType: 'none' }}>
                 <li className="mb-4">
                   <Link to="/local">Local Multiplayer</Link>
                 </li>
+                <li className="mb-4">
+                  <Link to="/training">Training</Link>
+                </li>
+                <hr />
                 <li>
                   <Link to="/">Back to Main Menu</Link>
                 </li>

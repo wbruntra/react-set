@@ -1,16 +1,17 @@
 import React, { Component, Fragment } from 'react'
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
+import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 
-import Host from './Host'
 import Guest from './Guest'
+import Host from './Host'
 import Lobby from './Lobby'
-import Solo from './Solo'
-import Main from './Main'
-import Rules from './Rules'
 import Login from './Login'
-import SharedDevice from './SharedDevice'
-import Stats from './Stats'
+import Main from './Main'
 import Puzzle from './Puzzle'
+import Rules from './Rules'
+import SharedDevice from './SharedDevice'
+import Solo from './Solo'
+import Stats from './Stats'
+import Training from './Training'
 
 class Routes extends Component {
   render() {
@@ -28,6 +29,7 @@ class Routes extends Component {
             <Route path="/login" component={Login} />
             <Route path="/stats" component={Stats} />
             <Route path="/puzzle" component={Puzzle} />
+            <Route path="/training" component={Training} />
           </Switch>
         </Router>
       </Fragment>

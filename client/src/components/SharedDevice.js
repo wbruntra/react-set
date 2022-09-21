@@ -1,17 +1,18 @@
 import React, { Component } from 'react'
-import Board from './Board'
 import {
-  makeDeck,
   cardToggle,
-  reshuffle,
-  removeSelected as removeSelectedCards,
   isSet,
+  makeDeck,
   nameThird,
+  removeSelected as removeSelectedCards,
+  reshuffle,
 } from '../utils/helpers'
-import { shuffle, cloneDeep } from 'lodash'
+import { cloneDeep, shuffle } from 'lodash'
+
+import Board from './Board'
+import { Link } from 'react-router-dom'
 import { colors } from '../config'
 import update from 'immutability-helper'
-import { Link } from 'react-router-dom'
 
 const debugging = false
 
@@ -198,7 +199,6 @@ class SharedDevice extends Component {
 
   render() {
     const { board, deck, selected, declarer, players, numPlayers, setFound } = this.state
-    console.log(players)
     if (!numPlayers) {
       return (
         <div className="container">

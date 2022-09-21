@@ -160,14 +160,6 @@ function Board(props) {
             </div>
           )}
 
-          {sharedDevice && (
-            <SharedPlayersDisplay
-              players={bottomPlayers}
-              declarer={declarer}
-              handlePlayerClick={props.handlePlayerClick}
-            />
-          )}
-
           {props.handleRedeal && (
             <div className="row mt-3">
               <div className="col mt-3 mt-md-4">
@@ -178,6 +170,13 @@ function Board(props) {
             </div>
           )}
         </div>
+        {sharedDevice && (
+          <SharedPlayersDisplay
+            players={bottomPlayers}
+            declarer={declarer}
+            handlePlayerClick={props.handlePlayerClick}
+          />
+        )}
       </div>
     </Fragment>
   )
