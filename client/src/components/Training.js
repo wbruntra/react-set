@@ -78,6 +78,7 @@ const Training = () => {
     Get turn time, in ms
   */
   const calculateTurnTime = (score) => {
+    return 10 ** 5
     const calc = Math.round(6000 - 1000 * Math.log2(score + 1))
     return calc
   }
