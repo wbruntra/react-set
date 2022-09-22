@@ -186,13 +186,13 @@ const Training = () => {
           />
         </div>
 
-        {gameOver && (
+        {/* {gameOver && (
           <div className="d-flex justify-content-center mt-3">
             <button className="btn btn-primary" onClick={reset}>
               Reset
             </button>
           </div>
-        )}
+        )} */}
       </div>
       <GameOverModal
         show={gameOver && showModal}
