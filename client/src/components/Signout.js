@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from 'react'
-import Routes from './Routes'
+import 'firebase/compat/auth'
+import 'firebase/compat/firestore'
+
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
   Link,
   Redirect,
+  Route,
+  BrowserRouter as Router,
+  Switch,
   useHistory,
   useLocation,
 } from 'react-router-dom'
-import firebase from 'firebase/app'
-import 'firebase/auth'
+import React, { useEffect, useState } from 'react'
+
+import Routes from './Routes'
+import firebase from 'firebase/compat/app'
 import { logOut } from '../redux-helpers'
 import { useDispatch } from 'react-redux'
 

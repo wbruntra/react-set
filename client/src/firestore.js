@@ -1,10 +1,10 @@
-import * as firebase from 'firebase/app'
-import 'firebase/firestore'
+import 'firebase/compat/auth'
+import 'firebase/compat/firestore'
+
+import firebase from 'firebase/compat/app'
 import firebaseConfig from './firebaseConfig'
-import 'firebase/auth'
 
 firebase.initializeApp(firebaseConfig)
-// firebase.analytics()
 
 const firestore = firebase.firestore()
 

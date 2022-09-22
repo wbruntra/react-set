@@ -1,12 +1,11 @@
-import 'firebase/auth'
-import 'firebase/firestore'
-
-import * as firebase from 'firebase/app'
+import 'firebase/compat/auth'
+import 'firebase/compat/firestore'
 
 import { GameState, Player } from './models'
 import { find, isNil, shuffle } from 'lodash'
 
 import _ from 'lodash'
+import firebase from 'firebase/compat/app'
 import firestore from '../firestore'
 
 export const range = (n) => {

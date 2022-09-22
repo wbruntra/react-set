@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import 'firebase/compat/auth'
+import 'firebase/compat/firestore'
+
+import React, { useEffect, useState } from 'react'
+import { updateNickname, updateUser } from '../redux-helpers'
+
 import Routes from './Routes'
-import firebase from 'firebase/app'
-import 'firebase/auth'
-// import 'firebase/firestore'
-// import firestore from '../firestore'
-import { updateUser, updateNickname } from '../redux-helpers'
-import { useDispatch } from 'react-redux'
 import axios from 'axios'
+import firebase from 'firebase/compat/app'
+import { useDispatch } from 'react-redux'
 
 function App(props) {
   const [user, setUser] = useState(null)
