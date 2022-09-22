@@ -1,29 +1,29 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import { updateNickname } from '../redux-helpers'
-import { Link } from 'react-router-dom'
-import update from 'immutability-helper'
-import firebase from 'firebase/app'
+import 'firebase/compat/auth'
+import 'firebase/compat/firestore'
 
-import 'firebase/auth'
-import 'firebase/firestore'
-import firestore from '../firestore'
-
-import Signout from './Signout'
-import Board from './Board'
+import { Action, MultiState } from '../utils/models'
+import React, { useEffect, useRef, useState } from 'react'
 import {
-  handleGoogleRedirect,
-  makeDeck,
   cardToggle,
-  reshuffle,
-  removeSelected,
+  handleGoogleRedirect,
   isSet,
+  makeDeck,
+  removeSelected,
+  reshuffle,
   updateGame,
 } from '../utils/helpers'
-import { colors } from '../config'
-import PlayerList from './PlayerList'
 import { findKey, isEmpty } from 'lodash'
-import { Action, MultiState } from '../utils/models'
+import { useDispatch, useSelector } from 'react-redux'
+
+import Board from './Board'
+import { Link } from 'react-router-dom'
+import PlayerList from './PlayerList'
+import Signout from './Signout'
+import { colors } from '../config'
+import firebase from 'firebase/compat/app'
+import firestore from '../firestore'
+import update from 'immutability-helper'
+import { updateNickname } from '../redux-helpers'
 
 const config = {
   turnTime: 5000,

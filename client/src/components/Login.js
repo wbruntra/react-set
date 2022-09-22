@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import 'firebase/compat/auth'
+import 'firebase/compat/firestore'
+
+import React, { useEffect, useRef, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 
 import Signout from './Signout'
+import firebase from 'firebase/compat/app'
 import { handleGoogleRedirect } from '../utils/helpers'
-import * as firebase from 'firebase/app'
-import 'firebase/auth'
 
 function Login(props) {
   const user = useSelector((state) => state.user)
