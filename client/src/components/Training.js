@@ -73,6 +73,7 @@ const Training = () => {
   const [gameOver, setGameOver] = useState(false)
   const [modalHidden, setModalHidden] = useState(false)
   const [showModal, setShowModal] = useState(false)
+  const [setFound, setSetFound] = useState(false)
 
   /*
     Get turn time, in ms
@@ -85,6 +86,7 @@ const Training = () => {
   const startTurn = ({ score }) => {
     setTurnStartTime(Date.now())
     setTurnTimeTotal(calculateTurnTime(score))
+    setSetFound(false)
   }
 
   useEffect(() => {
@@ -103,7 +105,7 @@ const Training = () => {
       setTimeSinceTurnStart(timeSinceTurnStart)
       setTimeRemaining((newTimeRemaining / 1000).toFixed(1))
 
-      if (newTimeRemaining < 0) {
+      if (newTimeRemaining < 0 && !setFound) {
         setGameOver(true)
         setShowModal(true)
       }
@@ -129,6 +131,7 @@ const Training = () => {
     if (isSet([...selected, v])) {
       setSelected([...selected, v])
       setScore(score + 1)
+      setSetFound(true)
       window.setTimeout(() => {
         getNewBoard()
         startTurn({ score: score + 1 })
