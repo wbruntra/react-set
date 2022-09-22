@@ -35,9 +35,9 @@ const GameOverModal = ({ handleClose, show, finalScore, handleHide }) => {
           <Button onClick={handleClose} variant="secondary">
             Restart
           </Button>
-          <Button onClick={handleHide} variant="secondary">
+          {/* <Button onClick={handleHide} variant="secondary">
             Hide
-          </Button>
+          </Button> */}
         </Modal.Footer>
       </Modal>
     </>
@@ -72,10 +72,13 @@ const Training = () => {
 
   const [gameOver, setGameOver] = useState(false)
   const [modalHidden, setModalHidden] = useState(false)
+  const [showModal, setShowModal] = useState(false)
 
+  /*
+    Get turn time, in ms
+  */
   const calculateTurnTime = (score) => {
-    const calc = Math.round(6 - Math.log2(score + 1))
-    console.log(calc)
+    const calc = Math.round(6000 - 1000 * Math.log2(score + 1))
     return calc
   }
 
@@ -93,16 +96,19 @@ const Training = () => {
     () => {
       const now = Date.now()
       const elapsed = Math.round((now - startTime) / 1000)
-      const timeSinceTurnStart = Math.round((now - turnStartTime) / 1000)
+      const timeSinceTurnStart = Math.round(now - turnStartTime)
+      const newTimeRemaining = turnTimeTotal - timeSinceTurnStart
+
       setElapsedTime(elapsed)
       setTimeSinceTurnStart(timeSinceTurnStart)
-      setTimeRemaining(turnTimeTotal - timeSinceTurnStart)
+      setTimeRemaining((newTimeRemaining / 1000).toFixed(1))
 
-      if (turnTimeTotal - timeSinceTurnStart < 0) {
+      if (newTimeRemaining < 0) {
         setGameOver(true)
+        setShowModal(true)
       }
     },
-    gameOver ? null : 250,
+    gameOver ? null : 200,
   )
 
   const getNewBoard = () => {
@@ -117,23 +123,32 @@ const Training = () => {
 
   const handleCardClick = (v) => {
     console.log('handleCardClick', v)
+    if (selected.length === 3 || gameOver) {
+      return
+    }
     if (isSet([...selected, v])) {
-      console.log('yes!')
+      setSelected([...selected, v])
       setScore(score + 1)
-      getNewBoard()
-      startTurn({ score: score + 1 })
+      window.setTimeout(() => {
+        getNewBoard()
+        startTurn({ score: score + 1 })
+      }, 550)
     } else {
-      console.log('no!')
       setSelected([...selected, v])
       if (Number(localStorage.getItem('highScoreTraining')) < score) {
         localStorage.setItem('highScoreTraining', score)
       }
       setGameOver(true)
+      window.setTimeout(() => {
+        setShowModal(true)
+      }, 1800)
+      // setGameOver(true)
     }
   }
 
   const reset = () => {
     setModalHidden(false)
+    setShowModal(false)
     setScore(0)
     setGameOver(false)
     getNewBoard()
@@ -144,42 +159,47 @@ const Training = () => {
   // console.log(selected)
   return (
     <React.Fragment>
-      <Board
-        board={board}
-        deck={[]}
-        selected={selected}
-        declarer={null}
-        handleCardClick={handleCardClick}
-        handleDeclare={() => {}}
-        players={{
-          you: {
-            name: 'you',
-            score,
-            color: 'light-blue',
-          },
-        }}
-        setFound={false}
-        gameOver={gameOver}
-        myName={'you'}
-        resetGame={() => {}}
-        solo={true}
-        gameMode="training"
-        elapsedTime={elapsedTime}
-        timeLeft={timeRemaining}
-      />
+      <div className="d-flex flex-column justify-content-between">
+        <div>
+          <Board
+            board={board}
+            deck={[]}
+            selected={selected}
+            declarer={null}
+            handleCardClick={handleCardClick}
+            handleDeclare={() => {}}
+            players={{
+              you: {
+                name: 'you',
+                score,
+                color: gameOver ? 'error-red' : 'light-blue',
+              },
+            }}
+            setFound={false}
+            gameOver={gameOver}
+            myName={'you'}
+            resetGame={() => {}}
+            solo={true}
+            gameMode="training"
+            elapsedTime={elapsedTime}
+            timeLeft={timeRemaining}
+          />
+        </div>
+
+        {gameOver && (
+          <div className="d-flex justify-content-center mt-3">
+            <button className="btn btn-primary" onClick={reset}>
+              Reset
+            </button>
+          </div>
+        )}
+      </div>
       <GameOverModal
-        show={gameOver && !modalHidden}
+        show={gameOver && showModal}
         finalScore={score}
         handleClose={reset}
         handleHide={() => setModalHidden(true)}
       />
-      {gameOver && (
-        <div className="d-flex justify-content-center">
-          <button className="btn btn-primary" onClick={reset}>
-            Reset
-          </button>
-        </div>
-      )}
     </React.Fragment>
   )
 }

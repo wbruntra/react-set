@@ -146,7 +146,7 @@ function Board(props) {
               )
             })}
           </div>
-          {!sharedDevice && gameMode !== 'puzzle' && (
+          {!sharedDevice && !['puzzle', 'training'].includes(gameMode) && (
             <div className="row my-1 text-center fixed-bottom">
               {map(players, (info, name) => {
                 return (

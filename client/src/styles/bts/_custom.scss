@@ -51,6 +51,9 @@ body {
   &-light-green {
     background-color: $light-green;
   }
+  &-error-red {
+    background-color: #f44336;
+  }
 }
 
 .game-over {
@@ -87,7 +90,7 @@ body {
 
 @include media-breakpoint-up(xl) {
   .container {
-    max-width: 960px;
+    max-width: 900px;
   }
 }
 
@@ -139,17 +142,8 @@ $card-blue: #1b2f92;
   }
 }
 
-// @media screen and (min-width: $four-col-width) {
-//   .board-main-container {
-//     grid-template-columns: repeat(4, 200px);
-//     row-gap: 20px;
-//     column-gap: 20px;
-//   }
-// }
-
 @media screen and (max-width: $rotate-width) {
   .card-wrapper {
     transform: rotate(90deg) scale(1.15);
-    // margin-right: 80px;
   }
 }

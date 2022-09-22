@@ -50,13 +50,13 @@ function TopBar({ gameMode, deck, board, declarer, setsFound, players, elapsedTi
       )
     case 'training':
       return (
-        <div className="navbar-fixed">
+        <div className="topbar py-2 bg-dark-orange navbar-fixed">
           <nav>
             <div className="nav-wrapper d-flex justify-content-around">
               <div>Time: {formatTime(elapsedTime)}</div>
               {/* <div>Hello World!</div> */}
               <div>Score: {players.you.score}</div>
-              <div>Remaining: {timeLeft >= 0 ? timeLeft : 'X'}</div>
+              <div>Remaining: {timeLeft > 0 ? timeLeft : 'X'}</div>
             </div>
           </nav>
         </div>
