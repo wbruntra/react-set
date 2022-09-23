@@ -1,5 +1,5 @@
 import React, { Component, Fragment, useEffect, useRef, useState } from 'react'
-import { getBoardStartingWithSet, isSet } from '../utils/helpers'
+import { getBoardStartingWithSet, isSet, nameThird } from '../utils/helpers'
 
 import Board from './Board'
 import Button from 'react-bootstrap/Button'
@@ -79,7 +79,7 @@ const Training = () => {
     Get turn time, in ms
   */
   const calculateTurnTime = (score) => {
-    const calc = Math.round(6000 - 1000 * Math.log2(score + 1))
+    const calc = Math.round(7000 - 1000 * Math.log2(score + 1))
     return calc
   }
 
@@ -137,14 +137,15 @@ const Training = () => {
         startTurn({ score: score + 1 })
       }, 550)
     } else {
-      setSelected([...selected, v])
+      const third = nameThird(...selected)
+      setSelected([...selected, third])
       if (Number(localStorage.getItem('highScoreTraining')) < score) {
         localStorage.setItem('highScoreTraining', score)
       }
       setGameOver(true)
       window.setTimeout(() => {
         setShowModal(true)
-      }, 1800)
+      }, 2500)
       // setGameOver(true)
     }
   }
