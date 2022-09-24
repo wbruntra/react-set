@@ -136,17 +136,47 @@ export const reshuffle = ({ board = [], deck }, boardSize = 12, minimumSets = 1)
   }
 }
 
+export const getRandomSet = (common_traits = null) => {
+  if (common_traits === null) {
+    const deck = _.shuffle(makeDeck())
+    let board = [...deck.slice(0, 2)]
+    const third = nameThird(board[0], board[1])
+    return [board[0], board[1], third]
+  }
+
+  const result = ['', '', '']
+  let common = [false, false, false, false]
+  const common_indices = _.sampleSize(_.range(4), common_traits)
+  common_indices.forEach((i) => {
+    common[i] = Math.floor(Math.random() * 3).toString()
+  })
+  common.forEach((c) => {
+    const potentialOrder = _.shuffle(['0', '1', '2'])
+    for (let j = 0; j < 3; j++) {
+      if (c === false) {
+        result[j] = result[j] + potentialOrder[j].toString()
+      } else {
+        result[j] = result[j] + c
+      }
+    }
+  })
+  return result
+}
+
 /**
  * The first two cards on the board will form a set with some other card
  */
 
-export const getBoardStartingWithSet = ({ startingSetCards = 2, boardSize = 12 }) => {
+export const getBoardStartingWithSet = ({
+  startingSetCards = 2,
+  boardSize = 12,
+  commonTraits,
+} = {}) => {
   let deck = _.shuffle(makeDeck())
-  let board = [...deck.slice(0, 2)]
-  const third = nameThird(board[0], board[1])
-  // board.push(third)
-  deck = deck.slice(2)
-  deck = deck.filter((c) => c !== third)
+  let set = _.shuffle(getRandomSet(commonTraits))
+  let board = set.slice(0, 2)
+  const third = set[2]
+  deck = deck.filter((c) => !set.includes(c))
   let restBoard = _.shuffle([third, ...deck.slice(0, boardSize - 3)])
   board = [...board, ...restBoard]
   deck = deck.slice(boardSize - 3)

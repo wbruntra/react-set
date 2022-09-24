@@ -8,15 +8,10 @@ import Modal from 'react-bootstrap/Modal'
 import { colors } from '../config'
 import useInterval from '../useInterval'
 
-const GameOverModal = ({ handleClose, show, finalScore, handleHide }) => {
+const GameOverModal = ({ handleClose, show, finalScore }) => {
   return (
     <>
-      <Modal
-        // onHide={() => {
-        //   handleClose()
-        // }}
-        show={show}
-      >
+      <Modal show={show}>
         <Modal.Body>
           <h3 className="text-center mt-3">GAME OVER!</h3>
           <div className="d-flex flex-column justify-content-center">
@@ -35,9 +30,6 @@ const GameOverModal = ({ handleClose, show, finalScore, handleHide }) => {
           <Button onClick={handleClose} variant="secondary">
             Restart
           </Button>
-          {/* <Button onClick={handleHide} variant="secondary">
-            Hide
-          </Button> */}
         </Modal.Footer>
       </Modal>
     </>
@@ -71,9 +63,9 @@ const Training = () => {
   timeRef.current = timeRemaining
 
   const [gameOver, setGameOver] = useState(false)
-  const [modalHidden, setModalHidden] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [setFound, setSetFound] = useState(false)
+  const [running, setRunning] = useState(true)
 
   /*
     Get turn time, in ms
@@ -106,15 +98,14 @@ const Training = () => {
       setTimeRemaining((newTimeRemaining / 1000).toFixed(1))
 
       if (newTimeRemaining < 0 && !setFound) {
-        setGameOver(true)
-        setShowModal(true)
+        triggerGameOver()
       }
     },
     gameOver ? null : 200,
   )
 
   const getNewBoard = () => {
-    const { board, deck } = getBoardStartingWithSet({ boardSize: 8 })
+    const { board, deck } = getBoardStartingWithSet({ boardSize: 8, commonTraits: null })
     setBoard([...board.slice(0, 2), '0333', ...board.slice(2)])
     setSelected(board.slice(0, 2))
   }
@@ -124,43 +115,46 @@ const Training = () => {
   }, [])
 
   const handleCardClick = (v) => {
-    console.log('handleCardClick', v)
+    setRunning(false)
     if (selected.length === 3 || gameOver) {
       return
     }
     if (isSet([...selected, v])) {
-      setSelected([...selected, v])
-      setScore(score + 1)
       setSetFound(true)
+      setScore(score + 1)
+      setSelected([...selected, v])
       window.setTimeout(() => {
         getNewBoard()
         startTurn({ score: score + 1 })
       }, 550)
     } else {
-      const third = nameThird(...selected)
-      setSelected([...selected, third])
-      if (Number(localStorage.getItem('highScoreTraining')) < score) {
-        localStorage.setItem('highScoreTraining', score)
-      }
-      setGameOver(true)
-      window.setTimeout(() => {
-        setShowModal(true)
-      }, 2500)
-      // setGameOver(true)
+      triggerGameOver()
     }
   }
 
+  const triggerGameOver = () => {
+    setGameOver(true)
+    const third = nameThird(...selected)
+    setSelected([...selected, third])
+    if (Number(localStorage.getItem('highScoreTraining')) < score) {
+      localStorage.setItem('highScoreTraining', score)
+    }
+    window.setTimeout(() => {
+      setShowModal(true)
+    }, 2500)
+  }
+
   const reset = () => {
-    setModalHidden(false)
-    setShowModal(false)
-    setScore(0)
     setGameOver(false)
+    setShowModal(false)
+    setRunning(true)
+    setSetFound(false)
+    setScore(0)
     getNewBoard()
     setStartTime(Date.now())
     startTurn({ score: 0 })
   }
 
-  // console.log(selected)
   return (
     <React.Fragment>
       <div className="d-flex flex-column justify-content-between">
@@ -198,12 +192,7 @@ const Training = () => {
           </div>
         )} */}
       </div>
-      <GameOverModal
-        show={gameOver && showModal}
-        finalScore={score}
-        handleClose={reset}
-        handleHide={() => setModalHidden(true)}
-      />
+      <GameOverModal show={gameOver && showModal} finalScore={score} handleClose={reset} />
     </React.Fragment>
   )
 }
