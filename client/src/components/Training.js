@@ -8,6 +8,33 @@ import Modal from 'react-bootstrap/Modal'
 import { colors } from '../config'
 import useInterval from '../useInterval'
 
+const IntroModal = ({ show, handleClose }) => {
+  return (
+    <>
+      <Modal show={show}>
+        <Modal.Header className="justify-content-center">
+          <Modal.Title>Training Mode</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="d-flex flex-column justify-content-center">
+            <p className="my-2">
+              Find the one card that completes a set with the two highlighted cards.
+            </p>
+            <p className="my-2">Try to keep finding SETs for as long as you can.</p>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <div className="d-flex justify-content-center">
+            <Button onClick={handleClose} variant="primary">
+              Let's Go!
+            </Button>
+          </div>
+        </Modal.Footer>
+      </Modal>
+    </>
+  )
+}
+
 const GameOverModal = ({ handleClose, show, finalScore }) => {
   return (
     <>
@@ -43,6 +70,7 @@ const config = {
   colors,
   playingTo: 6,
   cpuDelay: 1200,
+  initialTurnTime: 7,
 }
 
 const Training = () => {
@@ -57,22 +85,23 @@ const Training = () => {
   const [turnTimeTotal, setTurnTimeTotal] = useState(99)
   const [timeSinceTurnStart, setTimeSinceTurnStart] = useState(0)
 
-  const [timeRemaining, setTimeRemaining] = useState(99)
+  const [timeRemaining, setTimeRemaining] = useState(config.initialTurnTime)
 
   const timeRef = useRef(null)
   timeRef.current = timeRemaining
 
-  const [gameOver, setGameOver] = useState(false)
+  const [gameOver, setGameOver] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [setFound, setSetFound] = useState(false)
-  const [running, setRunning] = useState(true)
+  const [running, setRunning] = useState(false)
+  const [initialized, setInitialized] = useState(false)
 
   /*
     Get turn time, in ms
   */
   const calculateTurnTime = (score) => {
-    const calc = Math.round(7000 - 1000 * Math.log2(score + 1))
-    return calc
+    const calc = Math.round(config.initialTurnTime * 1000 - 1100 * Math.log2(score + 1))
+    return Math.max(calc, 1000)
   }
 
   const startTurn = ({ score }) => {
@@ -104,14 +133,16 @@ const Training = () => {
     gameOver ? null : 200,
   )
 
-  const getNewBoard = () => {
+  const getNewBoard = ({ select = true } = {}) => {
     const { board, deck } = getBoardStartingWithSet({ boardSize: 8, commonTraits: null })
     setBoard([...board.slice(0, 2), '0333', ...board.slice(2)])
-    setSelected(board.slice(0, 2))
+    if (select) {
+      setSelected(board.slice(0, 2))
+    }
   }
 
   useEffect(() => {
-    getNewBoard()
+    getNewBoard({ select: false })
   }, [])
 
   const handleCardClick = (v) => {
@@ -192,7 +223,19 @@ const Training = () => {
           </div>
         )} */}
       </div>
-      <GameOverModal show={gameOver && showModal} finalScore={score} handleClose={reset} />
+      <IntroModal
+        show={!initialized}
+        setShow={setInitialized}
+        handleClose={() => {
+          setInitialized(true)
+          reset()
+        }}
+      />
+      <GameOverModal
+        show={initialized && gameOver && showModal}
+        finalScore={score}
+        handleClose={reset}
+      />
     </React.Fragment>
   )
 }
