@@ -84,17 +84,18 @@ const Training = () => {
 
   const [turnStartTime, setTurnStartTime] = useState(null)
   const [turnTimeTotal, setTurnTimeTotal] = useState(99)
-  const [timeSinceTurnStart, setTimeSinceTurnStart] = useState(0)
 
   const [timeRemaining, setTimeRemaining] = useState(config.initialTurnTime / 1000)
 
   const timeRef = useRef(null)
   timeRef.current = timeRemaining
 
+  const scoreRef = useRef(null)
+  scoreRef.current = score
+
   const [gameOver, setGameOver] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [setFound, setSetFound] = useState(false)
-  const [running, setRunning] = useState(false)
   const [initialized, setInitialized] = useState(false)
 
   /*
@@ -107,6 +108,7 @@ const Training = () => {
 
   const startTurn = ({ score }) => {
     setTurnStartTime(Date.now())
+    const totalTurnTime = calculateTurnTime(score)
     setTurnTimeTotal(calculateTurnTime(score))
     setSetFound(false)
   }
@@ -116,22 +118,27 @@ const Training = () => {
     startTurn({ score: 0 })
   }, [])
 
+  const calculateTimeRemaining = ({ precise = false } = {}) => {
+    const timeSinceTurnStart = Date.now() - turnStartTime
+    const timeRemaining = calculateTurnTime(scoreRef.current) - timeSinceTurnStart
+    return (timeRemaining / 1000).toFixed(1)
+  }
+
   useInterval(
     () => {
       const now = Date.now()
       const elapsed = Math.round((now - startTime) / 1000)
       const timeSinceTurnStart = Math.round(now - turnStartTime)
-      const newTimeRemaining = turnTimeTotal - timeSinceTurnStart
+      const newTimeRemaining = calculateTurnTime(scoreRef.current) - timeSinceTurnStart
 
       setElapsedTime(elapsed)
-      setTimeSinceTurnStart(timeSinceTurnStart)
       setTimeRemaining((newTimeRemaining / 1000).toFixed(1))
 
       if (newTimeRemaining < 0 && !setFound) {
         triggerGameOver()
       }
     },
-    gameOver ? null : 200,
+    setFound || gameOver ? null : 200,
   )
 
   const getNewBoard = ({ select = true } = {}) => {
@@ -147,7 +154,9 @@ const Training = () => {
   }, [])
 
   const handleCardClick = (v) => {
-    setRunning(false)
+    const timeRemaining = calculateTimeRemaining()
+    setTimeRemaining(timeRemaining)
+
     if (selected.length === 3 || gameOver) {
       return
     }
@@ -158,7 +167,7 @@ const Training = () => {
       window.setTimeout(() => {
         getNewBoard()
         startTurn({ score: score + 1 })
-      }, 550)
+      }, 650)
     } else {
       triggerGameOver()
     }
@@ -179,7 +188,6 @@ const Training = () => {
   const reset = () => {
     setGameOver(false)
     setShowModal(false)
-    setRunning(true)
     setSetFound(false)
     setScore(0)
     getNewBoard()
@@ -215,14 +223,6 @@ const Training = () => {
             timeLeft={timeRemaining}
           />
         </div>
-
-        {/* {gameOver && (
-          <div className="d-flex justify-content-center mt-3">
-            <button className="btn btn-primary" onClick={reset}>
-              Reset
-            </button>
-          </div>
-        )} */}
       </div>
       <IntroModal
         show={!initialized}
