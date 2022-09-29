@@ -71,7 +71,7 @@ const config = {
   playingTo: 6,
   cpuDelay: 1200,
   initialTurnTime: 7000,
-  minimumTurnTime: 1400,
+  minimumTurnTime: 1600,
 }
 
 const Training = () => {
@@ -83,8 +83,6 @@ const Training = () => {
   const [elapsedTime, setElapsedTime] = useState(0)
 
   const [turnStartTime, setTurnStartTime] = useState(null)
-  const [turnTimeTotal, setTurnTimeTotal] = useState(99)
-
   const [timeRemaining, setTimeRemaining] = useState(config.initialTurnTime / 1000)
 
   const timeRef = useRef(null)
@@ -108,8 +106,6 @@ const Training = () => {
 
   const startTurn = ({ score }) => {
     setTurnStartTime(Date.now())
-    const totalTurnTime = calculateTurnTime(score)
-    setTurnTimeTotal(calculateTurnTime(score))
     setSetFound(false)
   }
 
