@@ -13,7 +13,7 @@
     "dev:db": "cd db; docker-compose up -d",
     "server:dev": "nodemon server.js",
     "predeploy": "cd client && npm run build",
-    "deploy": "gh-pages -d client/build -b rp-pages -e client/"
+    "deploy": "gh-pages -d vite-client/dist -b rp-pages -e client/"
   },
   "keywords": [],
   "author": "",
