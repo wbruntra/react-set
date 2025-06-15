@@ -1,14 +1,14 @@
-version: '3.8'
+name: react-set
 services:
   react_set_db:
-    image: mariadb:11.6.1-ubi9-rc
+    image: mariadb:11.8.2-ubi9
     volumes:
       - reactdb:/var/lib/mysql
     environment:
-      MYSQL_DATABASE: reactdb
-      MYSQL_ROOT_PASSWORD: battle
-      MYSQL_USER: william
-      MYSQL_PASSWORD: battle
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     command:
       - '--character-set-server=utf8mb4'
       - '--collation-server=utf8mb4_unicode_ci'
