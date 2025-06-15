@@ -1,7 +1,7 @@
-version: '3.1'
+version: '3.8'
 services:
   react_set_db:
-    image: mariadb:10.7.1-focal
+    image: mariadb:11.6.1-ubi9-rc
     volumes:
       - reactdb:/var/lib/mysql
     environment:
