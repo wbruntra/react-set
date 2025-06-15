@@ -326,20 +326,19 @@ function Solo() {
 
   const removeSet = (selectedCards?: string[], declarerPlayer?: string) => {
     setState((prevState) => {
+      // Guard: only process if setFound is true
+      if (!prevState.setFound) return prevState
+
       const currentSelected = selectedCards || prevState.selected
       const currentDeclarer = declarerPlayer || prevState.declarer
 
       if (currentDeclarer && isSet(currentSelected)) {
-        console.log(
-          'Set found, removing - Score before:',
-          prevState.players[currentDeclarer]?.score,
-        )
+        // Immediately set setFound: false to prevent double scoring
+        let newState: any = { ...prevState, setFound: false }
 
         // Update score
         const [newPlayers, newScore] = updatePlayerScore(prevState.players, currentDeclarer, 1)
         const gameOver = newScore >= config.playingTo ? currentDeclarer : ''
-
-        console.log('Score after:', newScore, 'Game over:', gameOver)
 
         // Handle game completion (don't block the game flow)
         if (gameOver) {
@@ -348,8 +347,6 @@ function Solo() {
           const total_time = Math.round(
             (new Date().getTime() - prevState.startTime.getTime()) / 1000,
           )
-
-          // Send game stats asynchronously without blocking
           setTimeout(() => {
             axios
               .post('/api/game', {
@@ -359,12 +356,7 @@ function Solo() {
                 difficulty_level: prevState.difficulty,
                 winning_score: newScore,
               })
-              .then(() => {
-                console.log('Game stats sent successfully')
-              })
-              .catch((err) => {
-                console.log('Failed to send game stats (this is OK):', err.message)
-              })
+              .catch(() => {})
           }, 0)
         }
 
@@ -381,24 +373,15 @@ function Solo() {
         }
         cpuTimerRef.current = window.setInterval(cpuTurn, prevState.cpuTurnInterval)
 
-        const newState = {
-          ...prevState,
+        newState = {
+          ...newState,
           players: newPlayers as Players,
           gameOver,
-          setFound: false,
           declarer: null,
           timeDeclared: undefined,
           cpuTimer: cpuTimerRef.current,
           ...removedState,
         }
-
-        console.log(
-          'Game continues - setFound reset to:',
-          newState.setFound,
-          'declarer reset to:',
-          newState.declarer,
-        )
-
         return newState
       }
       return prevState

@@ -130,6 +130,8 @@ function Board(props: BoardProps) {
         <div className="board d-flex flex-column align-items-center">
           <div className="board-main-container">
             {board.map((card) => {
+              const isSelected = selected.includes(card)
+              const cardHolderStyle = isSelected ? { backgroundColor: borderColor } : {}
               return (
                 <div
                   key={card}
@@ -138,9 +140,7 @@ function Board(props: BoardProps) {
                     props.handleCardClick(card)
                   }}
                 >
-                  <div
-                    className={`card-holder ${selected.includes(card) ? `bg-${borderColor}` : ''}`}
-                  >
+                  <div className="card-holder" style={cardHolderStyle}>
                     <div
                       className={`card ${
                         setFound && selected.length === 3 && !selected.includes(card)
