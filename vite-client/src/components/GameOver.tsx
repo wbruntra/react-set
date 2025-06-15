@@ -40,7 +40,7 @@ function GameOver(props: GameOverProps) {
                   <Link to="/">Main</Link>
                 </p>
               </div>
-              {solo && user !== null && (
+              {solo && user && user.uid && (
                 <div className="col-4">
                   <p className="text-center">
                     <Link to="/stats">Stats</Link>

@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import { colors } from '../config'
 import useInterval from '../useInterval'
 import { Modal, Button } from 'react-bootstrap' // Import Modal and Button from react-bootstrap
+import scssColors from '@/styles/bts/colors.module.scss'
 
 interface IntroModalProps {
   show: boolean
@@ -224,7 +225,7 @@ const Training = () => {
               you: {
                 name: 'you',
                 score,
-                color: gameOver ? 'error-red' : 'light-blue',
+                color: gameOver ? scssColors.errorRed : scssColors.lightBlue,
               },
             }}
             setFound={false}

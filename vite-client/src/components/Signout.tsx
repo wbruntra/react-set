@@ -17,6 +17,9 @@ function Signout() {
       .signOut()
       .then(() => {
         dispatch(logOut())
+        // Clear guest user data from localStorage
+        localStorage.removeItem('guestUser')
+        localStorage.removeItem('nickname')
         console.log('Signed out.')
         navigate('/')
       })

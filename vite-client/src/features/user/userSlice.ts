@@ -4,14 +4,18 @@ import update from 'immutability-helper'
 interface UserState {
   loading: boolean
   user: {
+    uid?: string
     nickname?: string
+    displayName?: string
+    email?: string
+    isGuest?: boolean
     [key: string]: any // Allow other properties
   } | null
 }
 
 const initialState: UserState = {
   loading: true,
-  user: {},
+  user: null,
 }
 
 const userSlice = createSlice({

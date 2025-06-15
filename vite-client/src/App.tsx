@@ -13,6 +13,7 @@ import Login from './components/Login'
 import Stats from './components/Stats'
 import Puzzle from './components/Puzzle'
 import Training from './components/Training'
+import AuthCallback from './components/AuthCallback'
 
 const router = createBrowserRouter([
   {
@@ -61,6 +62,10 @@ const router = createBrowserRouter([
       {
         path: '/training',
         element: <Training />,
+      },
+      {
+        path: '/auth/callback',
+        element: <AuthCallback />,
       },
     ],
   },

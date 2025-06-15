@@ -1,9 +1,11 @@
+import scssColors from '@/styles/bts/colors.module.scss'
+
 export const colors: string[] = [
-  'light-blue',
-  'pink',
-  'amber',
-  'light-green',
-  'purple',
-  'orange',
-  'error-red',
+  scssColors['lightBlue'],
+  scssColors['pink'],
+  scssColors['amber'],
+  scssColors['lightGreen'],
+  scssColors['purple'],
+  scssColors['orange'],
+  scssColors['errorRed'],
 ]

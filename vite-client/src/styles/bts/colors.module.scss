@@ -1,0 +1,29 @@
+@import './variables';
+
+// Define a map of colors
+$color-map: (
+  'darkPurple': $dark-purple,
+  'grey': $grey,
+  'lightOrange': $light-orange,
+  'darkOrange': $dark-orange,
+  'lightBlue': $light-blue,
+  'pink': $pink,
+  'amber': $amber,
+  'purple': $purple,
+  'lightGreen': $light-green,
+  'errorRed': #f44336,
+  'orange': $dark-orange,
+);
+
+// List of color names for iteration
+$color-list: ('light-blue', 'pink', 'amber', 'light-green', 'purple', 'orange', 'error-red');
+
+// Export the color variables to JavaScript
+:export {
+  @each $name, $color in $color-map {
+    #{$name}: $color;
+  }
+
+  // Export the color list as a JSON string
+  colorList: '[#{join($color-list, ', ')}]';
+}

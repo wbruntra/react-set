@@ -218,28 +218,94 @@ export const removeSelected = (state: {
 }
 
 export const handleGoogleSignIn = () => {
-  const provider = new firebase.auth.GoogleAuthProvider()
-  firebase
-    .auth()
-    .signInWithPopup(provider)
-    .then(function(result) {
-      const credential = result.credential
-      var token = (credential as any).accessToken // Type assertion for accessToken
-      var user = result.user
-      console.log(token, user)
-    })
-    .catch(function(error) {
-      var errorCode = error.code
-      var errorMessage = error.message
-      var email = error.email
-      var credential = error.credential
-      console.error(errorCode, errorMessage, email, credential)
-    })
+  // Use popup for localhost development, redirect for production
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    console.log('🚀 Development environment detected, using popup authentication')
+    return handleGooglePopup()
+  } else {
+    console.log('🚀 Production environment detected, using redirect authentication')
+    return handleGoogleRedirect()
+  }
 }
 
 export const handleGoogleRedirect = () => {
+  console.log('🚀 handleGoogleRedirect called')
+  console.log('🚀 Current URL:', window.location.href)
+  console.log('🚀 Current origin:', window.location.origin)
+  console.log('🚀 Current user before redirect:', firebase.auth().currentUser)
+
+  // Store the current page to return to after auth
+  localStorage.setItem('preRedirectUrl', window.location.pathname)
+  localStorage.setItem('redirectInitiated', Date.now().toString())
+  console.log('🚀 Stored pre-redirect URL:', window.location.pathname)
+
   const provider = new firebase.auth.GoogleAuthProvider()
-  firebase.auth().signInWithRedirect(provider)
+
+  // Add some scopes to make sure we get the right permissions
+  provider.addScope('email')
+  provider.addScope('profile')
+
+  // Try setting a custom parameter to help with debugging
+  provider.setCustomParameters({
+    prompt: 'select_account',
+  })
+
+  console.log('🚀 Provider created with scopes and custom parameters')
+  console.log('🚀 Firebase config:', firebase.app().options)
+  console.log('🚀 About to call signInWithRedirect...')
+
+  // Let's also try adding error handling for the redirect itself
+  firebase
+    .auth()
+    .signInWithRedirect(provider)
+    .then(() => {
+      console.log('🚀 signInWithRedirect promise resolved (this might not log due to redirect)')
+    })
+    .catch((error) => {
+      console.error('❌ signInWithRedirect error:', error)
+      console.error('❌ Error code:', error.code)
+      console.error('❌ Error message:', error.message)
+      console.error('❌ Error email:', error.email)
+      console.error('❌ Error credential:', error.credential)
+      localStorage.removeItem('redirectInitiated')
+      localStorage.removeItem('preRedirectUrl')
+    })
+}
+
+// Let's also create a debug function to check auth state
+export const debugFirebaseAuth = () => {
+  const auth = firebase.auth()
+  console.log('🔍 Firebase Auth Debug:')
+  console.log('🔍 Current user:', auth.currentUser)
+  console.log('🔍 Firebase config:', firebase.app().options)
+
+  // Check if there's any pending redirect
+  return auth
+    .getRedirectResult()
+    .then((result) => {
+      console.log('🔍 Current redirect result:', result)
+      return result
+    })
+    .catch((error) => {
+      console.error('🔍 Current redirect error:', error)
+      throw error
+    })
+}
+
+export const handleGooglePopup = () => {
+  console.log('🚀 handleGooglePopup called')
+  const provider = new firebase.auth.GoogleAuthProvider()
+  return firebase
+    .auth()
+    .signInWithPopup(provider)
+    .then(function(result) {
+      console.log('Popup sign-in successful:', result.user)
+      return result
+    })
+    .catch(function(error) {
+      console.error('Popup sign-in error:', error)
+      throw error
+    })
 }
 
 export const updateGame = (
