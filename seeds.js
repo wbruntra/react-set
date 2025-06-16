@@ -31,8 +31,19 @@ const runGames = async () => {
   return db('games').insert(entries)
 }
 
-runUsers().then(() => {
-  runGames().then(() => {
+const run = async () => {
+  try {
+    await runUsers()
+    console.log('Users seeded successfully')
+    await runGames()
+    console.log('Games seeded successfully')
+  } catch (error) {
+    console.error('Error seeding data:', error)
+  } finally {
     process.exit(0)
-  })
-})
+  }
+}
+
+if (require.main === module) {
+  run()
+}
