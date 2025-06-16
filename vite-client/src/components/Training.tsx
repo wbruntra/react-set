@@ -1,10 +1,9 @@
-import React, { Fragment, useEffect, useRef, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import { getBoardStartingWithSet, isSet, nameThird } from '../utils/helpers'
 
 import Board from './Board'
 import { Link } from 'react-router-dom'
 import { colors } from '../config'
-import useInterval from '../useInterval'
 import { Modal, Button } from 'react-bootstrap' // Import Modal and Button from react-bootstrap
 import scssColors from '@/styles/bts/colors.module.scss'
 
@@ -95,19 +94,15 @@ const Training = () => {
   const [selected, setSelected] = useState<string[]>([])
   const [score, setScore] = useState(0)
 
-  const [startTime, setStartTime] = useState<number | null>(null)
+  const [startTime, setStartTime] = useState<number>(Date.now())
   const [elapsedTime, setElapsedTime] = useState(0)
 
-  const [turnStartTime, setTurnStartTime] = useState<number | null>(null)
-  const [timeRemaining, setTimeRemaining] = useState<number | string>(
-    config.initialTurnTime / 1000,
-  )
+  // Flash animation states
+  const [showSuccessFlash, setShowSuccessFlash] = useState(false)
+  const [showErrorFlash, setShowErrorFlash] = useState(false)
 
-  const timeRef = useRef<number | string>(timeRemaining)
-  timeRef.current = timeRemaining
-
-  const scoreRef = useRef<number>(score)
-  scoreRef.current = score
+  const [turnStartTime, setTurnStartTime] = useState<number>(Date.now())
+  const [timeRemaining, setTimeRemaining] = useState<number>(config.initialTurnTime / 1000)
 
   const [gameOver, setGameOver] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -122,39 +117,47 @@ const Training = () => {
     return Math.max(calc, config.minimumTurnTime)
   }
 
-  const startTurn = ({ currentScore }: { currentScore: number }) => {
+  const startTurn = (currentScore: number) => {
     setTurnStartTime(Date.now())
     setSetFound(false)
+    setTimeRemaining(calculateTurnTime(currentScore) / 1000)
   }
 
+  // Initialize game on mount
   useEffect(() => {
-    setStartTime(Date.now())
-    startTurn({ currentScore: 0 })
+    const now = Date.now()
+    setStartTime(now)
+    startTurn(0)
   }, [])
 
-  const calculateTimeRemaining = ({ precise = false } = {}): string => {
-    if (turnStartTime === null) return '0.0' // Handle null turnStartTime
-    const timeSinceTurnStart = Date.now() - turnStartTime
-    const timeRemainingCalc = calculateTurnTime(scoreRef.current) - timeSinceTurnStart
-    return (timeRemainingCalc / 1000).toFixed(1)
-  }
+  // Timer Effect - handles countdown and game over
+  useEffect(() => {
+    let timerInterval: number | null = null
 
-  useInterval(
-    () => {
-      const now = Date.now()
-      const elapsed = Math.round((now - (startTime || now)) / 1000) // Handle null startTime
-      const timeSinceTurnStart = Math.round(now - (turnStartTime || now)) // Handle null turnStartTime
-      const newTimeRemaining = calculateTurnTime(scoreRef.current) - timeSinceTurnStart
+    // Only run timer if game is active and no set is being processed
+    if (!gameOver && !setFound && initialized) {
+      timerInterval = window.setInterval(() => {
+        const now = Date.now()
+        const elapsed = Math.round((now - startTime) / 1000)
+        const timeSinceTurnStart = now - turnStartTime
+        const newTimeRemaining = calculateTurnTime(score) - timeSinceTurnStart
 
-      setElapsedTime(elapsed)
-      setTimeRemaining((newTimeRemaining / 1000).toFixed(1))
+        setElapsedTime(elapsed)
+        setTimeRemaining(Math.max(0, Math.round((newTimeRemaining / 1000) * 10) / 10))
 
-      if (newTimeRemaining < 0 && !setFound) {
-        triggerGameOver()
+        // Check if time has run out
+        if (newTimeRemaining <= 0 && !setFound) {
+          triggerGameOver()
+        }
+      }, 100) // Update every 100ms for smooth countdown
+    }
+
+    return () => {
+      if (timerInterval !== null) {
+        clearInterval(timerInterval)
       }
-    },
-    setFound || gameOver ? null : 200,
-  )
+    }
+  }, [gameOver, setFound, initialized, startTime, turnStartTime, score])
 
   const getNewBoard = ({ select = true } = {}) => {
     const { board: newBoard, deck } = getBoardStartingWithSet({ boardSize: 8, commonTraits: null })
@@ -169,21 +172,28 @@ const Training = () => {
   }, [])
 
   const handleCardClick = (v: string) => {
-    const timeRemainingVal = calculateTimeRemaining() // Get current value
-    setTimeRemaining(timeRemainingVal)
-
     if (selected.length === 3 || gameOver) {
       return
     }
     if (isSet([...selected, v])) {
       setSetFound(true)
-      setScore((prevScore) => prevScore + 1)
+      const newScore = score + 1
+      setScore(newScore)
       setSelected([...selected, v])
+
+      // Trigger green flash for correct answer
+      setShowSuccessFlash(true)
+      setTimeout(() => setShowSuccessFlash(false), 500) // Brief flash for 500ms
+
       window.setTimeout(() => {
         getNewBoard()
-        startTurn({ currentScore: scoreRef.current + 1 }) // Use updated score from ref
+        startTurn(newScore)
       }, 650)
     } else {
+      // Trigger red flash for wrong answer
+      setShowErrorFlash(true)
+      setTimeout(() => setShowErrorFlash(false), 800) // Flash for 800ms
+
       triggerGameOver()
     }
   }
@@ -192,6 +202,11 @@ const Training = () => {
     setGameOver(true)
     const third = nameThird(selected[0], selected[1]) // Assuming selected has at least 2 elements
     setSelected([...selected, third])
+
+    // Trigger red flash for game over (timeout)
+    setShowErrorFlash(true)
+    setTimeout(() => setShowErrorFlash(false), 800) // Flash for 800ms
+
     if (Number(localStorage.getItem('highScoreTraining')) < score) {
       localStorage.setItem('highScoreTraining', score.toString())
     }
@@ -205,13 +220,52 @@ const Training = () => {
     setShowModal(false)
     setSetFound(false)
     setScore(0)
+    setShowSuccessFlash(false)
+    setShowErrorFlash(false)
     getNewBoard()
-    setStartTime(Date.now())
-    startTurn({ currentScore: 0 })
+    const now = Date.now()
+    setStartTime(now)
+    startTurn(0)
   }
 
   return (
     <Fragment>
+      {/* Success Flash Animation Overlay */}
+      {showSuccessFlash && (
+        <div
+          className="success-flash-overlay"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(100, 255, 100, 0.4)',
+            zIndex: 9999,
+            pointerEvents: 'none',
+            animation: 'successFlash 0.5s ease-out',
+          }}
+        />
+      )}
+
+      {/* Error Flash Animation Overlay */}
+      {showErrorFlash && (
+        <div
+          className="error-flash-overlay"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(255, 100, 100, 0.4)',
+            zIndex: 9999,
+            pointerEvents: 'none',
+            animation: 'errorFlash 0.8s ease-out',
+          }}
+        />
+      )}
+
       <div className="d-flex flex-column justify-content-between">
         <div>
           <Board
@@ -251,6 +305,47 @@ const Training = () => {
         show={initialized && gameOver && showModal}
         finalScore={score}
         handleClose={reset}
+      />
+
+      {/* CSS Animation Styles */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+          @keyframes successFlash {
+            0% {
+              opacity: 0;
+              background-color: rgba(100, 255, 100, 0);
+            }
+            30% {
+              opacity: 1;
+              background-color: rgba(100, 255, 100, 0.5);
+            }
+            100% {
+              opacity: 0;
+              background-color: rgba(100, 255, 100, 0);
+            }
+          }
+          
+          @keyframes errorFlash {
+            0% {
+              opacity: 0;
+              background-color: rgba(255, 100, 100, 0);
+            }
+            20% {
+              opacity: 1;
+              background-color: rgba(255, 100, 100, 0.5);
+            }
+            80% {
+              opacity: 1;
+              background-color: rgba(255, 100, 100, 0.3);
+            }
+            100% {
+              opacity: 0;
+              background-color: rgba(255, 100, 100, 0);
+            }
+          }
+        `,
+        }}
       />
     </Fragment>
   )

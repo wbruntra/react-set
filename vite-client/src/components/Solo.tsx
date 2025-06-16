@@ -89,6 +89,11 @@ function Solo() {
     difficulty: 2,
   }))
 
+  // Flash animation state for CPU alerts
+  const [showCpuFlash, setShowCpuFlash] = useState(false)
+  // Flash animation state for user success
+  const [showUserFlash, setShowUserFlash] = useState(false)
+
   // User data from Redux
   const userReducer = useSelector((state: RootState) => state.user)
   const { user } = userReducer
@@ -131,7 +136,10 @@ function Solo() {
           const [a, b] = shuffle(board).slice(0, 2)
           const c = nameThird(a, b)
           if (board.includes(c)) {
-            // Found a set, start the animation
+            // Found a set, trigger flash animation and start the selection
+            setShowCpuFlash(true)
+            setTimeout(() => setShowCpuFlash(false), 800) // Flash for 800ms
+
             return {
               ...prevState,
               declarer: 'cpu',
@@ -336,6 +344,12 @@ function Solo() {
       // Check if this completes a set
       const setFoundStatus = isSet(newSelected)
 
+      // Trigger green flash if user found a set
+      if (setFoundStatus && newDeclarer === myName) {
+        setShowUserFlash(true)
+        setTimeout(() => setShowUserFlash(false), 800) // Flash for 800ms
+      }
+
       return {
         ...prevState,
         selected: newSelected,
@@ -487,22 +501,105 @@ function Solo() {
   }
 
   return (
-    <Board
-      board={board}
-      deck={deck}
-      selected={selected}
-      declarer={declarer}
-      handleCardClick={handleCardClick}
-      handleDeclare={() => {}}
-      handleRedeal={handleRedeal}
-      players={players}
-      setFound={setFound}
-      gameOver={gameOver}
-      myName={myName}
-      resetGame={resetGame}
-      solo={true}
-      gameMode="versus"
-    />
+    <>
+      {/* CPU Flash Animation Overlay */}
+      {showCpuFlash && (
+        <div
+          className="cpu-flash-overlay"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(255, 100, 100, 0.3)',
+            zIndex: 9999,
+            pointerEvents: 'none',
+            animation: 'cpuFlash 0.8s ease-out',
+          }}
+        />
+      )}
+
+      {/* User Success Flash Animation Overlay */}
+      {showUserFlash && (
+        <div
+          className="user-flash-overlay"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(100, 255, 100, 0.3)',
+            zIndex: 9999,
+            pointerEvents: 'none',
+            animation: 'userFlash 0.8s ease-out',
+          }}
+        />
+      )}
+
+      <Board
+        board={board}
+        deck={deck}
+        selected={selected}
+        declarer={declarer}
+        handleCardClick={handleCardClick}
+        handleDeclare={() => {}}
+        handleRedeal={handleRedeal}
+        players={players}
+        setFound={setFound}
+        gameOver={gameOver}
+        myName={myName}
+        resetGame={resetGame}
+        solo={true}
+        gameMode="versus"
+      />
+
+      {/* CSS Animation Styles */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+          @keyframes cpuFlash {
+            0% {
+              opacity: 0;
+              background-color: rgba(255, 100, 100, 0);
+            }
+            20% {
+              opacity: 1;
+              background-color: rgba(255, 100, 100, 0.4);
+            }
+            80% {
+              opacity: 1;
+              background-color: rgba(255, 100, 100, 0.2);
+            }
+            100% {
+              opacity: 0;
+              background-color: rgba(255, 100, 100, 0);
+            }
+          }
+          
+          @keyframes userFlash {
+            0% {
+              opacity: 0;
+              background-color: rgba(100, 255, 100, 0);
+            }
+            20% {
+              opacity: 1;
+              background-color: rgba(100, 255, 100, 0.4);
+            }
+            80% {
+              opacity: 1;
+              background-color: rgba(100, 255, 100, 0.2);
+            }
+            100% {
+              opacity: 0;
+              background-color: rgba(100, 255, 100, 0);
+            }
+          }
+        `,
+        }}
+      />
+    </>
   )
 }
 

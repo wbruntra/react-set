@@ -3,3 +3,8 @@
 @import './bts/fonts';
 @import './bts/slider';
 @import './bts/custom';
+
+// Monospace font class for numbers and timers
+.mono-font {
+  font-family: 'Courier Prime', monospace;
+}

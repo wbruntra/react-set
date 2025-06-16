@@ -46,7 +46,9 @@ function TopBar({
         <div className={`topbar py-2 bg-${declarer ? 'light' : 'dark'}-orange`}>
           <nav className="text-white">
             <div className="d-flex justify-content-around text-center">
-              <div>Sets: {sets}</div>
+              <div>
+                Sets: <span className="mono-font">{sets}</span>
+              </div>
               <div>{declarer && <>SET! {declarer}</>}</div>
             </div>
           </nav>
@@ -60,9 +62,19 @@ function TopBar({
               className="nav-wrapper"
               style={{ display: 'flex', justifyContent: 'space-between' }}
             >
-              <div>Total Sets: {sets}</div>
-              <div>Remaining: {setsFound ? sets - setsFound.length : sets}</div>
-              <div>Time: {elapsedTime !== undefined ? formatTime(elapsedTime) : '0:00'}</div>
+              <div>
+                Total Sets: <span className="mono-font">{sets}</span>
+              </div>
+              <div>
+                Remaining:{' '}
+                <span className="mono-font">{setsFound ? sets - setsFound.length : sets}</span>
+              </div>
+              <div>
+                Time:{' '}
+                <span className="mono-font">
+                  {elapsedTime !== undefined ? formatTime(elapsedTime) : '0:00'}
+                </span>
+              </div>
             </div>
           </nav>
         </div>
@@ -72,9 +84,21 @@ function TopBar({
         <div className="topbar py-2 bg-dark-orange navbar-fixed">
           <nav>
             <div className="nav-wrapper d-flex justify-content-around">
-              <div>Time: {elapsedTime !== undefined ? formatTime(elapsedTime) : '0:00'}</div>
-              <div>Score: {players.you.score}</div>
-              <div>Remaining: {typeof timeLeft === 'number' && timeLeft > 0 ? timeLeft : 'X'}</div>
+              <div>
+                Time:{' '}
+                <span className="mono-font">
+                  {elapsedTime !== undefined ? formatTime(elapsedTime) : '0:00'}
+                </span>
+              </div>
+              <div>
+                Score: <span className="mono-font">{players.you.score}</span>
+              </div>
+              <div>
+                Remaining:{' '}
+                <span className="mono-font">
+                  {typeof timeLeft === 'number' && timeLeft > 0 ? timeLeft.toFixed(1) : '0.0'}
+                </span>
+              </div>
             </div>
           </nav>
         </div>

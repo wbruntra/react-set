@@ -1,119 +1,95 @@
-# React App Migration Plan (CRA to Vite)
+# UI/UX Improvement Plan
 
-## Overview
+## Problem Statement
 
-Migrate React application from create-react-app to Vite while:
+Excessive white space in the background and lack of proper content containers throughout the application.
 
-- Maintaining original `client` directory intact
-- Excluding socket.io functionality
-- Migrating features incrementally
+## Proposed Solution
+
+Implement a cohesive design system using Bootstrap:
+
+1. Apply dark background theme
+2. Use container classes for content organization
+3. Add consistent padding/margins
+4. Implement responsive grid layouts
 
 ```mermaid
 graph TD
-    A[Phase 1: Core Setup] --> B[Phase 2: Foundation Migration]
-    B --> C[Phase 3: Feature Migration]
-    C --> D[Phase 4: Testing & Optimization]
-
-    subgraph Phase 1: Core Setup
-        A1[Create Redux store configuration]
-        A2[Set up react-router-dom v7]
-        A3[Configure Vite proxy]
-        A4[Update TS config for JS compatibility]
-        A5[Skip socket.io setup]
-    end
-
-    subgraph Phase 2: Foundation Migration
-        B1[Migrate App.js structure]
-        B2[Convert Routes.js to v7 API]
-        B3[Set up Provider wrappers]
-        B4[Migrate core styles]
-    end
-
-    subgraph Phase 3: Feature Migration
-        C1[Migrate simple components first]
-        C2[Migrate complex features incrementally]
-        C3[Update component imports]
-        C4[Handle asset relocation]
-        C5[Skip socket.io components]
-    end
-
-    subgraph Phase 4: Testing & Optimization
-        D1[Verify store functionality]
-        D2[Test routing behavior]
-        D3[Optimize Vite build]
-        D4[Clean up vite-client dependencies]
-    end
+    A[Improve Layout Structure] --> B[Add Bootstrap Container]
+    A --> C[Implement Dark Background]
+    D[Enhance Content Containers] --> E[Apply Container Classes]
+    D --> F[Add Consistent Padding]
+    G[Refine Component Layouts] --> H[Update Main Components]
+    G --> I[Adjust Card Layouts]
 ```
 
-## Phase 1: Core Setup
+## Implementation Steps
 
-1. **Redux Store Configuration**
+### 1. Update Layout Structure (`src/components/Layout.tsx`)
 
-   - Create `src/store.ts` with Redux Toolkit setup
-   - Install missing Redux dependencies if needed
-   - Set up root reducer and initial state
+```jsx
+// Add these classes to the root div:
+<div className="bg-dark min-vh-100 text-light">
+  <div className="container py-4">
+    <Outlet />
+  </div>
+</div>
+```
 
-2. **React Router v7 Setup**
+### 2. Activate Dark Theme (`src/styles/bts/_custom.scss`)
 
-   - Convert routing to new API using `createBrowserRouter`
-   - Set up route loader functions for data fetching
+```scss
+// Uncomment and activate dark background:
+body {
+  background-color: $dark-purple;
+  color: white;
+  font-size: 1.2em;
+}
 
-3. **Vite Proxy Configuration**
+// Add container styling:
+.container {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 2rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+```
 
-   - Convert `setupProxy.js` to `vite.config.ts` proxy settings
-   - Exclude WebSocket handling
+### 3. Update Main Components
 
-4. **TypeScript Configuration**
-   - Allow JS/JSX files in `tsconfig.json`
-   - Add type definitions for untyped libraries
+Apply container classes to:
 
-## Phase 2: Foundation Migration
+- `src/components/Main.tsx`
+- `src/components/Lobby.tsx`
+- `src/components/Host.tsx`
+- `src/components/Guest.tsx`
 
-1. **App Component**
+Example structure:
 
-   - Migrate `App.js` to `App.tsx` with TypeScript types
-   - Integrate Redux Provider and Router Provider
+```jsx
+<div className="container-fluid">
+  <div className="row justify-content-center">
+    <div className="col-md-8 col-lg-6">{/* Component content */}</div>
+  </div>
+</div>
+```
 
-2. **Routing Configuration**
+### 4. Adjust Card Layouts (`src/components/card.scss`)
 
-   - Convert `Routes.js` to new route object structure
-   - Implement lazy loading for routes
+```scss
+.card-container {
+  padding: 15px;
+  margin-bottom: 20px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+```
 
-3. **Core Styles**
-   - Migrate global CSS/Sass files
-   - Update import paths for Vite's asset handling
+## Expected Results
 
-## Phase 3: Feature Migration
-
-1. **Component Migration Strategy**
-
-   - Start with leaf components (no dependencies)
-   - Progress to connected components
-   - Finally migrate container components
-
-2. **Asset Handling**
-
-   - Move public assets to `vite-client/public`
-   - Convert CSS modules to Vite's handling
-
-3. **API Services**
-   - Migrate Firebase initialization
-   - Exclude socket.io connection setup
-
-## Phase 4: Testing & Optimization
-
-1. **Functional Verification**
-
-   - Test Redux state management
-   - Verify routing behavior
-   - Check API/proxy functionality
-
-2. **Performance Optimization**
-
-   - Analyze bundle with `vite build --mode production`
-   - Implement code splitting
-   - Optimize asset loading
-
-3. **Cleanup**
-   - Remove unused dependencies
-   - Verify original `client` directory remains intact
+- Dark purple background throughout application
+- Content contained in centered Bootstrap containers
+- Consistent padding and spacing
+- Reduced white space with proper content organization
+- Responsive design across all device sizes
