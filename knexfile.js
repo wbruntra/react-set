@@ -1,50 +1,29 @@
-const secrets = require('./secrets')
+// knexfile.js
+const path = require('path')
 
 module.exports = {
-  // development: {
-  //   client: 'mysql2',
-  //   connection: {
-  //     database: 'reactdb',
-  //     user: 'william',
-  //     password: 'battle',
-  //     port: 3366,
-  //   },
-  //   migrations: {
-  //     tableName: 'knex_migrations',
-  //   },
-  // },
-  // use better-sqlite3 instead of mysql2
   development: {
     client: 'better-sqlite3',
     connection: {
-      filename: './react-set-dev.db',
+      filename: path.join(__dirname, 'react-db-dev.sqlite3'),
     },
+    useNullAsDefault: true,
     migrations: {
-      tableName: 'knex_migrations',
+      directory: path.join(__dirname, 'migrations'),
     },
   },
+
   production: {
     client: 'better-sqlite3',
     connection: {
-      filename: './react-set.db',
+      filename: path.join(__dirname, 'production.sqlite3'),
     },
+    useNullAsDefault: true,
     migrations: {
-      tableName: 'knex_migrations',
+      directory: path.join(__dirname, 'migrations'),
     },
+    // Production-specific options
+    acquireConnectionTimeout: 60000,
+    asyncStackTraces: false,
   },
-  // production: {
-  //   client: 'mysql2',
-  //   connection: {
-  //     database: secrets.DB_NAME,
-  //     user: secrets.DB_USER,
-  //     password: secrets.DB_PASSWORD,
-  //   },
-  //   pool: {
-  //     min: 2,
-  //     max: 10,
-  //   },
-  //   migrations: {
-  //     tableName: 'knex_migrations',
-  //   },
-  // },
 }

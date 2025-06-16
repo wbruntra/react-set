@@ -66,4 +66,4 @@ venv/
 
 secrets.js
 
-react-set*.db
+*.sqlite3
