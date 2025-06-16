@@ -65,3 +65,5 @@ npm-debug.log
 venv/
 
 secrets.js
+
+react-set*.db
