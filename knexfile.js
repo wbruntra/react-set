@@ -3,7 +3,7 @@ const path = require('path')
 
 module.exports = {
   development: {
-    client: 'better-sqlite3',
+    client: 'sqlite3',
     connection: {
       filename: path.join(__dirname, 'react-db-dev.sqlite3'),
     },
@@ -14,7 +14,7 @@ module.exports = {
   },
 
   production: {
-    client: 'better-sqlite3',
+    client: 'sqlite3',
     connection: {
       filename: path.join(__dirname, 'production.sqlite3'),
     },
