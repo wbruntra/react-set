@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, Fragment } from 'react'
-import { cardToggle, handleGoogleRedirect, isSet } from '../utils/helpers'
+import { cardToggle, handleGoogleSignIn, isSet } from '../utils/helpers'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useParams } from 'react-router-dom'
 import { Modal, ProgressBar, Spinner } from 'react-bootstrap'
@@ -302,9 +302,9 @@ function Guest() {
         <p>
           <button
             onClick={() => {
-              // Clear guest data before redirecting to Google auth
+              // Clear guest data before signing in with Google auth
               localStorage.removeItem('guestUser')
-              handleGoogleRedirect()
+              handleGoogleSignIn()
             }}
             className="btn btn-outline-info"
           >
@@ -331,7 +331,7 @@ function Guest() {
                 className="btn btn-link btn-sm p-0 ms-2"
                 onClick={() => {
                   localStorage.removeItem('guestUser')
-                  handleGoogleRedirect()
+                  handleGoogleSignIn()
                 }}
               >
                 Sign in with Google

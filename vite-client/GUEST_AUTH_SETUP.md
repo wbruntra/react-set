@@ -11,8 +11,10 @@ The Guest component has been modified to allow users to join games without requi
 - ✅ Guest user creation and persistence working
 - ✅ LocalStorage session management working
 - ✅ UI for guest/authenticated user transitions working
+- ✅ **Authentication now uses popup method by default (redirect was broken)**
 - ⚠️ Firebase write operations may fail for guest users (depends on security rules)
 - ⚠️ Anonymous authentication disabled on Firebase project
+- ⚠️ **TODO: Fix redirect authentication method**
 
 ## Changes Made
 
@@ -150,3 +152,27 @@ service cloud.firestore {
 - The component gracefully handles both authenticated and guest users
 - Guest data is automatically cleared when users sign in with Google
 - Signout functionality properly cleans up guest data from localStorage
+
+## Authentication Method Update (June 2025)
+
+**Issue**: The Firebase redirect authentication method was not working properly across all environments.
+
+**Solution**: Switched to popup authentication as the default method for all environments.
+
+**Changes Made**:
+
+- Modified `handleGoogleSignIn()` to always use popup instead of environment-based selection
+- Updated all components (`Host.tsx`, `Stats.tsx`, `Guest.tsx`) to use `handleGoogleSignIn()` instead of calling `handleGoogleRedirect()` directly
+- Kept `handleGoogleRedirect()` available for testing in advanced options with clear indication it's not working
+- Added TODO comments to fix redirect authentication in the future
+
+**Benefits**:
+
+- ✅ Reliable authentication that works in all environments
+- ✅ Consistent user experience
+- ✅ No more auth failures due to redirect issues
+
+**Future Work**:
+
+- 🔄 Investigate and fix the redirect authentication method
+- 🔄 Consider making redirect vs popup configurable once redirect is fixed

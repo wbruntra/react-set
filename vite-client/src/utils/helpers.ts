@@ -218,17 +218,15 @@ export const removeSelected = (state: {
 }
 
 export const handleGoogleSignIn = () => {
-  // Use popup for localhost development, redirect for production
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    console.log('🚀 Development environment detected, using popup authentication')
-    return handleGooglePopup()
-  } else {
-    console.log('🚀 Production environment detected, using redirect authentication')
-    return handleGoogleRedirect()
-  }
+  // TODO: Fix redirect authentication - currently not working, so using popup for all environments
+  // Previously used redirect for production but popup works reliably everywhere
+  console.log('🚀 Using popup authentication (redirect needs to be fixed)')
+  return handleGooglePopup()
 }
 
 export const handleGoogleRedirect = () => {
+  // TODO: This redirect authentication method is currently not working properly
+  // Need to investigate and fix the redirect flow - popup works fine for now
   console.log('🚀 handleGoogleRedirect called')
   console.log('🚀 Current URL:', window.location.href)
   console.log('🚀 Current origin:', window.location.origin)
@@ -293,6 +291,7 @@ export const debugFirebaseAuth = () => {
 }
 
 export const handleGooglePopup = () => {
+  // This popup authentication method works reliably and is currently the default
   console.log('🚀 handleGooglePopup called')
   const provider = new firebase.auth.GoogleAuthProvider()
   return firebase

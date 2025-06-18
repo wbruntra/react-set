@@ -196,7 +196,7 @@ const AuthenticationSection: React.FC = () => (
             </summary>
             <div className="mt-3 d-flex gap-2 justify-content-center">
               <button onClick={handleGoogleRedirect} className="btn btn-outline-secondary btn-sm">
-                Force Redirect
+                Try Redirect (Not Working)
               </button>
               <button
                 onClick={() => {
@@ -204,9 +204,12 @@ const AuthenticationSection: React.FC = () => (
                 }}
                 className="btn btn-outline-success btn-sm"
               >
-                Force Popup
+                Use Popup (Default)
               </button>
             </div>
+            <small className="text-muted mt-2 d-block">
+              Note: Popup authentication is now the default method as redirect needs to be fixed.
+            </small>
           </details>
         </div>
       </div>

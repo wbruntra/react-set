@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import {
   cardToggle,
-  handleGoogleRedirect,
+  handleGoogleSignIn,
   isSet,
   makeDeck,
   removeSelected,
@@ -386,7 +386,7 @@ function Host() {
     return (
       <MessageCard title="Sign In Required">
         <p className="mb-4">To host a game, sign in with your Google account.</p>
-        <button onClick={handleGoogleRedirect} className="btn btn-info btn-lg">
+        <button onClick={handleGoogleSignIn} className="btn btn-info btn-lg">
           Sign in
         </button>
       </MessageCard>

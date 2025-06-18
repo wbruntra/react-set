@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { handleGoogleRedirect } from '../utils/helpers'
+import { handleGoogleSignIn } from '../utils/helpers'
 import axios from 'axios'
 import { RootState } from '../store' // Assuming RootState is defined in store.ts
 
@@ -41,7 +41,7 @@ function Stats() {
       <div className="container mt-4">
         <p>Sign in to view stats</p>
         <p>
-          <button onClick={handleGoogleRedirect} className="btn btn-info">
+          <button onClick={handleGoogleSignIn} className="btn btn-info">
             Sign in
           </button>
         </p>
