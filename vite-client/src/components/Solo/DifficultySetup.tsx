@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { handleGoogleSignIn, handleGoogleRedirect, handleGooglePopup } from '../../utils/helpers'
+import { handleGoogleSignIn } from '../../utils/helpers'
 import { GAME_CONFIG, DIFFICULTY_CONFIG } from './constants'
 import { calculateCPUPerformanceTime, formatTimeString } from './cpuPerformance'
 import CPUAnalysisModal from './CPUAnalysisModal'
@@ -189,28 +189,6 @@ const AuthenticationSection: React.FC = () => (
           >
             Sign in with Google
           </button>
-
-          <details className="mt-3">
-            <summary className="text-muted" style={{ cursor: 'pointer' }}>
-              Advanced options
-            </summary>
-            <div className="mt-3 d-flex gap-2 justify-content-center">
-              <button onClick={handleGoogleRedirect} className="btn btn-outline-secondary btn-sm">
-                Try Redirect (Not Working)
-              </button>
-              <button
-                onClick={() => {
-                  handleGooglePopup().catch(console.error)
-                }}
-                className="btn btn-outline-success btn-sm"
-              >
-                Use Popup (Default)
-              </button>
-            </div>
-            <small className="text-muted mt-2 d-block">
-              Note: Popup authentication is now the default method as redirect needs to be fixed.
-            </small>
-          </details>
         </div>
       </div>
     </div>

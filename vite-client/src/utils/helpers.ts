@@ -1,10 +1,4 @@
-import {
-  GoogleAuthProvider,
-  signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
-  User,
-} from 'firebase/auth'
+import { GoogleAuthProvider, signInWithPopup, User } from 'firebase/auth'
 import { auth, firestore } from '../firebaseConfig'
 import {
   doc,
@@ -231,106 +225,30 @@ export const removeSelected = (state: {
 }
 
 export const handleGoogleSignIn = () => {
-  // TODO: Fix redirect authentication - currently not working, so using popup for all environments
-  // Previously used redirect for production but popup works reliably everywhere
-  console.log('🚀 Using popup authentication (redirect needs to be fixed)')
+  // Use popup authentication - Firebase's recommended method
+  console.log('🚀 Using popup authentication')
   return handleGooglePopup()
 }
 
-export const handleGoogleRedirect = () => {
-  // TODO: This redirect authentication method is currently not working properly
-  // Need to investigate and fix the redirect flow - popup works fine for now
-  console.log('🚀 handleGoogleRedirect called')
-  console.log('🚀 Current URL:', window.location.href)
-  console.log('🚀 Current origin:', window.location.origin)
-  console.log('🚀 Current user before redirect:', auth.currentUser)
-
-  // Store the current page to return to after auth
-  localStorage.setItem('preRedirectUrl', window.location.pathname)
-  localStorage.setItem('redirectInitiated', Date.now().toString())
-  console.log('🚀 Stored pre-redirect URL:', window.location.pathname)
-
+export const handleGooglePopup = () => {
+  console.log('🚀 handleGooglePopup called')
   const provider = new GoogleAuthProvider()
 
-  // Add some scopes to make sure we get the right permissions
+  // Add scopes for user profile information
   provider.addScope('email')
   provider.addScope('profile')
 
-  // For development, try using localhost as the custom domain
-  // This might help with the redirect flow
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    console.log('🚀 Development environment detected - trying alternative redirect configuration')
-    // Don't set custom parameters that might interfere
-  } else {
-    // Try setting a custom parameter to help with debugging
-    provider.setCustomParameters({
-      prompt: 'select_account',
-    })
-  }
-
-  console.log('🚀 Provider created with scopes and custom parameters')
-  console.log('🚀 Firebase auth instance:', auth)
-  console.log('🚀 About to call signInWithRedirect...')
-
-  // Clear any previous auth errors
-  localStorage.removeItem('authError')
-
-  // Let's also try adding error handling for the redirect itself
-  signInWithRedirect(auth, provider)
-    .then(() => {
-      console.log('🚀 signInWithRedirect promise resolved (this might not log due to redirect)')
-    })
-    .catch((error) => {
-      console.error('❌ signInWithRedirect error:', error)
-      console.error('❌ Error code:', error.code)
-      console.error('❌ Error message:', error.message)
-      console.error('❌ Error email:', error.email)
-      console.error('❌ Error credential:', error.credential)
-
-      // Store the error for debugging
-      localStorage.setItem(
-        'authError',
-        JSON.stringify({
-          code: error.code,
-          message: error.message,
-          email: error.email,
-        }),
-      )
-
-      localStorage.removeItem('redirectInitiated')
-      localStorage.removeItem('preRedirectUrl')
-    })
-}
-
-// Let's also create a debug function to check auth state
-export const debugFirebaseAuth = () => {
-  console.log('🔍 Firebase Auth Debug:')
-  console.log('🔍 Current user:', auth.currentUser)
-  console.log('🔍 Firebase auth instance:', auth)
-
-  // Don't call getRedirectResult() again as it can only be called once successfully
-  // The result should have already been handled by main.tsx
-  console.log('🔍 Skipping getRedirectResult() call to avoid consuming the result twice')
-
-  return Promise.resolve({
-    credential: null,
-    user: auth.currentUser,
-    additionalUserInfo: null,
-    operationType: null,
-  })
-}
-
-export const handleGooglePopup = () => {
-  // This popup authentication method works reliably and is currently the default
-  console.log('🚀 handleGooglePopup called')
-  const provider = new GoogleAuthProvider()
   return signInWithPopup(auth, provider)
     .then(function (result) {
-      console.log('Popup sign-in successful:', result.user)
+      console.log('✅ Popup sign-in successful:', result.user.displayName)
+      console.log('✅ User UID:', result.user.uid)
+      console.log('✅ User email:', result.user.email)
       return result
     })
     .catch(function (error) {
-      console.error('Popup sign-in error:', error)
+      console.error('❌ Popup sign-in error:', error)
+      console.error('❌ Error code:', error.code)
+      console.error('❌ Error message:', error.message)
       throw error
     })
 }
@@ -366,45 +284,4 @@ export const sendAction = (gameId: string, action: any) => {
 export const playerNotRegistered = (players: Player[], name: string): boolean => {
   const player = find(players, ['name', name])
   return isNil(player)
-}
-
-// Enhanced redirect debugging function
-export const diagnoseRedirectIssues = async () => {
-  console.log('🔍 === REDIRECT DIAGNOSIS START ===')
-
-  console.log('🔍 Current domain:', window.location.origin)
-  console.log('🔍 Current user:', auth.currentUser)
-  console.log('🔍 Firebase auth instance:', auth)
-
-  // Check if we're in a redirect scenario
-  const redirectInitiated = localStorage.getItem('redirectInitiated')
-  const preRedirectUrl = localStorage.getItem('preRedirectUrl')
-
-  console.log('🔍 Redirect initiated:', redirectInitiated)
-  console.log('🔍 Pre-redirect URL:', preRedirectUrl)
-  console.log('🔍 Current URL:', window.location.href)
-
-  // Check URL parameters for auth codes
-  const urlParams = new URLSearchParams(window.location.search)
-  const authCode = urlParams.get('code')
-  const authState = urlParams.get('state')
-
-  console.log('🔍 URL auth code:', authCode ? 'Present' : 'None')
-  console.log('🔍 URL auth state:', authState ? 'Present' : 'None')
-
-  // Check for any auth errors in localStorage
-  const authError = localStorage.getItem('authError')
-  console.log('🔍 Stored auth error:', authError)
-
-  console.log('🔍 === REDIRECT DIAGNOSIS END ===')
-
-  return {
-    redirectInitiated: !!redirectInitiated,
-    preRedirectUrl,
-    currentUrl: window.location.href,
-    hasAuthCode: !!authCode,
-    hasAuthState: !!authState,
-    currentUser: auth.currentUser,
-    authError,
-  }
 }
