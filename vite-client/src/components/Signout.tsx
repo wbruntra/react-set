@@ -1,9 +1,7 @@
-import 'firebase/compat/auth'
-import 'firebase/compat/firestore'
-
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import firebase from 'firebase/compat/app'
+import { auth } from '../firebaseConfig'
+import { signOut as firebaseSignOut } from 'firebase/auth'
 import { useDispatch } from 'react-redux'
 import { logOut } from '../features/user/userSlice'
 
@@ -12,17 +10,14 @@ function Signout() {
   const navigate = useNavigate()
 
   const signOut = () => {
-    firebase
-      .auth()
-      .signOut()
-      .then(() => {
-        dispatch(logOut())
-        // Clear guest user data from localStorage
-        localStorage.removeItem('guestUser')
-        localStorage.removeItem('nickname')
-        console.log('Signed out.')
-        navigate('/')
-      })
+    firebaseSignOut(auth).then(() => {
+      dispatch(logOut())
+      // Clear guest user data from localStorage
+      localStorage.removeItem('guestUser')
+      localStorage.removeItem('nickname')
+      console.log('Signed out.')
+      navigate('/')
+    })
   }
 
   return (

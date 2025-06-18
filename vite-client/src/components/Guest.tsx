@@ -3,10 +3,16 @@ import { cardToggle, handleGoogleSignIn, isSet } from '../utils/helpers'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useParams } from 'react-router-dom'
 import { Modal, ProgressBar, Spinner } from 'react-bootstrap'
-import firebase from 'firebase/compat/app'
-import 'firebase/compat/auth'
-import 'firebase/compat/firestore'
-import firestore from '../firestore'
+import { auth, firestore } from '../firebaseConfig'
+import {
+  doc,
+  collection,
+  onSnapshot,
+  addDoc,
+  serverTimestamp,
+  DocumentReference,
+  CollectionReference,
+} from 'firebase/firestore'
 import { isEmpty } from 'lodash'
 import { updateNickname, updateUser } from '../features/user/userSlice'
 import { RootState } from '../store'
@@ -54,8 +60,8 @@ function Guest() {
   const [modalDelayMsg, setDelayMsg] = useState<string | undefined>(undefined) // Not used in original, but good for type safety
 
   const myFire = useRef<{
-    game?: firebase.firestore.DocumentReference
-    actions?: firebase.firestore.CollectionReference
+    game?: DocumentReference
+    actions?: CollectionReference
   }>({})
   const firebaseRefs = myFire.current
 
@@ -91,9 +97,9 @@ function Guest() {
 
     console.log('Creating action on', firebaseRefs.actions)
     try {
-      const docRef = await firebaseRefs.actions.add({
+      const docRef = await addDoc(firebaseRefs.actions, {
         ...action,
-        created: firebase.firestore.FieldValue.serverTimestamp(),
+        created: serverTimestamp(),
       })
 
       if (action.type === 'found') {
@@ -164,7 +170,7 @@ function Guest() {
     await sendAction(action)
   }
 
-  const processUpdate = (doc: firebase.firestore.DocumentSnapshot) => {
+  const processUpdate = (doc: any) => {
     const updatedState = { ...doc.data() } as GuestState // Cast to GuestState
     const { selected: mySelected } = currentState.current
     if (isEmpty(updatedState)) {
@@ -196,12 +202,13 @@ function Guest() {
     }
 
     console.log('Setting up Firebase listeners for game:', gameName)
-    console.log('Current Firebase auth state:', firebase.auth().currentUser)
+    console.log('Current Firebase auth state:', auth.currentUser)
 
-    firebaseRefs.game = firestore.collection('games').doc(gameName)
+    firebaseRefs.game = doc(firestore, 'games', gameName)
 
     // Test if we can read from Firebase without authentication
-    const unsubGames = firebaseRefs.game.onSnapshot(
+    const unsubGames = onSnapshot(
+      firebaseRefs.game,
       (doc) => {
         console.log('Successfully received game update')
         processUpdate(doc)
@@ -214,9 +221,10 @@ function Guest() {
       },
     )
 
-    firebaseRefs.actions = firebaseRefs.game.collection('actions')
+    firebaseRefs.actions = collection(firebaseRefs.game, 'actions')
 
-    const unsubActions = firebaseRefs.actions.onSnapshot(
+    const unsubActions = onSnapshot(
+      firebaseRefs.actions,
       (snapshot) => {
         console.log('Successfully received actions update')
         snapshot.docChanges().forEach((change) => {

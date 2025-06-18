@@ -1,7 +1,7 @@
 import React, { Fragment, useEffect, useState } from 'react'
-import firestore from '../firestore'
+import { firestore } from '../firebaseConfig'
+import { collection, onSnapshot, Timestamp } from 'firebase/firestore'
 import { Link } from 'react-router-dom'
-import { Timestamp } from 'firebase/firestore' // Import Timestamp
 
 interface GameData {
   name: string
@@ -14,9 +14,9 @@ function Lobby() {
   const [init, setInit] = useState(false)
 
   useEffect(() => {
-    const gamesRef = firestore.collection('games')
+    const gamesRef = collection(firestore, 'games')
 
-    const unsubscribe = gamesRef.onSnapshot((snapshot) => {
+    const unsubscribe = onSnapshot(gamesRef, (snapshot) => {
       const newGames: GameData[] = []
       snapshot.forEach((doc) => {
         newGames.push({

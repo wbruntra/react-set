@@ -11,10 +11,20 @@ import {
 import { findKey, isEmpty } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
-import firebase from 'firebase/compat/app'
-import 'firebase/compat/auth'
-import 'firebase/compat/firestore'
-import firestore from '../firestore'
+import { auth, firestore } from '../firebaseConfig'
+import {
+  doc,
+  collection,
+  onSnapshot,
+  setDoc,
+  deleteDoc,
+  updateDoc,
+  serverTimestamp,
+  query,
+  where,
+  getDocs,
+  DocumentReference,
+} from 'firebase/firestore'
 import update from 'immutability-helper'
 
 import Board from './Board'
@@ -69,7 +79,7 @@ function Host() {
   const { user, loading: userLoading } = userReducer
   const dispatch = useDispatch()
 
-  const myFire = useRef<{ game?: firebase.firestore.DocumentReference; actions?: any }>({})
+  const myFire = useRef<{ game?: DocumentReference; actions?: any }>({})
   const firebaseRefs = myFire.current
 
   const initialDeck = makeDeck()
@@ -118,10 +128,11 @@ function Host() {
 
   useEffect(() => {
     if (user && !isEmpty(user.uid)) {
-      firestore
-        .collection('games')
-        .where('creator_uid', '==', user.uid)
-        .get()
+      const gamesQuery = query(
+        collection(firestore, 'games'),
+        where('creator_uid', '==', user.uid),
+      )
+      getDocs(gamesQuery)
         .then(function (querySnapshot) {
           querySnapshot.forEach(function (doc) {
             console.log(doc.id)
@@ -155,14 +166,11 @@ function Host() {
 
   const handleRejectResume = () => {
     const { gameTitle } = gameInProgress
-    firestore
-      .collection('games')
-      .doc(gameTitle)
-      .delete()
-      .then(() => {
-        console.log('Deleted old game')
-        setGameInProgress(undefined)
-      })
+    const gameDocRef = doc(firestore, 'games', gameTitle)
+    deleteDoc(gameDocRef).then(() => {
+      console.log('Deleted old game')
+      setGameInProgress(undefined)
+    })
   }
 
   const handleCardClick = (card: string) => {
@@ -183,14 +191,14 @@ function Host() {
     setAndSendState(newState)
   }
 
-  const actionsSubscribe = (reference: firebase.firestore.DocumentReference) => {
-    const actions = reference.collection('actions')
-    const unsubscribe = actions.onSnapshot((snapshot) => {
+  const actionsSubscribe = (reference: DocumentReference) => {
+    const actions = collection(reference, 'actions')
+    const unsubscribe = onSnapshot(actions, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
         if (change.type === 'added') {
           const action = change.doc.data() as Action // Assuming Action interface is defined
           processAction(action)
-          actions.doc(change.doc.id).delete()
+          deleteDoc(doc(actions, change.doc.id))
         }
         if (change.type === 'removed') {
           console.log('Removed action: ', change.doc.data())
@@ -201,7 +209,7 @@ function Host() {
   }
 
   const subscribeToGame = async (gameTitle: string) => {
-    firebaseRefs.game = firestore.collection('games').doc(gameTitle)
+    firebaseRefs.game = doc(firestore, 'games', gameTitle)
     const gameUpdateId = window.setInterval(() => {
       updateGame(firebaseRefs.game!, {})
     }, 30000)
@@ -221,7 +229,7 @@ function Host() {
       myName: host,
       created: true,
       ...gameInProgress,
-      lastUpdate: firebase.firestore.FieldValue.serverTimestamp(), // This will be handled by updateGame
+      lastUpdate: serverTimestamp(), // This will be handled by updateGame
     })
   }
 
@@ -230,8 +238,8 @@ function Host() {
     const { myName, board, deck, selected, players, gameOver, gameStarted } = currentState.current
     const officialTitle = !isEmpty(gameTitle) ? gameTitle : `${myName}'s game`
     setGameTitle(officialTitle) // Update local state for gameTitle
-    firebaseRefs.game = firestore.collection('games').doc(officialTitle)
-    firebaseRefs.game.set({
+    firebaseRefs.game = doc(firestore, 'games', officialTitle)
+    setDoc(firebaseRefs.game, {
       creator_uid: user?.uid,
       players,
       board,
@@ -239,12 +247,14 @@ function Host() {
       selected,
       gameOver,
       gameStarted, // Include gameStarted in the Firebase document
-      lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
+      lastUpdate: serverTimestamp(),
     })
     const updateId = window.setInterval(() => {
-      firebaseRefs.game?.update({
-        lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
-      })
+      if (firebaseRefs.game) {
+        updateDoc(firebaseRefs.game, {
+          lastUpdate: serverTimestamp(),
+        })
+      }
     }, 30000)
     setActiveGameUpdater(updateId)
 
@@ -291,7 +301,9 @@ function Host() {
     const gameOver = newScore >= config.playingTo ? declarer : ''
     if (gameOver) {
       window.setTimeout(() => {
-        firebaseRefs.game?.delete()
+        if (firebaseRefs.game) {
+          deleteDoc(firebaseRefs.game)
+        }
         if (activeGameUpdater !== undefined) {
           clearInterval(activeGameUpdater)
         }

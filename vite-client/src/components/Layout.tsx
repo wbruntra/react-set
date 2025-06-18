@@ -2,18 +2,13 @@ import React, { useEffect, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import axios from 'axios'
-import firebase from 'firebase/compat/app'
-import 'firebase/compat/auth'
-import 'firebase/compat/firestore'
+import { auth } from '../firebaseConfig'
+import { onAuthStateChanged, setPersistence, browserLocalPersistence } from 'firebase/auth'
 
 import { updateUser } from '../features/user/userSlice'
-import { debugFirebaseAuth } from '../utils/helpers'
-import firebaseConfig from '../firebaseConfig'
+import { debugFirebaseAuth, diagnoseRedirectIssues } from '../utils/helpers'
 
-// Initialize Firebase if not already initialized
-if (firebase.apps.length === 0) {
-  firebase.initializeApp(firebaseConfig)
-}
+// Firebase is already initialized in firebaseConfig.ts
 
 // Global flag to ensure getRedirectResult is only called once
 const redirectResultChecked = false
@@ -45,11 +40,8 @@ function Layout() {
       console.log('🔍 No redirect initiation detected')
     }
 
-    const auth = firebase.auth()
-
     // Set persistence to LOCAL to ensure authentication persists across sessions
-    auth
-      .setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+    setPersistence(auth, browserLocalPersistence)
       .then(() => {
         console.log('Auth persistence set to LOCAL')
       })
@@ -79,12 +71,12 @@ function Layout() {
     // Also call debug function if we detected a redirect
     if (redirectInitiated) {
       console.log('🔍 Running Firebase auth debug...')
-      debugFirebaseAuth()
+      diagnoseRedirectIssues()
         .then((result) => {
-          console.log('🔍 Debug result:', result)
+          console.log('🔍 Diagnosis result:', result)
         })
         .catch((error) => {
-          console.error('🔍 Debug error:', error)
+          console.error('🔍 Diagnosis error:', error)
         })
     }
 
@@ -102,7 +94,7 @@ function Layout() {
     }
 
     // Listen for auth state changes
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       console.log('🔥 Auth state changed:', user ? `${user.displayName} (${user.uid})` : 'No user')
 
       if (user) {

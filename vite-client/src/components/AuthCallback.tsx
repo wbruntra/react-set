@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import firebase from 'firebase/compat/app'
-import 'firebase/compat/auth'
+import { auth } from '../firebaseConfig'
+import { getRedirectResult } from 'firebase/auth'
 
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate()
@@ -9,9 +9,7 @@ const AuthCallback: React.FC = () => {
   useEffect(() => {
     console.log('🔄 AuthCallback component mounted')
 
-    firebase
-      .auth()
-      .getRedirectResult()
+    getRedirectResult(auth)
       .then((result) => {
         console.log('🔄 AuthCallback redirect result:', result)
 

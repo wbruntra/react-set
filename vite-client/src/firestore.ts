@@ -1,11 +1,2 @@
-import 'firebase/compat/auth'
-import 'firebase/compat/firestore'
-
-import firebase from 'firebase/compat/app'
-import firebaseConfig from './firebaseConfig'
-
-firebase.initializeApp(firebaseConfig)
-
-const firestore = firebase.firestore()
-
-export default firestore
+// Backwards compatibility - export the firestore instance from the new config
+export { firestore as default } from './firebaseConfig'

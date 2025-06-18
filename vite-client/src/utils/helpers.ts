@@ -1,12 +1,25 @@
-import 'firebase/compat/auth'
-import 'firebase/compat/firestore'
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  User,
+} from 'firebase/auth'
+import { auth, firestore } from '../firebaseConfig'
+import {
+  doc,
+  collection,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  serverTimestamp,
+  DocumentReference,
+} from 'firebase/firestore'
 
 import { CommonState, GameState, Player } from './models'
 import { find, isNil, shuffle } from 'lodash'
 
 import _ from 'lodash'
-import firebase from 'firebase/compat/app'
-import firestore from '../firestore'
 
 export const range = (n: number): number[] => {
   return [...Array(n).keys()]
@@ -230,32 +243,40 @@ export const handleGoogleRedirect = () => {
   console.log('🚀 handleGoogleRedirect called')
   console.log('🚀 Current URL:', window.location.href)
   console.log('🚀 Current origin:', window.location.origin)
-  console.log('🚀 Current user before redirect:', firebase.auth().currentUser)
+  console.log('🚀 Current user before redirect:', auth.currentUser)
 
   // Store the current page to return to after auth
   localStorage.setItem('preRedirectUrl', window.location.pathname)
   localStorage.setItem('redirectInitiated', Date.now().toString())
   console.log('🚀 Stored pre-redirect URL:', window.location.pathname)
 
-  const provider = new firebase.auth.GoogleAuthProvider()
+  const provider = new GoogleAuthProvider()
 
   // Add some scopes to make sure we get the right permissions
   provider.addScope('email')
   provider.addScope('profile')
 
-  // Try setting a custom parameter to help with debugging
-  provider.setCustomParameters({
-    prompt: 'select_account',
-  })
+  // For development, try using localhost as the custom domain
+  // This might help with the redirect flow
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    console.log('🚀 Development environment detected - trying alternative redirect configuration')
+    // Don't set custom parameters that might interfere
+  } else {
+    // Try setting a custom parameter to help with debugging
+    provider.setCustomParameters({
+      prompt: 'select_account',
+    })
+  }
 
   console.log('🚀 Provider created with scopes and custom parameters')
-  console.log('🚀 Firebase config:', firebase.app().options)
+  console.log('🚀 Firebase auth instance:', auth)
   console.log('🚀 About to call signInWithRedirect...')
 
+  // Clear any previous auth errors
+  localStorage.removeItem('authError')
+
   // Let's also try adding error handling for the redirect itself
-  firebase
-    .auth()
-    .signInWithRedirect(provider)
+  signInWithRedirect(auth, provider)
     .then(() => {
       console.log('🚀 signInWithRedirect promise resolved (this might not log due to redirect)')
     })
@@ -265,6 +286,17 @@ export const handleGoogleRedirect = () => {
       console.error('❌ Error message:', error.message)
       console.error('❌ Error email:', error.email)
       console.error('❌ Error credential:', error.credential)
+
+      // Store the error for debugging
+      localStorage.setItem(
+        'authError',
+        JSON.stringify({
+          code: error.code,
+          message: error.message,
+          email: error.email,
+        }),
+      )
+
       localStorage.removeItem('redirectInitiated')
       localStorage.removeItem('preRedirectUrl')
     })
@@ -272,31 +304,27 @@ export const handleGoogleRedirect = () => {
 
 // Let's also create a debug function to check auth state
 export const debugFirebaseAuth = () => {
-  const auth = firebase.auth()
   console.log('🔍 Firebase Auth Debug:')
   console.log('🔍 Current user:', auth.currentUser)
-  console.log('🔍 Firebase config:', firebase.app().options)
+  console.log('🔍 Firebase auth instance:', auth)
 
-  // Check if there's any pending redirect
-  return auth
-    .getRedirectResult()
-    .then((result) => {
-      console.log('🔍 Current redirect result:', result)
-      return result
-    })
-    .catch((error) => {
-      console.error('🔍 Current redirect error:', error)
-      throw error
-    })
+  // Don't call getRedirectResult() again as it can only be called once successfully
+  // The result should have already been handled by main.tsx
+  console.log('🔍 Skipping getRedirectResult() call to avoid consuming the result twice')
+
+  return Promise.resolve({
+    credential: null,
+    user: auth.currentUser,
+    additionalUserInfo: null,
+    operationType: null,
+  })
 }
 
 export const handleGooglePopup = () => {
   // This popup authentication method works reliably and is currently the default
   console.log('🚀 handleGooglePopup called')
-  const provider = new firebase.auth.GoogleAuthProvider()
-  return firebase
-    .auth()
-    .signInWithPopup(provider)
+  const provider = new GoogleAuthProvider()
+  return signInWithPopup(auth, provider)
     .then(function (result) {
       console.log('Popup sign-in successful:', result.user)
       return result
@@ -307,40 +335,76 @@ export const handleGooglePopup = () => {
     })
 }
 
-export const updateGame = (
-  reference: string | firebase.firestore.DocumentReference,
-  data: any,
-) => {
-  let game: firebase.firestore.DocumentReference
+export const updateGame = (reference: string | DocumentReference, data: any) => {
+  let game: DocumentReference
   if (typeof reference === 'string') {
-    game = firestore.collection('games').doc(reference)
+    game = doc(firestore, 'games', reference)
   } else {
     game = reference
   }
-  game.update({
+  updateDoc(game, {
     ...data,
-    lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
+    lastUpdate: serverTimestamp(),
   })
 }
 
 export const sendAction = (gameId: string, action: any) => {
-  const actions = firestore.collection('games').doc(gameId).collection('actions')
-  actions
-    .add({
-      ...action,
-      created: firebase.firestore.FieldValue.serverTimestamp(),
-    })
-    .then(function (docRef) {
-      if (action.type === 'found') {
-        const docId = docRef.id
-        console.log('Document written with ID: ', docId)
-        const pendingActionId = docId
-        return pendingActionId
-      }
-    })
+  const actions = collection(firestore, 'games', gameId, 'actions')
+  addDoc(actions, {
+    ...action,
+    created: serverTimestamp(),
+  }).then(function (docRef) {
+    if (action.type === 'found') {
+      const docId = docRef.id
+      console.log('Document written with ID: ', docId)
+      const pendingActionId = docId
+      return pendingActionId
+    }
+  })
 }
 
 export const playerNotRegistered = (players: Player[], name: string): boolean => {
   const player = find(players, ['name', name])
   return isNil(player)
+}
+
+// Enhanced redirect debugging function
+export const diagnoseRedirectIssues = async () => {
+  console.log('🔍 === REDIRECT DIAGNOSIS START ===')
+
+  console.log('🔍 Current domain:', window.location.origin)
+  console.log('🔍 Current user:', auth.currentUser)
+  console.log('🔍 Firebase auth instance:', auth)
+
+  // Check if we're in a redirect scenario
+  const redirectInitiated = localStorage.getItem('redirectInitiated')
+  const preRedirectUrl = localStorage.getItem('preRedirectUrl')
+
+  console.log('🔍 Redirect initiated:', redirectInitiated)
+  console.log('🔍 Pre-redirect URL:', preRedirectUrl)
+  console.log('🔍 Current URL:', window.location.href)
+
+  // Check URL parameters for auth codes
+  const urlParams = new URLSearchParams(window.location.search)
+  const authCode = urlParams.get('code')
+  const authState = urlParams.get('state')
+
+  console.log('🔍 URL auth code:', authCode ? 'Present' : 'None')
+  console.log('🔍 URL auth state:', authState ? 'Present' : 'None')
+
+  // Check for any auth errors in localStorage
+  const authError = localStorage.getItem('authError')
+  console.log('🔍 Stored auth error:', authError)
+
+  console.log('🔍 === REDIRECT DIAGNOSIS END ===')
+
+  return {
+    redirectInitiated: !!redirectInitiated,
+    preRedirectUrl,
+    currentUrl: window.location.href,
+    hasAuthCode: !!authCode,
+    hasAuthState: !!authState,
+    currentUser: auth.currentUser,
+    authError,
+  }
 }
