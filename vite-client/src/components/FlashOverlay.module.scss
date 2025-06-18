@@ -1,0 +1,190 @@
+// Flash overlay animations for game modes
+
+// Animation configuration
+$flash-duration: 0.8s;
+$flash-easing: ease-out;
+$z-index-flash: 9999;
+
+// Color configuration
+$cpu-flash-color: rgba(255, 100, 100, 1);
+$user-flash-color: rgba(100, 255, 100, 1);
+$success-flash-color: rgba(100, 255, 100, 1);
+$error-flash-color: rgba(255, 100, 100, 1);
+
+// Base flash overlay styles
+.flashOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: $z-index-flash;
+  pointer-events: none;
+}
+
+.cpuFlash {
+  @extend .flashOverlay;
+  animation: cpuFlash $flash-duration $flash-easing;
+}
+
+.userFlash {
+  @extend .flashOverlay;
+  animation: userFlash $flash-duration $flash-easing;
+}
+
+.successFlash {
+  @extend .flashOverlay;
+  animation: successFlash 0.5s $flash-easing;
+}
+
+.errorFlash {
+  @extend .flashOverlay;
+  animation: errorFlash $flash-duration $flash-easing;
+}
+
+@keyframes cpuFlash {
+  0% {
+    opacity: 0;
+    background-color: rgba(
+      red($cpu-flash-color),
+      green($cpu-flash-color),
+      blue($cpu-flash-color),
+      0
+    );
+  }
+  20% {
+    opacity: 1;
+    background-color: rgba(
+      red($cpu-flash-color),
+      green($cpu-flash-color),
+      blue($cpu-flash-color),
+      0.4
+    );
+  }
+  80% {
+    opacity: 1;
+    background-color: rgba(
+      red($cpu-flash-color),
+      green($cpu-flash-color),
+      blue($cpu-flash-color),
+      0.2
+    );
+  }
+  100% {
+    opacity: 0;
+    background-color: rgba(
+      red($cpu-flash-color),
+      green($cpu-flash-color),
+      blue($cpu-flash-color),
+      0
+    );
+  }
+}
+
+@keyframes userFlash {
+  0% {
+    opacity: 0;
+    background-color: rgba(
+      red($user-flash-color),
+      green($user-flash-color),
+      blue($user-flash-color),
+      0
+    );
+  }
+  20% {
+    opacity: 1;
+    background-color: rgba(
+      red($user-flash-color),
+      green($user-flash-color),
+      blue($user-flash-color),
+      0.4
+    );
+  }
+  80% {
+    opacity: 1;
+    background-color: rgba(
+      red($user-flash-color),
+      green($user-flash-color),
+      blue($user-flash-color),
+      0.2
+    );
+  }
+  100% {
+    opacity: 0;
+    background-color: rgba(
+      red($user-flash-color),
+      green($user-flash-color),
+      blue($user-flash-color),
+      0
+    );
+  }
+}
+
+@keyframes successFlash {
+  0% {
+    opacity: 0;
+    background-color: rgba(
+      red($success-flash-color),
+      green($success-flash-color),
+      blue($success-flash-color),
+      0
+    );
+  }
+  30% {
+    opacity: 1;
+    background-color: rgba(
+      red($success-flash-color),
+      green($success-flash-color),
+      blue($success-flash-color),
+      0.5
+    );
+  }
+  100% {
+    opacity: 0;
+    background-color: rgba(
+      red($success-flash-color),
+      green($success-flash-color),
+      blue($success-flash-color),
+      0
+    );
+  }
+}
+
+@keyframes errorFlash {
+  0% {
+    opacity: 0;
+    background-color: rgba(
+      red($error-flash-color),
+      green($error-flash-color),
+      blue($error-flash-color),
+      0
+    );
+  }
+  20% {
+    opacity: 1;
+    background-color: rgba(
+      red($error-flash-color),
+      green($error-flash-color),
+      blue($error-flash-color),
+      0.5
+    );
+  }
+  80% {
+    opacity: 1;
+    background-color: rgba(
+      red($error-flash-color),
+      green($error-flash-color),
+      blue($error-flash-color),
+      0.3
+    );
+  }
+  100% {
+    opacity: 0;
+    background-color: rgba(
+      red($error-flash-color),
+      green($error-flash-color),
+      blue($error-flash-color),
+      0
+    );
+  }
+}

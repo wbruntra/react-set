@@ -9,7 +9,8 @@
   "scripts": {
     "setup": "cd client && yarn install",
     "build": "cd client && npm run build",
-    "dev": "concurrently \"npm run start --prefix client\" \"npm run server:dev\"",
+    "client": "cd vite-client && npm run dev",
+    "dev": "concurrently \"npm run client\" \"npm run server:dev\"",
     "dev:db": "cd db; docker-compose up -d",
     "server:dev": "nodemon server.js",
     "predeploy": "cd vite-client && npm run build",
@@ -24,7 +25,7 @@
     "express": "^4.17.1",
     "knex": "^3.1.0",
     "morgan": "^1.9.1",
-    "sql.js": "^1.13.0"
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

@@ -2,6 +2,8 @@ import React, { Fragment, useEffect, useState } from 'react'
 import { getBoardStartingWithSet, isSet, nameThird } from '../utils/helpers'
 
 import Board from './Board'
+import FlashOverlay from './FlashOverlay'
+import { useFlashAnimation } from '../hooks/useFlashAnimation'
 import { Link } from 'react-router-dom'
 import { colors } from '../config'
 import { Modal, Button } from 'react-bootstrap' // Import Modal and Button from react-bootstrap
@@ -97,9 +99,13 @@ const Training = () => {
   const [startTime, setStartTime] = useState<number>(Date.now())
   const [elapsedTime, setElapsedTime] = useState(0)
 
-  // Flash animation states
-  const [showSuccessFlash, setShowSuccessFlash] = useState(false)
-  const [showErrorFlash, setShowErrorFlash] = useState(false)
+  // Flash animation hook
+  const {
+    showSuccessFlash,
+    showErrorFlash,
+    triggerSuccessFlash,
+    triggerErrorFlash,
+  } = useFlashAnimation()
 
   const [turnStartTime, setTurnStartTime] = useState<number>(Date.now())
   const [timeRemaining, setTimeRemaining] = useState<number>(config.initialTurnTime / 1000)
@@ -182,8 +188,7 @@ const Training = () => {
       setSelected([...selected, v])
 
       // Trigger green flash for correct answer
-      setShowSuccessFlash(true)
-      setTimeout(() => setShowSuccessFlash(false), 500) // Brief flash for 500ms
+      triggerSuccessFlash()
 
       window.setTimeout(() => {
         getNewBoard()
@@ -191,8 +196,7 @@ const Training = () => {
       }, 650)
     } else {
       // Trigger red flash for wrong answer
-      setShowErrorFlash(true)
-      setTimeout(() => setShowErrorFlash(false), 800) // Flash for 800ms
+      triggerErrorFlash()
 
       triggerGameOver()
     }
@@ -204,8 +208,7 @@ const Training = () => {
     setSelected([...selected, third])
 
     // Trigger red flash for game over (timeout)
-    setShowErrorFlash(true)
-    setTimeout(() => setShowErrorFlash(false), 800) // Flash for 800ms
+    triggerErrorFlash()
 
     if (Number(localStorage.getItem('highScoreTraining')) < score) {
       localStorage.setItem('highScoreTraining', score.toString())
@@ -220,8 +223,6 @@ const Training = () => {
     setShowModal(false)
     setSetFound(false)
     setScore(0)
-    setShowSuccessFlash(false)
-    setShowErrorFlash(false)
     getNewBoard()
     const now = Date.now()
     setStartTime(now)
@@ -230,41 +231,7 @@ const Training = () => {
 
   return (
     <Fragment>
-      {/* Success Flash Animation Overlay */}
-      {showSuccessFlash && (
-        <div
-          className="success-flash-overlay"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(100, 255, 100, 0.4)',
-            zIndex: 9999,
-            pointerEvents: 'none',
-            animation: 'successFlash 0.5s ease-out',
-          }}
-        />
-      )}
-
-      {/* Error Flash Animation Overlay */}
-      {showErrorFlash && (
-        <div
-          className="error-flash-overlay"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(255, 100, 100, 0.4)',
-            zIndex: 9999,
-            pointerEvents: 'none',
-            animation: 'errorFlash 0.8s ease-out',
-          }}
-        />
-      )}
+      <FlashOverlay showSuccessFlash={showSuccessFlash} showErrorFlash={showErrorFlash} />
 
       <div className="d-flex flex-column justify-content-between">
         <div>
@@ -305,47 +272,6 @@ const Training = () => {
         show={initialized && gameOver && showModal}
         finalScore={score}
         handleClose={reset}
-      />
-
-      {/* CSS Animation Styles */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-          @keyframes successFlash {
-            0% {
-              opacity: 0;
-              background-color: rgba(100, 255, 100, 0);
-            }
-            30% {
-              opacity: 1;
-              background-color: rgba(100, 255, 100, 0.5);
-            }
-            100% {
-              opacity: 0;
-              background-color: rgba(100, 255, 100, 0);
-            }
-          }
-          
-          @keyframes errorFlash {
-            0% {
-              opacity: 0;
-              background-color: rgba(255, 100, 100, 0);
-            }
-            20% {
-              opacity: 1;
-              background-color: rgba(255, 100, 100, 0.5);
-            }
-            80% {
-              opacity: 1;
-              background-color: rgba(255, 100, 100, 0.3);
-            }
-            100% {
-              opacity: 0;
-              background-color: rgba(255, 100, 100, 0);
-            }
-          }
-        `,
-        }}
       />
     </Fragment>
   )
