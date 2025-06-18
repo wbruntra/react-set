@@ -41,7 +41,7 @@ function Main() {
     },
   ]
   return (
-    <div className="container mt-3 mt-md-5">
+    <div className="container mt-3 mt-md-5 p-4">
       <h1 className="d-none d-md-block text-center mb-3 mb-md-5">Main Menu</h1>
       <div className="row justify-content-center">
         {menuItems.map((item, i) => {

@@ -3,6 +3,7 @@ import './card.scss'
 import React, { Fragment } from 'react'
 
 import { range } from '../utils/helpers'
+import { SOFT_CARD_BACKGROUND, CARD_GREEN, CARD_BLUE, CARD_RED } from '../styles/colors'
 
 const config = {
   width: 120,
@@ -41,7 +42,14 @@ const Squiggle: React.FC<SquiggleProps> = ({ fill, color }) => {
   return (
     <svg width="120" height="200" xmlns="http://www.w3.org/2000/svg">
       <g>
-        <rect fill="#fff" id="canvas_background" height="202" width="122" y="-1" x="-1" />
+        <rect
+          fill={SOFT_CARD_BACKGROUND}
+          id="canvas_background"
+          height="202"
+          width="122"
+          y="-1"
+          x="-1"
+        />
         <g
           display="none"
           overflow="visible"
@@ -51,7 +59,14 @@ const Squiggle: React.FC<SquiggleProps> = ({ fill, color }) => {
           width="100%"
           id="canvasGrid"
         >
-          <rect fill="#fff" strokeWidth="0" y="0" x="0" height="100%" width="100%" />
+          <rect
+            fill={SOFT_CARD_BACKGROUND}
+            strokeWidth="0"
+            y="0"
+            x="0"
+            height="100%"
+            width="100%"
+          />
         </g>
       </g>
       <g>
@@ -162,10 +177,10 @@ const Card: React.FC<CardProps> = ({ desc }) => {
   }
 
   const colors: { [key: string]: string } = {
-    0: '#61d020',
-    1: '#1b2f92',
-    2: '#FF0000',
-    white: '#fff',
+    0: CARD_GREEN,
+    1: CARD_BLUE,
+    2: CARD_RED,
+    white: SOFT_CARD_BACKGROUND,
   }
 
   const getFill = (color: string, fill: string): string => {

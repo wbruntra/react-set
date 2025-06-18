@@ -1,5 +1,6 @@
-// COLORS
+// COLORS - Single source of truth for all app colors
 
+// Original theme colors
 $dark-purple: #4a148c;
 $grey: #fff;
 $light-orange: #ffa726;
@@ -10,16 +11,39 @@ $amber: #ffd740;
 $purple: #8e24aa;
 $light-green: #9ccc65;
 
+// New soft theme colors - centralized color constants
+$soft-background: #fafafa;
+$soft-card-background: #f7f8fa;
+$soft-border-color: #e8eaed;
+$soft-text-color: #2c3e50;
+$light-purple-background: #e4deff; // Light purple for HTML/body background
+
+// Game card colors
+$card-green: #61d020;
+$card-blue: #1b2f92;
+$card-red: #ff0000;
+
 // Typography
 //
 // Font, line-height, and color for body text, headings, and more.
 
 // stylelint-disable value-keyword-case
-$font-family-sans-serif: 'Muli', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-  'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-  'Segoe UI Symbol', 'Noto Color Emoji';
-$font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
-  monospace !default;
+$font-family-sans-serif:
+  'Muli',
+  -apple-system,
+  BlinkMacSystemFont,
+  'Segoe UI',
+  Roboto,
+  'Helvetica Neue',
+  Arial,
+  'Noto Sans',
+  sans-serif,
+  'Apple Color Emoji',
+  'Segoe UI Emoji',
+  'Segoe UI Symbol',
+  'Noto Color Emoji';
+$font-family-monospace:
+  SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace !default;
 $font-family-base: $font-family-sans-serif !default;
 // stylelint-enable value-keyword-case
 

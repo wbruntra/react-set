@@ -9,7 +9,6 @@ import Guest from './components/Guest'
 import Solo from './components/Solo'
 import SharedDevice from './components/SharedDevice'
 import Rules from './components/Rules'
-import Login from './components/Login'
 import Stats from './components/Stats'
 import Puzzle from './components/Puzzle'
 import Training from './components/Training'
@@ -45,10 +44,6 @@ const router = createBrowserRouter([
       {
         path: '/rules',
         element: <Rules />,
-      },
-      {
-        path: '/login',
-        element: <Login />,
       },
       {
         path: '/stats',

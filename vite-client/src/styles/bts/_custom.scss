@@ -1,23 +1,40 @@
 @import 'bootstrap/scss/bootstrap-grid.scss';
 
+// Override root and viewport background
+#root {
+  background-color: $light-purple-background;
+  min-height: 100vh;
+}
+
+html,
+body {
+  background-color: $light-purple-background;
+}
+
 body {
   // background-color: $dark-purple;
   // color: white;
   font-size: 1.2em;
+  background-color: $soft-background;
+  color: $soft-text-color;
 }
 
 .main-content {
   padding: 25px;
 }
 
-// .container {
-//   background-color: $white;
-// }
+.container {
+  background-color: $soft-card-background;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
 
-// .card {
-//   background-color: $grey;
-//   color: black;
-// }
+.card {
+  background-color: $soft-card-background;
+  color: $soft-text-color;
+  border: 1px solid $soft-border-color;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
 
 .bg {
   &-dark-orange {
@@ -96,9 +113,6 @@ body {
 
 $rotate-width: 560px;
 $four-col-width: 980px;
-
-$card-green: #61d020;
-$card-blue: #1b2f92;
 
 .board-main-container {
   display: grid;
@@ -220,8 +234,8 @@ a {
 
 // User info section styling
 .user-info-section {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border: 1px solid #dee2e6;
+  background: linear-gradient(135deg, $soft-card-background 0%, #f0f2f5 100%);
+  border: 1px solid $soft-border-color;
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 2rem;
@@ -229,11 +243,11 @@ a {
 
   .user-display-name {
     font-weight: 600;
-    color: #495057;
+    color: $soft-text-color;
   }
 
   .user-email {
-    color: #6c757d;
+    color: #5a6c7d;
     font-size: 0.9rem;
   }
 }
