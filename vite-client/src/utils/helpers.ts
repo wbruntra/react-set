@@ -73,7 +73,7 @@ export const countSets = (
 }
 
 export const makeDeck = (): string[] => {
-  let deck: string[] = []
+  const deck: string[] = []
   range(3).forEach((c) => {
     range(3).forEach((n) => {
       range(3).forEach((s) => {
@@ -144,13 +144,13 @@ export const reshuffle = (
 export const getRandomSet = (common_traits: number | null = null): string[] => {
   if (common_traits === null) {
     const deck = _.shuffle(makeDeck())
-    let board = [...deck.slice(0, 2)]
+    const board = [...deck.slice(0, 2)]
     const third = nameThird(board[0], board[1])
     return [board[0], board[1], third]
   }
 
   const result: string[] = ['', '', '']
-  let common: (string | boolean)[] = [false, false, false, false]
+  const common: (string | boolean)[] = [false, false, false, false]
   const common_indices = _.sampleSize(_.range(4), common_traits)
   common_indices.forEach((i) => {
     common[i] = Math.floor(Math.random() * 3).toString()
@@ -177,11 +177,11 @@ export const getBoardStartingWithSet = ({
   deck: string[]
 } => {
   let deck = _.shuffle(makeDeck())
-  let set = _.shuffle(getRandomSet(commonTraits))
+  const set = _.shuffle(getRandomSet(commonTraits))
   let board = set.slice(0, 2)
   const third = set[2]
   deck = deck.filter((c) => !set.includes(c))
-  let restBoard = _.shuffle([third, ...deck.slice(0, boardSize - 3)])
+  const restBoard = _.shuffle([third, ...deck.slice(0, boardSize - 3)])
   board = [...board, ...restBoard]
   deck = deck.slice(boardSize - 3)
   return {
@@ -200,7 +200,7 @@ export const removeSelected = (state: {
   let newBoard = [...board]
   let newDeck = deck.slice(3)
   selected.forEach((c, i) => {
-    let index = newBoard.indexOf(c)
+    const index = newBoard.indexOf(c)
     newBoard[index] = newCards[i]
   })
   while (countSets(newBoard) === 0) {
@@ -298,11 +298,11 @@ export const handleGooglePopup = () => {
   return firebase
     .auth()
     .signInWithPopup(provider)
-    .then(function(result) {
+    .then(function (result) {
       console.log('Popup sign-in successful:', result.user)
       return result
     })
-    .catch(function(error) {
+    .catch(function (error) {
       console.error('Popup sign-in error:', error)
       throw error
     })
@@ -325,16 +325,13 @@ export const updateGame = (
 }
 
 export const sendAction = (gameId: string, action: any) => {
-  const actions = firestore
-    .collection('games')
-    .doc(gameId)
-    .collection('actions')
+  const actions = firestore.collection('games').doc(gameId).collection('actions')
   actions
     .add({
       ...action,
       created: firebase.firestore.FieldValue.serverTimestamp(),
     })
-    .then(function(docRef) {
+    .then(function (docRef) {
       if (action.type === 'found') {
         const docId = docRef.id
         console.log('Document written with ID: ', docId)

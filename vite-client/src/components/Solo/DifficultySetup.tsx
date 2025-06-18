@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { handleGoogleSignIn, handleGoogleRedirect, handleGooglePopup } from '../../utils/helpers'
 import { GAME_CONFIG, DIFFICULTY_CONFIG } from './constants'
-import Signout from '../Signout'
+import { calculateCPUPerformanceTime, formatTimeString } from './cpuPerformance'
+import CPUAnalysisModal from './CPUAnalysisModal'
+import UserInfo from '../UserInfo'
 
 interface DifficultySetupProps {
   user: any
@@ -11,23 +13,95 @@ interface DifficultySetupProps {
   onStartGame: (e: React.FormEvent) => void
 }
 
+interface CPUPerformanceDisplayProps {
+  cpuPerformance: ReturnType<typeof calculateCPUPerformanceTime>
+  onShowDetails: () => void
+}
+
+const CPUPerformanceDisplay: React.FC<CPUPerformanceDisplayProps> = ({
+  cpuPerformance,
+  onShowDetails,
+}) => {
+  const { averageTimeSeconds } = cpuPerformance
+
+  // Helper function to get difficulty description
+  const getDifficultyDescription = (avgTime: number) => {
+    if (avgTime <= 10) return { text: 'Very Fast', color: 'danger' }
+    if (avgTime <= 20) return { text: 'Fast', color: 'warning' }
+    if (avgTime <= 40) return { text: 'Moderate', color: 'info' }
+    if (avgTime <= 60) return { text: 'Slow', color: 'secondary' }
+    return { text: 'Very Slow', color: 'dark' }
+  }
+
+  const difficultyDesc = getDifficultyDescription(averageTimeSeconds)
+
+  return (
+    <div className="mt-3 p-3 border rounded bg-light">
+      <div className="d-flex justify-content-between align-items-center">
+        <div className="text-center flex-grow-1">
+          <div className="mb-2">
+            <small className="text-muted">Expected CPU Speed:</small>
+          </div>
+          <div className="d-flex justify-content-center align-items-center gap-3">
+            <div>
+              <div className="fw-bold text-primary fs-5">
+                {formatTimeString(averageTimeSeconds)}
+              </div>
+              <small className="text-muted">Average time to find a set</small>
+            </div>
+            <div>
+              <span
+                className={`badge bg-${difficultyDesc.color} fs-6`}
+                title="CPU difficulty level based on average response time"
+              >
+                {difficultyDesc.text}
+              </span>
+            </div>
+          </div>
+          <div className="mt-2">
+            <small className="text-muted">Based on typical boards with 3 sets available</small>
+          </div>
+        </div>
+
+        <div className="ms-3">
+          <button
+            type="button"
+            onClick={onShowDetails}
+            className="btn btn-outline-info btn-sm"
+            title="View detailed CPU performance analysis"
+          >
+            <i className="bi bi-graph-up me-1"></i>
+            Detailed Analysis
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const DifficultySetup: React.FC<DifficultySetupProps> = ({
   user,
   difficulty,
   onDifficultyChange,
   onStartGame,
 }) => {
+  // Calculate CPU performance for current difficulty
+  const cpuPerformance = calculateCPUPerformanceTime(difficulty)
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false)
+
   return (
     <div className="container main-content">
-      {user && user.uid ? <Signout /> : null}
+      <UserInfo user={user} />
 
-      <h3 className="text-center mb-4">Solo Play vs. Computer</h3>
-      <h4 className="mb-4">Choose difficulty level:</h4>
+      <div className="text-center mb-4">
+        <h3 className="mb-3">Solo Play vs. Computer</h3>
+        <h4 className="mb-4">Choose difficulty level:</h4>
+      </div>
 
-      <div className="row">
-        <div className="col-12">
-          <form onSubmit={onStartGame}>
-            <div className="col-10 col-md-6 mb-5">
+      <div className="row justify-content-center">
+        <div className="col-12 col-md-8">
+          <form onSubmit={onStartGame} className="mb-4">
+            <div className="mb-4">
               <input
                 type="range"
                 min={DIFFICULTY_CONFIG.min}
@@ -37,74 +111,107 @@ const DifficultySetup: React.FC<DifficultySetupProps> = ({
                 onChange={(e) => onDifficultyChange(Number(e.target.value))}
                 className="form-range"
               />
-              <p>Difficulty: {difficulty}</p>
-            </div>
-            <input type="submit" value="Start" className="btn btn-primary" />
-          </form>
-          <p style={{ marginTop: '24px' }}>
-            First to {GAME_CONFIG.playingTo} points is the winner
-          </p>
-        </div>
+              <div className="text-center mt-2">
+                <span className="badge bg-primary fs-6">Difficulty: {difficulty}</span>
+              </div>
 
-        <GameModeLinks />
+              {/* Simplified CPU Performance Display */}
+              <CPUPerformanceDisplay
+                cpuPerformance={cpuPerformance}
+                onShowDetails={() => setShowAnalysisModal(true)}
+              />
+            </div>
+            <div className="text-center">
+              <button type="submit" className="btn btn-primary btn-lg px-5">
+                Start Game
+              </button>
+              <p className="mt-3 text-muted">
+                First to {GAME_CONFIG.playingTo} points is the winner
+              </p>
+            </div>
+          </form>
+
+          <GameModeLinks />
+        </div>
       </div>
 
       {(!user || !user.uid) && <AuthenticationSection />}
+
+      {/* CPU Analysis Modal */}
+      <CPUAnalysisModal
+        currentDifficulty={difficulty}
+        isOpen={showAnalysisModal}
+        onClose={() => setShowAnalysisModal(false)}
+      />
     </div>
   )
 }
 
 const GameModeLinks: React.FC = () => (
-  <div className="row mt-4">
-    <p>Other Game Options:</p>
-    <ul style={{ listStyleType: 'none' }}>
-      <li className="mb-4">
-        <Link to="/local">Local Multiplayer</Link>
-      </li>
-      <li className="mb-4">
-        <Link to="/training">Training</Link>
-      </li>
-      <hr />
-      <li>
-        <Link to="/">Back to Main Menu</Link>
-      </li>
-    </ul>
+  <div className="mt-5">
+    <h5 className="mb-3">Other Game Options:</h5>
+    <div className="row">
+      <div className="col-md-6">
+        <div className="d-grid gap-2">
+          <Link to="/local" className="btn btn-outline-primary">
+            Local Multiplayer
+          </Link>
+          <Link to="/training" className="btn btn-outline-primary">
+            Training Mode
+          </Link>
+        </div>
+      </div>
+    </div>
+    <hr className="my-4" />
+    <div className="text-center">
+      <Link to="/" className="btn btn-outline-secondary">
+        ← Back to Main Menu
+      </Link>
+    </div>
   </div>
 )
 
 const AuthenticationSection: React.FC = () => (
-  <div className="row mt-4">
-    <div>
-      <p>To save your game statistics, sign in with your Google account.</p>
-      <p>
-        <button
-          onClick={() => {
-            const result = handleGoogleSignIn()
-            if (result && typeof result.catch === 'function') {
-              result.catch(console.error)
-            }
-          }}
-          className="btn btn-info me-2"
-        >
-          Sign in with Google
-        </button>
-      </p>
-      <details>
-        <summary>Advanced options</summary>
-        <div className="mt-2">
-          <button onClick={handleGoogleRedirect} className="btn btn-outline-secondary btn-sm me-2">
-            Force Redirect
-          </button>
+  <div className="row justify-content-center mt-5">
+    <div className="col-12 col-md-8">
+      <div className="card border-info">
+        <div className="card-body text-center">
+          <h5 className="card-title">Save Your Progress</h5>
+          <p className="card-text">
+            Sign in with your Google account to track your game statistics and progress.
+          </p>
           <button
             onClick={() => {
-              handleGooglePopup().catch(console.error)
+              const result = handleGoogleSignIn()
+              if (result && typeof result.catch === 'function') {
+                result.catch(console.error)
+              }
             }}
-            className="btn btn-outline-success btn-sm"
+            className="btn btn-info btn-lg"
           >
-            Force Popup
+            Sign in with Google
           </button>
+
+          <details className="mt-3">
+            <summary className="text-muted" style={{ cursor: 'pointer' }}>
+              Advanced options
+            </summary>
+            <div className="mt-3 d-flex gap-2 justify-content-center">
+              <button onClick={handleGoogleRedirect} className="btn btn-outline-secondary btn-sm">
+                Force Redirect
+              </button>
+              <button
+                onClick={() => {
+                  handleGooglePopup().catch(console.error)
+                }}
+                className="btn btn-outline-success btn-sm"
+              >
+                Force Popup
+              </button>
+            </div>
+          </details>
         </div>
-      </details>
+      </div>
     </div>
   </div>
 )

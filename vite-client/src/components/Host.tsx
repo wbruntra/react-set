@@ -19,7 +19,7 @@ import update from 'immutability-helper'
 
 import Board from './Board'
 import PlayerList from './PlayerList'
-import Signout from './Signout'
+import UserInfo from './UserInfo'
 import { colors } from '../config'
 import { RootState } from '../store'
 import { updateNickname } from '../features/user/userSlice'
@@ -122,8 +122,8 @@ function Host() {
         .collection('games')
         .where('creator_uid', '==', user.uid)
         .get()
-        .then(function(querySnapshot) {
-          querySnapshot.forEach(function(doc) {
+        .then(function (querySnapshot) {
+          querySnapshot.forEach(function (doc) {
             console.log(doc.id)
             const oldGame = {
               ...doc.data(),
@@ -133,7 +133,7 @@ function Host() {
             setGameInProgress(oldGame)
           })
         })
-        .catch(function(error) {
+        .catch(function (error) {
           console.log('Error getting documents: ', error)
         })
     }
@@ -412,7 +412,7 @@ function Host() {
   if (myName === '') {
     return (
       <MessageCard title="Enter Your Nickname">
-        <Signout />
+        <UserInfo user={user} />
         <form onSubmit={handleSetName}>
           <div className="mb-4">
             <input

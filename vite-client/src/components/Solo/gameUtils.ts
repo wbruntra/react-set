@@ -5,10 +5,27 @@ import { cloneDeep } from 'lodash'
 
 /**
  * Calculate CPU turn interval based on difficulty level
+ * New improved curve for better progression
  */
 export const calculateIntervalFromDifficulty = (difficulty: number): number => {
   const validDifficulty = Number.isNaN(difficulty) ? DIFFICULTY_CONFIG.default : difficulty
-  return 24000 / (5 * validDifficulty)
+
+  // New difficulty mapping for better progression
+  // Targets: 30s, 25s, 20s, 15s, 10s, 8s, 6s, 4s (approximate)
+  const difficultyMap: { [key: number]: number } = {
+    1: 1.1, // ~30s
+    2: 1.4, // ~25s
+    3: 1.7, // ~20s
+    4: 2.3, // ~15s
+    5: 3.3, // ~10s
+    6: 4.0, // ~8s
+    7: 6.0, // ~6s
+    8: 8.0, // ~4s
+  }
+
+  const actualDifficulty =
+    difficultyMap[validDifficulty] || difficultyMap[DIFFICULTY_CONFIG.default]
+  return 24000 / (5 * actualDifficulty)
 }
 
 /**

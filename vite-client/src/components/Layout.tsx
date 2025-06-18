@@ -16,7 +16,7 @@ if (firebase.apps.length === 0) {
 }
 
 // Global flag to ensure getRedirectResult is only called once
-let redirectResultChecked = false
+const redirectResultChecked = false
 
 function Layout() {
   const dispatch = useDispatch()

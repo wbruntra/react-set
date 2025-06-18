@@ -31,18 +31,8 @@ interface BoardProps {
 function Board(props: BoardProps) {
   const [sets, setSets] = useState<number | null>(null)
   const [windowHeight, setWindowHeight] = useState(window.innerHeight)
-  const {
-    board,
-    selected,
-    deck,
-    declarer,
-    players,
-    gameOver,
-    myName,
-    setFound,
-    solo,
-    gameMode,
-  } = props
+  const { board, selected, deck, declarer, players, gameOver, myName, setFound, solo, gameMode } =
+    props
 
   // Determine if sharedDevice is true based on gameMode
   const sharedDevice = gameMode === 'shared-device'
@@ -129,12 +119,12 @@ function Board(props: BoardProps) {
 
         <div className="board d-flex flex-column align-items-center">
           <div className="board-main-container">
-            {board.map((card) => {
+            {board.map((card, index) => {
               const isSelected = selected.includes(card)
               const cardHolderStyle = isSelected ? { backgroundColor: borderColor } : {}
               return (
                 <div
-                  key={card}
+                  key={`${card}-${index}`}
                   className={`card-wrapper`}
                   onClick={() => {
                     props.handleCardClick(card)

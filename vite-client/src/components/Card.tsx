@@ -17,7 +17,7 @@ interface RectangleProps {
 }
 
 const Rectangle: React.FC<RectangleProps> = ({ fill, color }) => {
-  let { padding, height, width, strokeWidth } = config
+  const { padding, height, width, strokeWidth } = config
   return (
     <g>
       <polygon
@@ -37,7 +37,7 @@ interface SquiggleProps {
 }
 
 const Squiggle: React.FC<SquiggleProps> = ({ fill, color }) => {
-  let { padding, height, width, strokeWidth } = config
+  const { padding, height, width, strokeWidth } = config
   return (
     <svg width="120" height="200" xmlns="http://www.w3.org/2000/svg">
       <g>
@@ -136,6 +136,31 @@ interface CardProps {
 }
 
 const Card: React.FC<CardProps> = ({ desc }) => {
+  // Handle blank cards specially
+  if (desc === '0333') {
+    return (
+      <div className="game-card d-flex justify-content-center">
+        <svg
+          className="shape blank-card"
+          viewBox={`0 0 ${config.width} ${config.height}`}
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            x="2"
+            y="2"
+            width={config.width - 4}
+            height={config.height - 4}
+            fill="#f8f9fa"
+            stroke="#dee2e6"
+            strokeWidth="2"
+            strokeDasharray="5,5"
+            rx="8"
+          />
+        </svg>
+      </div>
+    )
+  }
+
   const colors: { [key: string]: string } = {
     0: '#61d020',
     1: '#1b2f92',

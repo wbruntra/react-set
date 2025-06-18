@@ -6,8 +6,8 @@ import useInterval from '../useInterval' // Not directly used in TopBar, but imp
 
 const formatTime = (seconds: number): string => {
   const pad = (ss: number): string => {
-    var p = '00'
-    var result = (p + ss).slice(-p.length)
+    const p = '00'
+    const result = (p + ss).slice(-p.length)
     return result
   }
   const mm = Math.floor(seconds / 60)

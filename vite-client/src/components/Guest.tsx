@@ -14,7 +14,7 @@ import { Action, MultiPlayers, GameState } from '../utils/models'
 
 import Board from './Board'
 import PlayerList from './PlayerList'
-import Signout from './Signout'
+import UserInfo from './UserInfo'
 
 interface GuestState {
   popupVisible: boolean
@@ -269,9 +269,7 @@ function Guest() {
             }
             // Create an anonymous user object for the guest
             const guestUser = {
-              uid: `guest_${Date.now()}_${Math.random()
-                .toString(36)
-                .substr(2, 9)}`,
+              uid: `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
               nickname: nameInput,
               displayName: nameInput,
               isGuest: true,
@@ -322,7 +320,7 @@ function Guest() {
   if (!myName) {
     return (
       <div className="container">
-        <Signout />
+        <UserInfo user={user} />
 
         <h4 className="mb-3">Choose your nickname:</h4>
         {user?.isGuest && (
