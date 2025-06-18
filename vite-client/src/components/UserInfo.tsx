@@ -32,12 +32,20 @@ const UserInfo: React.FC<UserInfoProps> = ({ user }) => {
 
   return (
     <div className="user-info-section">
-      <div className="d-flex justify-content-between align-items-center">
-        <div>
-          <div className="user-display-name">Signed in as {user.displayName || 'User'}</div>
-          {user.email && <div className="user-email">{user.email}</div>}
+      <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div className="flex-grow-1 min-width-0">
+          <div className="user-display-name text-truncate">
+            Signed in as {user.displayName || 'User'}
+          </div>
+          {user.email && (
+            <div className="user-email text-truncate small text-muted">{user.email}</div>
+          )}
         </div>
-        <button className="btn btn-danger btn-sm" onClick={signOut}>
+        <button
+          className="btn btn-danger btn-sm flex-shrink-0"
+          onClick={signOut}
+          style={{ minWidth: 'auto', fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+        >
           Sign Out
         </button>
       </div>
