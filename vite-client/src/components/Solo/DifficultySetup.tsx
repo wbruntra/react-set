@@ -37,19 +37,16 @@ const CPUPerformanceDisplay: React.FC<CPUPerformanceDisplayProps> = ({
 
   return (
     <div className="mt-3 p-3 border rounded bg-light">
-      <div className="d-flex justify-content-between align-items-center">
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
         <div className="text-center flex-grow-1">
           <div className="mb-2">
-            <small className="text-muted">Expected CPU Speed:</small>
+            <small className="text-muted">Opponent Set-Finding Time:</small>
           </div>
-          <div className="d-flex justify-content-center align-items-center gap-3">
-            <div>
-              <div className="fw-bold text-primary fs-5">
+          <div className="text-center">
+            <div className="d-flex justify-content-center align-items-center gap-2 mb-1">
+              <span className="fw-bold text-primary fs-5">
                 {formatTimeString(averageTimeSeconds)}
-              </div>
-              <small className="text-muted">Average time to find a set</small>
-            </div>
-            <div>
+              </span>
               <span
                 className={`badge bg-${difficultyDesc.color} fs-6`}
                 title="CPU difficulty level based on average response time"
@@ -59,11 +56,11 @@ const CPUPerformanceDisplay: React.FC<CPUPerformanceDisplayProps> = ({
             </div>
           </div>
           <div className="mt-2">
-            <small className="text-muted">Based on typical boards with 3 sets available</small>
+            <small className="text-muted">Average based on board showing 3 sets</small>
           </div>
         </div>
 
-        <div className="ms-3">
+        <div className="flex-shrink-0">
           <button
             type="button"
             onClick={onShowDetails}
@@ -71,7 +68,8 @@ const CPUPerformanceDisplay: React.FC<CPUPerformanceDisplayProps> = ({
             title="View detailed CPU performance analysis"
           >
             <i className="bi bi-graph-up me-1"></i>
-            Detailed Analysis
+            <span className="d-none d-sm-inline">Detailed Analysis</span>
+            <span className="d-inline d-sm-none">Details</span>
           </button>
         </div>
       </div>
