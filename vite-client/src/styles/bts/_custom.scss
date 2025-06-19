@@ -1,5 +1,8 @@
 @import 'bootstrap/scss/bootstrap-grid.scss';
 
+$rotate-width: 560px;
+$four-col-width: 980px;
+
 // Override root and viewport background
 #root {
   background-color: $light-purple-background;
@@ -111,9 +114,6 @@ body {
   margin-top: 60px;
 }
 
-$rotate-width: 560px;
-$four-col-width: 980px;
-
 .board-main-container {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -147,6 +147,12 @@ $four-col-width: 980px;
 }
 
 @media screen and (max-width: $rotate-width) {
+  html,
+  #root,
+  .container {
+    background-color: $soft-card-background;
+  }
+
   .card-wrapper {
     transform: rotate(90deg) scale(1.15);
   }
