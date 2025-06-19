@@ -29,9 +29,9 @@ const CPUPerformanceDisplay: React.FC<CPUPerformanceDisplayProps> = ({
 }) => {
   // Calculate timing for different scenarios to show adaptation
   const scenarios = [
-    { sets: 1, label: 'Few sets (hard)' },
-    { sets: 3, label: 'Normal (3 sets)' },
-    { sets: 6, label: 'Many sets (easy)' },
+    { sets: 1, label: 'Few' },
+    { sets: 3, label: 'Normal' },
+    { sets: 6, label: 'Many' },
   ]
 
   const timings = scenarios
