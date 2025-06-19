@@ -34,7 +34,7 @@ export const IntroModal: React.FC<IntroModalProps> = ({ show, onClose }) => {
                 onChange={() => setSelectedMode('two-card-hint')}
               />
               <label className="form-check-label" htmlFor="twoCardHint">
-                <strong>Two Card Hint (Easier)</strong>
+                <strong>Two Card Hint</strong>
                 <br />
                 <small>
                   Find the one card that completes a set with the two highlighted cards.
@@ -52,7 +52,7 @@ export const IntroModal: React.FC<IntroModalProps> = ({ show, onClose }) => {
                 onChange={() => setSelectedMode('one-card-hint')}
               />
               <label className="form-check-label" htmlFor="oneCardHint">
-                <strong>One Card Hint (Harder)</strong>
+                <strong>One Card Hint</strong>
                 <br />
                 <small>
                   Find the two cards that complete a set with the one highlighted card.

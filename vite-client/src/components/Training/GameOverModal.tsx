@@ -28,9 +28,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
         <div className="d-flex flex-column justify-content-center">
           <p className="text-center my-1">Mode: {modeDisplayName}</p>
           <p className="text-center my-2">Final Score: {finalScore}</p>
-          <p className="text-center my-2">
-            Best Score ({modeDisplayName}): {highScore}
-          </p>
+          <p className="text-center my-2">Best Score: {highScore}</p>
         </div>
       </Modal.Body>
       <Modal.Footer>
