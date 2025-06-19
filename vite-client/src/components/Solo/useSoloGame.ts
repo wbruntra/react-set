@@ -49,12 +49,8 @@ export const useSoloGame = (user: any): UseSoloGameReturn => {
   const { showCpuFlash, showUserFlash, triggerCpuFlash, triggerUserFlash } = useFlashAnimation()
 
   // Game timers
-  const {
-    startCpuTimer,
-    startCpuAnimation,
-    startSetFoundTimer,
-    startDeclarationTimer,
-  } = useGameTimers()
+  const { startCpuTimer, startCpuAnimation, startSetFoundTimer, startDeclarationTimer } =
+    useGameTimers()
 
   // Load saved difficulty on mount
   useEffect(() => {
@@ -80,7 +76,14 @@ export const useSoloGame = (user: any): UseSoloGameReturn => {
         clearInterval(cpuTurnTimer)
       }
     }
-  }, [state.gameStarted, state.gameOver, state.declarer, state.setFound, state.cpuTurnInterval])
+  }, [
+    state.gameStarted,
+    state.gameOver,
+    state.declarer,
+    state.setFound,
+    state.board,
+    state.difficulty,
+  ])
 
   // CPU Animation Effect
   useEffect(() => {

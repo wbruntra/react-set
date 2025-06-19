@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import {
   calculateCPUPerformanceTime,
+  calculateDynamicCPUInterval,
   formatTimeString,
   CPU_PERFORMANCE_DATA,
 } from './cpuPerformance'
@@ -24,14 +25,19 @@ const CPUAnalysisModal: React.FC<CPUAnalysisModalProps> = ({
 
   const performance = calculateCPUPerformanceTime(selectedDifficulty, selectedSetsOnBoard)
   const {
-    cpuTurnInterval,
+    cpuTurnInterval: baselineInterval,
     averageAttempts,
     medianAttempts,
-    averageTimeSeconds,
+    averageTimeSeconds: baselineAverageTime,
     medianTimeSeconds,
     typicalRangeSeconds,
     performanceData,
   } = performance
+
+  // Calculate dynamic interval for comparison
+  const dynamicInterval = calculateDynamicCPUInterval(selectedDifficulty, selectedSetsOnBoard)
+  const dynamicAverageTimeMs = performanceData.averageAttempts * dynamicInterval
+  const dynamicAverageTimeSeconds = Math.round(dynamicAverageTimeMs / 1000)
 
   return (
     <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
@@ -96,7 +102,7 @@ const CPUAnalysisModal: React.FC<CPUAnalysisModalProps> = ({
                   <div className="col-md-3">
                     <div className="border rounded p-2 mb-2">
                       <div className="fw-bold text-primary fs-5">
-                        {(cpuTurnInterval / 1000).toFixed(1)}s
+                        {(dynamicInterval / 1000).toFixed(1)}s
                       </div>
                       <small className="text-muted">Per Attempt</small>
                     </div>
@@ -112,7 +118,7 @@ const CPUAnalysisModal: React.FC<CPUAnalysisModalProps> = ({
                   <div className="col-md-3">
                     <div className="border rounded p-2 mb-2">
                       <div className="fw-bold text-success fs-5">
-                        {formatTimeString(averageTimeSeconds)}
+                        {formatTimeString(dynamicAverageTimeSeconds)}
                       </div>
                       <small className="text-muted">Avg Time</small>
                     </div>
@@ -132,10 +138,11 @@ const CPUAnalysisModal: React.FC<CPUAnalysisModalProps> = ({
                 <div className="mt-3 p-2 bg-light rounded">
                   <small className="text-muted">
                     <strong>Interpretation:</strong> At difficulty {selectedDifficulty}, the CPU
-                    attempts to find a set every {(cpuTurnInterval / 1000).toFixed(1)} seconds.
-                    With {selectedSetsOnBoard} set{selectedSetsOnBoard !== 1 ? 's' : ''} available,
-                    it takes an average of {averageAttempts.toFixed(1)} attempts (
-                    {formatTimeString(averageTimeSeconds)} total) to successfully find one.
+                    attempts to find a set every {(dynamicInterval / 1000).toFixed(1)} seconds
+                    (dynamically adjusted for {selectedSetsOnBoard} set
+                    {selectedSetsOnBoard !== 1 ? 's' : ''}). It takes an average of{' '}
+                    {averageAttempts.toFixed(1)} attempts (
+                    {formatTimeString(dynamicAverageTimeSeconds)} total) to successfully find one.
                   </small>
                 </div>
               </div>
@@ -167,7 +174,7 @@ const PerformanceMatrix: React.FC<{ selectedDifficulty: number }> = ({ selectedD
     <div className="card mb-4">
       <div className="card-header">
         <h6 className="mb-0">
-          Performance Matrix: Difficulty {selectedDifficulty} vs Sets on Board
+          Performance Matrix: Difficulty {selectedDifficulty} vs Sets on Board (Dynamic Timing)
         </h6>
       </div>
       <div className="card-body">
@@ -177,30 +184,42 @@ const PerformanceMatrix: React.FC<{ selectedDifficulty: number }> = ({ selectedD
               <tr>
                 <th>Sets on Board</th>
                 <th>Avg Attempts</th>
-                <th>Time per Attempt</th>
+                <th>Dynamic Time/Attempt</th>
                 <th>Total Avg Time</th>
-                <th>Typical Range</th>
+                <th>Baseline Comparison</th>
               </tr>
             </thead>
             <tbody>
               {CPU_PERFORMANCE_DATA.map((data) => {
                 const perf = calculateCPUPerformanceTime(selectedDifficulty, data.setsOnBoard)
+                const dynamicInterval = calculateDynamicCPUInterval(
+                  selectedDifficulty,
+                  data.setsOnBoard,
+                )
+                const dynamicTotalTime = Math.round(
+                  (perf.averageAttempts * dynamicInterval) / 1000,
+                )
+                const baselineTime = perf.averageTimeSeconds
+                const improvement = baselineTime > dynamicTotalTime ? 'faster' : 'slower'
+                const timeDiff = Math.abs(baselineTime - dynamicTotalTime)
+
                 return (
                   <tr key={data.setsOnBoard}>
                     <td>
                       <span className="badge bg-secondary">{data.setsOnBoard}</span>
                     </td>
                     <td>{perf.averageAttempts.toFixed(1)}</td>
-                    <td>{(perf.cpuTurnInterval / 1000).toFixed(1)}s</td>
+                    <td>{(dynamicInterval / 1000).toFixed(1)}s</td>
                     <td>
                       <span className="fw-bold text-primary">
-                        {formatTimeString(perf.averageTimeSeconds)}
+                        {formatTimeString(dynamicTotalTime)}
                       </span>
                     </td>
                     <td>
-                      <small className="text-muted">
-                        {formatTimeString(perf.typicalRangeSeconds.fast)} -{' '}
-                        {formatTimeString(perf.typicalRangeSeconds.slow)}
+                      <small
+                        className={`text-${improvement === 'faster' ? 'success' : 'warning'}`}
+                      >
+                        {timeDiff > 0 ? `${timeDiff}s ${improvement}` : 'same'}
                       </small>
                     </td>
                   </tr>
@@ -270,6 +289,13 @@ const DetailedStatistics: React.FC<{ performanceData: any }> = ({ performanceDat
             need to be to complete a set, then checks if that card exists on the board. If yes, it
             finds the set. If no, it tries again with 2 different cards. This process repeats until
             a set is found.
+            <br />
+            <br />
+            <strong>Dynamic Timing:</strong> The CPU adjusts its speed based on current board
+            conditions. When fewer sets are available (making it harder to find), the CPU attempts
+            faster. When more sets are available (making it easier), the CPU attempts slower. A
+            dampening factor ensures some natural difficulty variation is preserved while reducing
+            extreme variance for better game balance.
           </small>
         </div>
       </div>

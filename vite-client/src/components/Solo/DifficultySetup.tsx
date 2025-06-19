@@ -2,7 +2,12 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { handleGoogleSignIn } from '../../utils/helpers'
 import { GAME_CONFIG, DIFFICULTY_CONFIG } from './constants'
-import { calculateCPUPerformanceTime, formatTimeString } from './cpuPerformance'
+import {
+  calculateCPUPerformanceTime,
+  calculateDynamicCPUInterval,
+  formatTimeString,
+  getCPUPerformanceForSets,
+} from './cpuPerformance'
 import CPUAnalysisModal from './CPUAnalysisModal'
 import UserInfo from '../UserInfo'
 
@@ -14,15 +19,33 @@ interface DifficultySetupProps {
 }
 
 interface CPUPerformanceDisplayProps {
-  cpuPerformance: ReturnType<typeof calculateCPUPerformanceTime>
+  difficulty: number
   onShowDetails: () => void
 }
 
 const CPUPerformanceDisplay: React.FC<CPUPerformanceDisplayProps> = ({
-  cpuPerformance,
+  difficulty,
   onShowDetails,
 }) => {
-  const { averageTimeSeconds } = cpuPerformance
+  // Calculate timing for different scenarios to show adaptation
+  const scenarios = [
+    { sets: 1, label: 'Few sets (hard)' },
+    { sets: 3, label: 'Normal (3 sets)' },
+    { sets: 6, label: 'Many sets (easy)' },
+  ]
+
+  const timings = scenarios
+    .map((scenario) => ({
+      ...scenario,
+      dynamicInterval: calculateDynamicCPUInterval(difficulty, scenario.sets),
+      avgAttempts: getCPUPerformanceForSets(scenario.sets).averageAttempts,
+    }))
+    .map((scenario) => ({
+      ...scenario,
+      totalTime: Math.round((scenario.avgAttempts * scenario.dynamicInterval) / 1000),
+    }))
+
+  const normalTiming = timings.find((t) => t.sets === 3)!
 
   // Helper function to get difficulty description
   const getDifficultyDescription = (avgTime: number) => {
@@ -33,30 +56,37 @@ const CPUPerformanceDisplay: React.FC<CPUPerformanceDisplayProps> = ({
     return { text: 'Very Slow', color: 'dark' }
   }
 
-  const difficultyDesc = getDifficultyDescription(averageTimeSeconds)
+  const difficultyDesc = getDifficultyDescription(normalTiming.totalTime)
 
   return (
     <div className="mt-3 p-3 border rounded bg-light">
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
         <div className="text-center flex-grow-1">
           <div className="mb-2">
-            <small className="text-muted">Opponent finds set every:</small>
+            <small className="text-muted">Adaptive CPU timing:</small>
           </div>
           <div className="text-center">
             <div className="d-flex d-md-flex flex-column flex-md-row justify-content-center align-items-center gap-2 mb-1">
               <span className="fw-bold text-primary fs-5">
-                {formatTimeString(averageTimeSeconds)}
+                {formatTimeString(normalTiming.totalTime)}
               </span>
               <span
                 className={`badge bg-${difficultyDesc.color} fs-6`}
-                title="CPU difficulty level based on average response time"
+                title="CPU difficulty level - adapts to board conditions"
               >
                 {difficultyDesc.text}
               </span>
             </div>
           </div>
           <div className="mt-2">
-            <small className="text-muted">Average with 3 sets on board</small>
+            <div className="row text-center">
+              {timings.map((timing) => (
+                <div key={timing.sets} className="col-4">
+                  <small className="text-muted d-block">{timing.label}</small>
+                  <small className="fw-bold">{formatTimeString(timing.totalTime)}</small>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -83,8 +113,6 @@ const DifficultySetup: React.FC<DifficultySetupProps> = ({
   onDifficultyChange,
   onStartGame,
 }) => {
-  // Calculate CPU performance for current difficulty
-  const cpuPerformance = calculateCPUPerformanceTime(difficulty)
   const [showAnalysisModal, setShowAnalysisModal] = useState(false)
 
   return (
@@ -113,9 +141,9 @@ const DifficultySetup: React.FC<DifficultySetupProps> = ({
                 <span className="badge bg-primary fs-6">Difficulty: {difficulty}</span>
               </div>
 
-              {/* Simplified CPU Performance Display */}
+              {/* Adaptive CPU Performance Display */}
               <CPUPerformanceDisplay
-                cpuPerformance={cpuPerformance}
+                difficulty={difficulty}
                 onShowDetails={() => setShowAnalysisModal(true)}
               />
             </div>

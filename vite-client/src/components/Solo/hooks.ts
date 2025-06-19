@@ -5,9 +5,11 @@ import {
   isSet,
   cardToggle,
   removeSelected as removeSelectedCards,
+  countSets,
 } from '../../utils/helpers'
 import { SoloState, Players } from '../../utils/models'
 import { GAME_CONFIG } from './constants'
+import { calculateDynamicCPUInterval } from './cpuPerformance'
 import update from 'immutability-helper'
 
 export interface GameTimersHook {
@@ -58,31 +60,38 @@ export const useGameTimers = (): GameTimersHook => {
     setState: React.Dispatch<React.SetStateAction<SoloState & { difficulty: number }>>,
     triggerFlash: () => void,
   ) => {
-    return window.setInterval(() => {
-      setState((prevState) => {
-        const { board, declarer, gameOver } = prevState
-        if (declarer || gameOver) {
-          return prevState
-        }
-
-        // Try to find a set
-        const [a, b] = shuffle(board).slice(0, 2)
-        const c = nameThird(a, b)
-        if (board.includes(c)) {
-          // Found a set, trigger flash animation and start the selection
-          triggerFlash()
-
-          return {
-            ...prevState,
-            declarer: 'cpu',
-            selected: [a],
-            cpuFound: [b, c],
-            setFound: true,
+    return window.setInterval(
+      () => {
+        setState((prevState) => {
+          const { board, declarer, gameOver, difficulty } = prevState
+          if (declarer || gameOver) {
+            return prevState
           }
-        }
-        return prevState
-      })
-    }, gameState.cpuTurnInterval)
+
+          // Try to find a set
+          const [a, b] = shuffle(board).slice(0, 2)
+          const c = nameThird(a, b)
+          if (board.includes(c)) {
+            // Found a set, trigger flash animation and start the selection
+            triggerFlash()
+
+            return {
+              ...prevState,
+              declarer: 'cpu',
+              selected: [a],
+              cpuFound: [b, c],
+              setFound: true,
+            }
+          }
+          return prevState
+        })
+      },
+      (() => {
+        // Calculate dynamic timing based on current board state
+        const setsOnBoard = countSets(gameState.board)
+        return calculateDynamicCPUInterval(gameState.difficulty, setsOnBoard)
+      })(),
+    )
   }
 
   const startCpuAnimation = (

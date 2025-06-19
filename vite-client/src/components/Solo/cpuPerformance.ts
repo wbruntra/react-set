@@ -182,3 +182,62 @@ export const formatTimeString = (seconds: number): string => {
   }
   return `${minutes}m ${remainingSeconds}s`
 }
+
+/**
+ * Calculate dynamic CPU turn interval based on difficulty and current board state
+ * This adjusts the CPU timing to be more reasonable - faster when few sets, slower when many sets
+ * @param difficulty - Difficulty level (1-8)
+ * @param setsOnBoard - Current number of sets on the board
+ * @returns CPU turn interval in milliseconds
+ */
+export const calculateDynamicCPUInterval = (difficulty: number, setsOnBoard: number): number => {
+  // Base difficulty mapping (same as existing system)
+  const difficultyMap: { [key: number]: number } = {
+    1: 1.1, // ~30s baseline
+    2: 1.4, // ~25s baseline
+    3: 1.7, // ~20s baseline
+    4: 2.3, // ~15s baseline
+    5: 3.3, // ~10s baseline
+    6: 4.0, // ~8s baseline
+    7: 6.0, // ~6s baseline
+    8: 8.0, // ~4s baseline
+  }
+
+  const actualDifficulty = difficultyMap[difficulty] || difficultyMap[2]
+
+  // Get performance data for current board state
+  const performanceData = getCPUPerformanceForSets(setsOnBoard)
+
+  // Target timing: Reduce variance in challenge level while preserving natural difficulty
+  // When there are fewer sets, CPU should attempt FASTER (but still somewhat slower overall)
+  // When there are more sets, CPU should attempt SLOWER (but still somewhat faster overall)
+  // Dampening prevents over-correction that would make all scenarios identical
+
+  // Use the baseline difficulty but adjust based on set density
+  // For reference: 3 sets is our baseline (7.19 avg attempts)
+  const baselineAttempts = 7.19
+  const currentAttempts = performanceData.averageAttempts
+
+  // Adjustment factor with dampening:
+  // - More attempts needed (fewer sets) → currentAttempts > baseline → factor > 1 → higher difficulty → FASTER intervals
+  // - Fewer attempts needed (more sets) → currentAttempts < baseline → factor < 1 → lower difficulty → SLOWER intervals
+  // - Dampening prevents over-correction, maintaining some natural difficulty variation
+  const rawAdjustmentFactor = currentAttempts / baselineAttempts
+
+  // Apply dampening: move the factor toward 1.0 to reduce the adjustment strength
+  // Dampening of 0.5 means we apply 50% of the calculated adjustment
+  const dampening = 0.6 // Adjust 60% of the way, leave 40% natural variation
+  const adjustmentFactor = 1 + (rawAdjustmentFactor - 1) * dampening
+
+  // Apply the adjustment to the difficulty
+  const adjustedDifficulty = actualDifficulty * adjustmentFactor
+
+  // Calculate interval using adjusted difficulty
+  const interval = 24000 / (5 * adjustedDifficulty)
+
+  // Add some bounds to prevent extreme values
+  const minInterval = 500 // Never faster than 0.5 seconds per attempt
+  const maxInterval = 8000 // Never slower than 8 seconds per attempt
+
+  return Math.max(minInterval, Math.min(maxInterval, interval))
+}
