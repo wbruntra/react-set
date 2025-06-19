@@ -40,10 +40,10 @@ const CPUPerformanceDisplay: React.FC<CPUPerformanceDisplayProps> = ({
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
         <div className="text-center flex-grow-1">
           <div className="mb-2">
-            <small className="text-muted">Opponent Set-Finding Time:</small>
+            <small className="text-muted">Opponent finds set every:</small>
           </div>
           <div className="text-center">
-            <div className="d-flex justify-content-center align-items-center gap-2 mb-1">
+            <div className="d-flex d-md-flex flex-column flex-md-row justify-content-center align-items-center gap-2 mb-1">
               <span className="fw-bold text-primary fs-5">
                 {formatTimeString(averageTimeSeconds)}
               </span>
@@ -56,7 +56,7 @@ const CPUPerformanceDisplay: React.FC<CPUPerformanceDisplayProps> = ({
             </div>
           </div>
           <div className="mt-2">
-            <small className="text-muted">Average based on board showing 3 sets</small>
+            <small className="text-muted">Average with 3 sets on board</small>
           </div>
         </div>
 
