@@ -4,8 +4,8 @@ export const TRAINING_CONFIG = {
   playingTo: 6,
   cpuDelay: 1200,
   initialTurnTime: 7000,
-  oneCardHintInitialTurnTime: 12000, // More time for the harder mode
   minimumTurnTime: 1600,
+  oneCardHintInitialTurnTime: 10000, // More time for the harder mode
   oneCardHintMinimumTurnTime: 3000, // More time for the harder mode
   boardSize: 8,
   timerUpdateInterval: 100,

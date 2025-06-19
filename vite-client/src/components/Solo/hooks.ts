@@ -81,6 +81,7 @@ export const useGameTimers = (): GameTimersHook => {
               selected: [a],
               cpuFound: [b, c],
               setFound: true,
+              timeDeclared: Date.now(),
             }
           }
           return prevState

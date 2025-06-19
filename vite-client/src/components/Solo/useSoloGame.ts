@@ -6,6 +6,7 @@ import {
   isSet,
   removeSelected as removeSelectedCards,
   reshuffle,
+  countSets,
 } from '../../utils/helpers'
 import {
   createInitialState,
@@ -18,6 +19,13 @@ import { useGameTimers, updatePlayerScore } from './hooks'
 import { useFlashAnimation } from '../../hooks/useFlashAnimation'
 import { GAME_CONFIG } from './constants'
 import axios from 'axios'
+
+// Action logging types
+type GameAction = [number, number, 'h' | 'c'] // [setsOnBoard, timeInSeconds, who]
+
+interface ActionLog {
+  actions: GameAction[]
+}
 
 export interface UseSoloGameReturn {
   state: SoloState & { difficulty: number }
@@ -45,12 +53,23 @@ export const useSoloGame = (user: any): UseSoloGameReturn => {
     difficulty: getSavedDifficulty(),
   }))
 
+  // Action logging state
+  const [actionLog, setActionLog] = useState<ActionLog>({ actions: [] })
+  const [lastDeclarationTime, setLastDeclarationTime] = useState<number | null>(null)
+
   // Flash animations
   const { showCpuFlash, showUserFlash, triggerCpuFlash, triggerUserFlash } = useFlashAnimation()
 
   // Game timers
   const { startCpuTimer, startCpuAnimation, startSetFoundTimer, startDeclarationTimer } =
     useGameTimers()
+
+  // Track when declarations happen to log timing
+  useEffect(() => {
+    if (state.declarer && state.timeDeclared) {
+      setLastDeclarationTime(state.timeDeclared)
+    }
+  }, [state.declarer, state.timeDeclared])
 
   // Load saved difficulty on mount
   useEffect(() => {
@@ -135,6 +154,20 @@ export const useSoloGame = (user: any): UseSoloGameReturn => {
     setState((prevState) => {
       if (!prevState.setFound) return prevState
 
+      // Log the action
+      const setsOnBoard = countSets(prevState.board)
+      const timeElapsed =
+        lastDeclarationTime && prevState.timeDeclared
+          ? (Date.now() - lastDeclarationTime) / 1000
+          : 0
+      const who = declarer === 'you' ? 'h' : 'c'
+
+      const newAction: GameAction = [setsOnBoard, Number(timeElapsed.toFixed(1)), who]
+      const updatedActionLog = {
+        actions: [...actionLog.actions, newAction],
+      }
+      setActionLog(updatedActionLog)
+
       const [newPlayers, newScore] = updatePlayerScore(prevState.players, declarer, 1)
       const gameOver = newScore >= GAME_CONFIG.playingTo ? declarer : ''
 
@@ -146,6 +179,9 @@ export const useSoloGame = (user: any): UseSoloGameReturn => {
           (new Date().getTime() - prevState.startTime.getTime()) / 1000,
         )
 
+        // Include action log in game data
+        const gameData = updatedActionLog
+
         // Report game stats asynchronously
         setTimeout(() => {
           axios
@@ -155,6 +191,7 @@ export const useSoloGame = (user: any): UseSoloGameReturn => {
               player_won,
               difficulty_level: prevState.difficulty,
               winning_score: newScore,
+              data: gameData,
             })
             .catch(() => {})
         }, 0)
@@ -228,6 +265,9 @@ export const useSoloGame = (user: any): UseSoloGameReturn => {
       difficulty: prevState.difficulty,
       cpuTurnInterval: prevState.cpuTurnInterval,
     }))
+    // Reset action log
+    setActionLog({ actions: [] })
+    setLastDeclarationTime(null)
   }
 
   const handleStartGame = (e: React.FormEvent) => {
@@ -237,6 +277,9 @@ export const useSoloGame = (user: any): UseSoloGameReturn => {
       gameStarted: true,
       startTime: new Date(),
     }))
+    // Reset action log for new game
+    setActionLog({ actions: [] })
+    setLastDeclarationTime(null)
   }
 
   const handleDifficultyChange = (newDifficulty: number) => {

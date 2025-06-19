@@ -2,7 +2,7 @@ var express = require('express')
 var router = express.Router()
 const db = require('./db_connection')
 
-router.get('/', function(req, res) {
+router.get('/', function (req, res) {
   res.send({ msg: 'Ping pong' })
 })
 
@@ -16,11 +16,9 @@ router.get('/users', async (req, res) => {
 
 router.get('/user/:uid', async (req, res) => {
   const uid = req.params.uid
-  const user = await db('users')
-    .select()
-    .where({
-      uid,
-    })
+  const user = await db('users').select().where({
+    uid,
+  })
   if (user) {
     return res.send(user)
   }
@@ -49,11 +47,9 @@ router.post('/user', async (req, res) => {
   const { email } = req.body.info || ''
   const info = req.body.info || {}
   try {
-    const existingUser = await db('users')
-      .select()
-      .where({
-        uid,
-      })
+    const existingUser = await db('users').select().where({
+      uid,
+    })
     if (existingUser) {
       return res.json({ msg: 'user exists' })
     }
@@ -70,15 +66,13 @@ router.post('/user', async (req, res) => {
 })
 
 router.get('/games', async (req, res) => {
-  const games = await db('games')
-    .count('*', { as: 'games_played' })
-    .groupBy('player_uid')
+  const games = await db('games').count('*', { as: 'games_played' }).groupBy('player_uid')
   console.log(games)
   return res.send(games)
 })
 
 router.post('/game', async (req, res) => {
-  const { uid, total_time, player_won, difficulty_level, winning_score } = req.body
+  const { uid, total_time, player_won, difficulty_level, winning_score, data } = req.body
   try {
     await db('games').insert({
       player_uid: uid,
@@ -86,6 +80,7 @@ router.post('/game', async (req, res) => {
       player_won,
       difficulty_level,
       winning_score,
+      data: JSON.stringify(data || {}),
     })
     return res.sendStatus(200)
   } catch (e) {

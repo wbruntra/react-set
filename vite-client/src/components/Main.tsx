@@ -48,13 +48,18 @@ function Main() {
           return <MenuItem key={`card-${i}`} {...item} />
         })}
       </div>
-      <div className="d-none d-md-block">
-        <hr />
+      <hr />
+      <div className="d-none d-md-block text-center">
         <p>
           <Link to="/rules">Rules</Link>
         </p>
         <p>
           <Link to="/stats">View Statistics</Link>
+        </p>
+      </div>
+      <div className="text-center mt-4">
+        <p>
+          <Link to="/training">Training Mode</Link>
         </p>
       </div>
     </div>
