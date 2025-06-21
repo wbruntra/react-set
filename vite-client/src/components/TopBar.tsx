@@ -49,6 +49,12 @@ function TopBar({
               <div>
                 Sets: <span className="mono-font">{sets}</span>
               </div>
+              <div>
+                Time:{' '}
+                <span className="mono-font">
+                  {elapsedTime !== undefined ? formatTime(elapsedTime) : '0:00'}
+                </span>
+              </div>
               <div>{declarer && <>SET! {declarer}</>}</div>
             </div>
           </nav>

@@ -108,7 +108,7 @@ function Board(props: BoardProps) {
       )}
 
       <TopBar {...props} />
-      <div className="container">
+      <div className="container bg-light-purple">
         {sharedDevice && (
           <SharedPlayersDisplay
             players={topPlayers}

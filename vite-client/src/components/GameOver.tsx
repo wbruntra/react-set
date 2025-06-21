@@ -18,9 +18,9 @@ function GameOver(props: GameOverProps) {
 
   return (
     <div className="game-over container mt-5">
-      <div className="row justify-content-center">
+      <div className="row justify-content-center bg-light-purple">
         <div className="col col-md-6">
-          <div className="card shadow">
+          <div className="card shadow p-3 m-2">
             <h3 className="text-center mt-3">GAME OVER!</h3>
             {!isNaN(finalScore as number) ? ( // Cast to number for isNaN
               <div className="d-flex flex-column justify-content-center">

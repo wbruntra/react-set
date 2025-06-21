@@ -28,7 +28,7 @@ interface ActionLog {
 }
 
 export interface UseSoloGameReturn {
-  state: SoloState & { difficulty: number }
+  state: SoloState & { difficulty: number; elapsedSeconds: number }
   flashState: {
     showCpuFlash: boolean
     showUserFlash: boolean
@@ -47,15 +47,18 @@ export interface UseSoloGameReturn {
  */
 export const useSoloGame = (user: any): UseSoloGameReturn => {
   // Initialize state
-  const [state, setState] = useState<SoloState & { difficulty: number }>(() => ({
-    ...cloneDeep(createInitialState()),
-    ...createGameState(),
-    difficulty: getSavedDifficulty(),
-  }))
+  const [state, setState] = useState<SoloState & { difficulty: number; elapsedSeconds: number }>(
+    () => ({
+      ...cloneDeep(createInitialState()),
+      ...createGameState(),
+      difficulty: getSavedDifficulty(),
+      elapsedSeconds: 0,
+    }),
+  )
 
   // Action logging state
   const [actionLog, setActionLog] = useState<ActionLog>({ actions: [] })
-  const [lastDeclarationTime, setLastDeclarationTime] = useState<number | null>(null)
+  const [roundStartTime, setRoundStartTime] = useState<number | null>(null)
 
   // Flash animations
   const { showCpuFlash, showUserFlash, triggerCpuFlash, triggerUserFlash } = useFlashAnimation()
@@ -64,12 +67,33 @@ export const useSoloGame = (user: any): UseSoloGameReturn => {
   const { startCpuTimer, startCpuAnimation, startSetFoundTimer, startDeclarationTimer } =
     useGameTimers()
 
-  // Track when declarations happen to log timing
+  // Track when rounds start for accurate timing
   useEffect(() => {
-    if (state.declarer && state.timeDeclared) {
-      setLastDeclarationTime(state.timeDeclared)
+    if (state.gameStarted && roundStartTime === null) {
+      // Set the round start time when the game starts
+      setRoundStartTime(Date.now())
     }
-  }, [state.declarer, state.timeDeclared])
+  }, [state.gameStarted, roundStartTime])
+
+  // Elapsed time timer effect
+  useEffect(() => {
+    let elapsedTimer: number | null = null
+
+    if (state.gameStarted && !state.gameOver) {
+      elapsedTimer = window.setInterval(() => {
+        setState((prevState) => ({
+          ...prevState,
+          elapsedSeconds: Math.floor((Date.now() - prevState.startTime.getTime()) / 1000),
+        }))
+      }, 1000)
+    }
+
+    return () => {
+      if (elapsedTimer !== null) {
+        clearInterval(elapsedTimer)
+      }
+    }
+  }, [state.gameStarted, state.gameOver])
 
   // Load saved difficulty on mount
   useEffect(() => {
@@ -156,9 +180,10 @@ export const useSoloGame = (user: any): UseSoloGameReturn => {
 
       // Log the action
       const setsOnBoard = countSets(prevState.board)
+      // Calculate time from round start to declaration
       const timeElapsed =
-        lastDeclarationTime && prevState.timeDeclared
-          ? (Date.now() - lastDeclarationTime) / 1000
+        roundStartTime && prevState.timeDeclared
+          ? (prevState.timeDeclared - roundStartTime) / 1000
           : 0
       const who = declarer === 'you' ? 'h' : 'c'
 
@@ -167,6 +192,9 @@ export const useSoloGame = (user: any): UseSoloGameReturn => {
         actions: [...actionLog.actions, newAction],
       }
       setActionLog(updatedActionLog)
+
+      // Start a new round after this set is processed
+      setRoundStartTime(Date.now())
 
       const [newPlayers, newScore] = updatePlayerScore(prevState.players, declarer, 1)
       const gameOver = newScore >= GAME_CONFIG.playingTo ? declarer : ''
@@ -264,10 +292,11 @@ export const useSoloGame = (user: any): UseSoloGameReturn => {
       ...createGameState(),
       difficulty: prevState.difficulty,
       cpuTurnInterval: prevState.cpuTurnInterval,
+      elapsedSeconds: 0,
     }))
     // Reset action log
     setActionLog({ actions: [] })
-    setLastDeclarationTime(null)
+    setRoundStartTime(null)
   }
 
   const handleStartGame = (e: React.FormEvent) => {
@@ -276,10 +305,11 @@ export const useSoloGame = (user: any): UseSoloGameReturn => {
       ...prevState,
       gameStarted: true,
       startTime: new Date(),
+      elapsedSeconds: 0,
     }))
     // Reset action log for new game
     setActionLog({ actions: [] })
-    setLastDeclarationTime(null)
+    setRoundStartTime(null)
   }
 
   const handleDifficultyChange = (newDifficulty: number) => {

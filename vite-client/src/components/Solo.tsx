@@ -34,16 +34,12 @@ function Solo() {
     gameOver,
     myName,
     difficulty,
+    elapsedSeconds,
   } = state
 
   const { showCpuFlash, showUserFlash } = flashState
-  const {
-    handleCardClick,
-    handleRedeal,
-    resetGame,
-    handleStartGame,
-    handleDifficultyChange,
-  } = handlers
+  const { handleCardClick, handleRedeal, resetGame, handleStartGame, handleDifficultyChange } =
+    handlers
 
   if (userReducer.loading) {
     return 'Loading...'
@@ -79,6 +75,7 @@ function Solo() {
         resetGame={resetGame}
         solo={true}
         gameMode="versus"
+        elapsedTime={elapsedSeconds}
       />
     </>
   )

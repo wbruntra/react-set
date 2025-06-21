@@ -176,7 +176,7 @@ const DifficultySetup: React.FC<DifficultySetupProps> = ({
 const GameModeLinks: React.FC = () => (
   <div className="mt-5">
     <h5 className="mb-3 text-center">Other Game Options</h5>
-    <div className="row">
+    <div className="row justify-content-center">
       <div className="col-md-6">
         <div className="d-grid gap-2">
           <Link to="/local" className="btn btn-outline-primary">

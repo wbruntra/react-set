@@ -17,7 +17,7 @@ Each action is logged as a compact array:
 Where:
 
 - `setsOnBoard` (number): Number of valid sets present on the board when the action occurred
-- `timeInSeconds` (number): Time taken to find the set (from declaration to completion), rounded to 1 decimal place
+- `timeInSeconds` (number): Time taken to find the set (from round start to declaration), rounded to 1 decimal place
 - `who` (string): Either `'h'` for human player or `'c'` for CPU
 
 ## Example Data
@@ -47,9 +47,9 @@ The action logging is implemented in `useSoloGame.ts`:
 
 2. **Timing Measurement**:
 
-   - Declaration time is recorded when a player declares (starts selecting)
-   - Completion time is when the set is confirmed as valid
-   - Time difference is calculated and stored in seconds
+   - Round start time is recorded when the game begins or when the previous set is completed
+   - Declaration time is when a player declares (starts selecting for human, or when CPU declares)
+   - Time difference is calculated from round start to declaration and stored in seconds
 
 3. **Data Submission**: When a game ends, the complete action log is sent to the backend along with other game statistics.
 
