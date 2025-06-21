@@ -262,3 +262,41 @@ a {
     font-size: 0.9rem;
   }
 }
+
+// Shared device player buttons
+.shared-players-container {
+  user-select: none;
+}
+
+.shared-player-button {
+  user-select: none;
+  transition: all 0.3s ease-in-out;
+  position: relative;
+
+  &:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  &:active {
+    transform: scale(0.95) !important;
+  }
+}
+
+.active-player {
+  animation: activePlayerPulse 1s ease-in-out infinite;
+}
+
+@keyframes activePlayerPulse {
+  0% {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.6),
+      0 0 20px rgba(255, 255, 255, 0.5);
+  }
+  100% {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  }
+}

@@ -17,6 +17,7 @@ interface BoardProps {
   handleCardClick: (card: string) => void
   handleDeclare: () => void
   handleRedeal?: () => void
+  handlePlayerClick?: (playerName: string) => void // For shared device mode
   players: Players // Use Players interface
   setFound: boolean
   gameOver: string | null | boolean
@@ -113,7 +114,7 @@ function Board(props: BoardProps) {
           <SharedPlayersDisplay
             players={topPlayers}
             declarer={declarer}
-            handlePlayerClick={props.handleCardClick} // This was handlePlayerClick in original
+            handlePlayerClick={props.handlePlayerClick || (() => {})}
           />
         )}
 
@@ -173,7 +174,7 @@ function Board(props: BoardProps) {
           <SharedPlayersDisplay
             players={bottomPlayers}
             declarer={declarer}
-            handlePlayerClick={props.handleCardClick} // This was handlePlayerClick in original
+            handlePlayerClick={props.handlePlayerClick || (() => {})}
           />
         )}
       </div>

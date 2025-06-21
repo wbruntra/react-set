@@ -1,0 +1,431 @@
+/* Shared Device Layout Styles */
+
+/* Main Layout Container */
+.shared-device-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Player Frame Styles */
+.shared-player-frame {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.shared-player-frame--top {
+  top: 0;
+  border-bottom: 3px solid rgba(0, 0, 0, 0.1);
+  /* Removed border-radius for straight edges */
+}
+
+.shared-player-frame--bottom {
+  bottom: 0;
+  border-top: 3px solid rgba(0, 0, 0, 0.1);
+  /* Removed border-radius for straight edges */
+}
+
+.shared-player-frame__container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem; /* Increased from 1rem for more spacing */
+  padding: 0.5rem; /* Reduced from 1rem */
+  flex-wrap: wrap;
+}
+
+/* Player Button Styles */
+.shared-player-button {
+  background: linear-gradient(145deg, #f0f0f0, #cacaca);
+  border: 3px solid rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  padding: 0.5rem 1rem; /* Reduced padding */
+  min-width: 100px; /* Reduced from 120px */
+  min-height: 60px; /* Reduced from 80px */
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.shared-player-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.shared-player-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.shared-player-button--active {
+  background: linear-gradient(145deg, #4caf50, #45a049);
+  border: 4px solid #2e7d32;
+  transform: scale(1.1);
+  box-shadow: 0 8px 24px rgba(76, 175, 80, 0.4);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 8px 24px rgba(76, 175, 80, 0.4);
+  }
+  50% {
+    box-shadow: 0 8px 24px rgba(76, 175, 80, 0.8);
+  }
+  100% {
+    box-shadow: 0 8px 24px rgba(76, 175, 80, 0.4);
+  }
+}
+
+/* Player Color Variants */
+.shared-player-button--red {
+  background: linear-gradient(145deg, #ff6b6b, #e55a5a);
+  color: white;
+}
+
+.shared-player-button--blue {
+  background: linear-gradient(145deg, #4dabf7, #339af0);
+  color: white;
+}
+
+.shared-player-button--green {
+  background: linear-gradient(145deg, #51cf66, #40c057);
+  color: white;
+}
+
+.shared-player-button--purple {
+  background: linear-gradient(145deg, #9775fa, #845ef7);
+  color: white;
+}
+
+.shared-player-button--orange {
+  background: linear-gradient(145deg, #ff922b, #fd7e14);
+  color: white;
+}
+
+.shared-player-button--yellow {
+  background: linear-gradient(145deg, #ffd43b, #fab005);
+  color: #333;
+}
+
+.shared-player-button__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.shared-player-button__name {
+  font-size: 0.9rem; /* Reduced font size */
+  font-weight: bold;
+  margin-bottom: 0.1rem; /* Reduced margin */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.shared-player-button--active .shared-player-button__name {
+  font-size: 1.4rem;
+  animation: bounce 0.6s ease-out;
+}
+
+@keyframes bounce {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-4px);
+  }
+  60% {
+    transform: translateY(-2px);
+  }
+}
+
+.shared-player-button__score {
+  font-size: 1.2rem; /* Reduced font size */
+  font-weight: bold;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.shared-player-button--active .shared-player-button__score {
+  font-size: 0.9rem;
+  font-weight: normal;
+  opacity: 0.9;
+}
+
+/* Game Area */
+.shared-game-area {
+  flex: 1;
+  display: flex;
+  margin: 90px 20px 90px 20px; /* Reduced margins for smaller player frames */
+  gap: 2rem;
+  align-items: center;
+  min-height: 0; /* Allow shrinking */
+}
+
+/* Game Board */
+.shared-game-board {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%; /* Take full height of game area */
+}
+
+.shared-game-board__container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 columns for iPad landscape */
+  grid-template-rows: repeat(3, 1fr); /* 3 rows */
+  grid-row-gap: 20px;
+  column-gap: 20px;
+  max-width: 900px; /* Wider for 4-column layout */
+  width: 100%;
+  height: 100%;
+  padding: 2rem;
+  /* Removed background, border, and shadow - now transparent */
+  justify-items: center;
+  align-items: center;
+  align-content: center; /* Center grid content vertically */
+}
+
+.shared-game-board__card-wrapper {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 200px; /* Wider landscape orientation */
+  height: 130px; /* Shorter height for landscape cards */
+}
+
+.shared-game-board__card-wrapper:hover {
+  transform: scale(1.05);
+}
+
+.shared-game-board__card-wrapper:active {
+  transform: scale(0.98);
+}
+
+.shared-game-board__card-holder {
+  margin: 4px;
+  padding: 15px; /* Increased padding for better containment */
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.shared-game-board__card {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: #f7f8fa; /* Use the same soft card background as the squiggle SVGs */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* Let the Card component determine its own size but ensure proper container */
+}
+
+.shared-game-board__card--blurred {
+  opacity: 0.3;
+  filter: blur(2px);
+}
+
+/* Set Counter */
+.set-counter {
+  position: fixed;
+  bottom: 100px; /* Position above the bottom player frame */
+  right: 20px; /* Small margin from right edge */
+  z-index: 5;
+}
+
+.set-counter__content {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px; /* Smaller radius */
+  padding: 0.75rem; /* Reduced padding */
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  min-width: 60px; /* Smaller minimum width */
+}
+
+.set-counter__main {
+  margin-bottom: 0; /* No margin since we removed the deck section */
+}
+
+.set-counter__number {
+  font-size: 1.8rem; /* Smaller font size */
+  font-weight: bold;
+  color: #2e7d32;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  line-height: 1;
+}
+
+.set-counter__label {
+  font-size: 0.7rem; /* Smaller label */
+  font-weight: bold;
+  color: #666;
+  margin-top: 0.25rem;
+}
+
+/* Responsive Design */
+
+/* iPad landscape and larger tablets - optimal 4-column layout */
+@media (min-width: 1024px) and (orientation: landscape) {
+  .shared-game-board__container {
+    max-width: 1000px;
+    grid-row-gap: 25px;
+    column-gap: 25px;
+    padding: 2.5rem;
+  }
+
+  .shared-game-board__card-wrapper {
+    width: 220px; /* Wider landscape cards */
+    height: 140px; /* Shorter height for landscape */
+  }
+
+  .shared-game-board__card-holder {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+  /* iPad and tablet landscape - keep 4 columns but adjust sizing */
+  .shared-game-board__container {
+    max-width: 800px;
+    grid-row-gap: 18px;
+    column-gap: 18px;
+    padding: 1.5rem;
+  }
+
+  .shared-game-board__card-wrapper {
+    width: 180px; /* Landscape orientation */
+    height: 120px; /* Shorter for landscape */
+  }
+
+  .shared-game-board__card-holder {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Smaller tablets and large phones - switch to 3 columns */
+  .shared-game-area {
+    margin: 80px 10px 80px 10px; /* Reduced margins */
+    flex-direction: column;
+  }
+
+  .set-counter {
+    bottom: 80px; /* Adjust for smaller player frames */
+    right: 15px;
+  }
+
+  .set-counter__content {
+    padding: 0.5rem;
+    min-width: 50px;
+  }
+
+  .set-counter__number {
+    font-size: 1.4rem;
+  }
+
+  .set-counter__label {
+    font-size: 0.6rem;
+  }
+
+  .shared-game-board__container {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    grid-row-gap: 20px;
+    column-gap: 15px;
+    padding: 1rem;
+    max-width: 480px;
+  }
+
+  .shared-game-board__card-wrapper {
+    width: 140px; /* Landscape for smaller screens too */
+    height: 100px;
+  }
+
+  .shared-game-board__card-holder {
+    margin: 2px;
+    padding: 8px;
+    border-radius: 3px;
+  }
+
+  .shared-player-button {
+    min-width: 80px; /* Smaller buttons */
+    min-height: 50px;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .shared-player-frame__container {
+    gap: 1.5rem; /* Maintain good spacing on smaller screens */
+    padding: 0.5rem; /* Reduced padding */
+  }
+}
+
+@media (max-width: 480px) {
+  /* Small phones - 3 columns, smaller cards */
+  .shared-game-board__container {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    grid-row-gap: 15px;
+    column-gap: 10px;
+    padding: 0.75rem;
+    max-width: 380px;
+  }
+
+  .shared-game-board__card-wrapper {
+    width: 110px; /* Landscape for phones */
+    height: 80px;
+  }
+
+  .shared-game-board__card-holder {
+    margin: 1px;
+    padding: 6px;
+    border-radius: 2px;
+  }
+
+  .shared-player-frame__container {
+    gap: 1rem; /* Reduced but still decent spacing on phones */
+  }
+
+  .shared-player-button {
+    min-width: 70px;
+    min-height: 45px;
+    padding: 0.4rem;
+  }
+
+  .shared-player-button__name {
+    font-size: 0.8rem;
+  }
+
+  .shared-player-button__score {
+    font-size: 1rem;
+  }
+}
