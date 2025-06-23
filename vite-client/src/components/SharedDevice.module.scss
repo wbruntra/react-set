@@ -429,3 +429,15 @@
     font-size: 1rem;
   }
 }
+/* Portrait mobile: rotate and expand cards for better space usage */
+@media (orientation: portrait) and (max-width: 560px) {
+  .shared-game-board__card-wrapper {
+    transform: rotate(90deg) scale(1.15);
+  }
+  .shared-game-board__card-wrapper:hover {
+    transform: rotate(90deg) scale(1.05);
+  }
+  .shared-game-board__card-wrapper:active {
+    transform: rotate(90deg) scale(0.98);
+  }
+}
