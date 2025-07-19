@@ -3,7 +3,7 @@
 import {
   calculateDynamicCPUInterval,
   getCPUPerformanceForSets,
-} from './vite-client/src/components/Solo/cpuPerformance.ts'
+} from '../vite-client/src/components/Solo/cpuPerformance.ts'
 
 console.log('🔧 Testing CORRECTED Dynamic CPU Timing')
 console.log('======================================')
