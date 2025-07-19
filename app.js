@@ -1,11 +1,11 @@
 require('dotenv').config()
-var express = require('express')
-var path = require('path')
-var logger = require('morgan')
+const express = require('express')
+const path = require('path')
+const logger = require('morgan')
 
-var cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session')
 
-var app = express()
+const app = express()
 
 app.use(
   cookieSession({
@@ -15,7 +15,7 @@ app.use(
   }),
 )
 
-var routes = require('./routes')
+const routes = require('./routes')
 
 app.use(logger('dev'))
 app.use(express.json())

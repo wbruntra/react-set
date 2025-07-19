@@ -128,17 +128,39 @@ const DifficultySetup: React.FC<DifficultySetupProps> = ({
         <div className="col-12 col-md-8">
           <form onSubmit={onStartGame} className="mb-4">
             <div className="mb-4">
-              <input
-                type="range"
-                min={DIFFICULTY_CONFIG.min}
-                max={DIFFICULTY_CONFIG.max}
-                step={DIFFICULTY_CONFIG.step}
-                value={difficulty}
-                onChange={(e) => onDifficultyChange(Number(e.target.value))}
-                className="form-range"
-              />
-              <div className="text-center mt-2">
-                <span className="badge bg-primary fs-6">Difficulty: {difficulty}</span>
+              {/* Difficulty Selector with Plus/Minus Buttons */}
+              <div className="d-flex justify-content-center align-items-center gap-3 mb-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    onDifficultyChange(
+                      Math.max(DIFFICULTY_CONFIG.min, difficulty - DIFFICULTY_CONFIG.step),
+                    )
+                  }
+                  disabled={difficulty <= DIFFICULTY_CONFIG.min}
+                  className="btn btn-outline-secondary btn-lg"
+                  title="Decrease difficulty"
+                >
+                  <i className="bi bi-dash-lg"></i>
+                </button>
+
+                <div className="text-center">
+                  <span className="badge bg-primary fs-4 px-4 py-2">Difficulty: {difficulty}</span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    onDifficultyChange(
+                      Math.min(DIFFICULTY_CONFIG.max, difficulty + DIFFICULTY_CONFIG.step),
+                    )
+                  }
+                  disabled={difficulty >= DIFFICULTY_CONFIG.max}
+                  className="btn btn-outline-secondary btn-lg"
+                  title="Increase difficulty"
+                >
+                  <i className="bi bi-plus-lg"></i>
+                </button>
               </div>
 
               {/* Adaptive CPU Performance Display */}
