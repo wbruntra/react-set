@@ -1,4 +1,5 @@
 // knexfile.js
+require('dotenv').config()
 const path = require('path')
 
 module.exports = {
