@@ -138,14 +138,14 @@ const DifficultySetup: React.FC<DifficultySetupProps> = ({
                     )
                   }
                   disabled={difficulty <= DIFFICULTY_CONFIG.min}
-                  className="btn btn-outline-secondary btn-lg"
+                  className="btn btn-outline-secondary"
                   title="Decrease difficulty"
                 >
                   <i className="bi bi-dash-lg"></i>
                 </button>
 
                 <div className="text-center">
-                  <span className="badge bg-primary fs-4 px-4 py-2">Difficulty: {difficulty}</span>
+                  <span className="badge bg-primary fs-2 px-4 py-2">{difficulty}</span>
                 </div>
 
                 <button
@@ -156,7 +156,7 @@ const DifficultySetup: React.FC<DifficultySetupProps> = ({
                     )
                   }
                   disabled={difficulty >= DIFFICULTY_CONFIG.max}
-                  className="btn btn-outline-secondary btn-lg"
+                  className="btn btn-outline-secondary"
                   title="Increase difficulty"
                 >
                   <i className="bi bi-plus-lg"></i>
