@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import update from 'immutability-helper'
 
 interface UserState {
   loading: boolean
@@ -26,10 +25,9 @@ const userSlice = createSlice({
       return { ...state, ...action.payload }
     },
     updateNickname: (state, action: PayloadAction<string>) => {
-      const newState = update(state, {
-        user: { nickname: { $set: action.payload } },
-      })
-      return newState
+      if (state.user) {
+        state.user.nickname = action.payload
+      }
     },
     logOut: (state) => {
       state.loading = false

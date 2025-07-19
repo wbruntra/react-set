@@ -13,7 +13,7 @@ function Solo() {
   const { user } = userReducer
 
   // Game logic hook
-  const { state, flashState, handlers } = useSoloGame(user)
+  const { state, flashState, handlers, gameData } = useSoloGame(user)
 
   // Debug logging for user state
   useEffect(() => {
@@ -76,6 +76,7 @@ function Solo() {
         solo={true}
         gameMode="versus"
         elapsedTime={elapsedSeconds}
+        gameData={gameData}
       />
     </>
   )

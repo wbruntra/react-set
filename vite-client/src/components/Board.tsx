@@ -7,7 +7,7 @@ import { Modal } from 'react-bootstrap'
 import TopBar from './TopBar'
 import { countSets } from '../utils/helpers'
 import SharedPlayersDisplay from './SharedPlayersDisplay'
-import { Players } from '../utils/models' // Import Players interface
+import { Players } from '@/utils/models' // Import Players interface
 
 interface BoardProps {
   board: string[]
@@ -27,6 +27,12 @@ interface BoardProps {
   gameMode: string
   elapsedTime?: number
   timeLeft?: number | string
+  gameData?: {
+    actions: Array<[number, number, 'h' | 'c']>
+    totalTime?: number
+    difficulty?: number
+    playerWon?: number
+  } // Game timeline data for solo mode
 }
 
 function Board(props: BoardProps) {
@@ -70,7 +76,17 @@ function Board(props: BoardProps) {
   const borderColor = getBorderColor(props)
 
   if (!isEmpty(gameOver)) {
-    return <GameOver gameOver={gameOver} myName={myName} solo={solo} reset={props.resetGame} />
+    const winner = typeof gameOver === 'string' ? gameOver : ''
+    return (
+      <GameOver
+        gameOver={gameOver}
+        myName={myName}
+        solo={solo}
+        finalScore={solo && winner ? players[winner]?.score : undefined}
+        reset={props.resetGame}
+        gameData={props.gameData}
+      />
+    )
   }
 
   const playersArray = map(players, (info, name) => {

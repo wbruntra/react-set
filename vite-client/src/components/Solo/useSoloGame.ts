@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { cloneDeep } from 'lodash'
-import { SoloState } from '../../utils/models'
+import { SoloState } from '@/utils/models'
 import {
   cardToggle,
   isSet,
@@ -16,7 +16,7 @@ import {
   calculateIntervalFromDifficulty,
 } from './gameUtils'
 import { useGameTimers, updatePlayerScore } from './hooks'
-import { useFlashAnimation } from '../../hooks/useFlashAnimation'
+import { useFlashAnimation } from '@/hooks/useFlashAnimation'
 import { GAME_CONFIG } from './constants'
 import axios from 'axios'
 
@@ -39,6 +39,12 @@ export interface UseSoloGameReturn {
     resetGame: () => void
     handleStartGame: (e: React.FormEvent) => void
     handleDifficultyChange: (newDifficulty: number) => void
+  }
+  gameData: {
+    actions: GameAction[]
+    totalTime: number
+    difficulty: number
+    playerWon: number
   }
 }
 
@@ -331,6 +337,12 @@ export const useSoloGame = (user: any): UseSoloGameReturn => {
       resetGame,
       handleStartGame,
       handleDifficultyChange,
+    },
+    gameData: {
+      actions: actionLog.actions,
+      totalTime: state.elapsedSeconds,
+      difficulty: state.difficulty,
+      playerWon: state.gameOver === 'you' ? 1 : 0,
     },
   }
 }

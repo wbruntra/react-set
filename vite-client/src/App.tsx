@@ -12,6 +12,7 @@ import Rules from './components/Rules'
 import Stats from './components/Stats'
 import Puzzle from './components/Puzzle'
 import Training from './components/Training'
+import GameStats from './components/Stats/GameStats'
 
 const router = createBrowserRouter([
   {
@@ -56,6 +57,10 @@ const router = createBrowserRouter([
       {
         path: '/training',
         element: <Training />,
+      },
+      {
+        path: '/game-stats',
+        element: <GameStats />,
       },
     ],
   },

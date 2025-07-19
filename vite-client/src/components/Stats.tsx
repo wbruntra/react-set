@@ -75,7 +75,12 @@ function Stats() {
         </tbody>
       </table>
       <p>
-        <Link to="/">Main Menu</Link>
+        <Link to="/game-stats" className="btn btn-primary me-3">
+          View Detailed Game Timeline
+        </Link>
+        <Link to="/" className="btn btn-outline-secondary">
+          Main Menu
+        </Link>
       </p>
     </div>
   )
