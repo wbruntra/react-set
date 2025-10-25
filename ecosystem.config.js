@@ -5,6 +5,7 @@ module.exports = {
   name: 'react-set',
   script: `${BASE}/react-set/server.js`,
   interpreter: 'bun',
+  exec_mode: 'fork',
   instances: 1,
   autorestart: true,
   watch: false,
