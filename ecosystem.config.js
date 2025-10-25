@@ -8,6 +8,10 @@ module.exports = {
   exec_mode: 'fork',
   instances: 1,
   autorestart: true,
+  // add restart delay
+  restart_delay: 4000,
+  // add maximum restarts
+  max_restarts: 5,
   watch: false,
   max_memory_restart: '128M',
   env: {
