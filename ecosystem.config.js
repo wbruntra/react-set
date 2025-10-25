@@ -1,4 +1,4 @@
-const BASE = '/home/pi/web'
+const BASE = '/home/william/web'
 const secrets = require('./secrets')
 
 module.exports = {
