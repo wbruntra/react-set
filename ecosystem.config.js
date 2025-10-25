@@ -4,7 +4,7 @@ const secrets = require('./secrets')
 module.exports = {
   name: 'react-set',
   script: `${BASE}/react-set/server.js`,
-  interpreter: 'bun',
+  interpreter: '/usr/local/bin/bun',
   exec_mode: 'fork',
   instances: 1,
   autorestart: true,

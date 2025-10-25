@@ -9,9 +9,6 @@ router.get('/', function (req, res) {
 router.get('/users', async (req, res) => {
   const users = await db('users').select()
   return res.send(users)
-  // User.findAll().then((rows) => {
-  //   return res.send(rows)
-  // })
 })
 
 router.get('/user/:uid', async (req, res) => {
