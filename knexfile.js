@@ -17,7 +17,7 @@ module.exports = {
   production: {
     client: 'sqlite3',
     connection: {
-      filename: path.join(__dirname, 'production.sqlite3'),
+      filename: path.join(__dirname, 'react-db-production.sqlite3'),
     },
     useNullAsDefault: true,
     migrations: {
