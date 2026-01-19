@@ -1,5 +1,3 @@
-require('dotenv').config()
-
 const game_data = require('./game_info.json')
 const Game = require('../models/Game')
 const User = require('../models/User')
