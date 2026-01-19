@@ -1,6 +1,5 @@
 const game_data = require('./game_info.json')
-const Game = require('../models/Game')
-const User = require('../models/User')
+const db = require('../db_connection')
 
 const my_user = {
   uid: '1sGkH0ebN1TF9Wk9cB3m3BoB2s72',
@@ -28,8 +27,19 @@ const my_user = {
   },
 }
 
-User.create(my_user).then(() => {
-  game_data.forEach((game) => {
-    Game.create(game)
-  })
+const run = async () => {
+  const existingUser = await db('users').where('uid', my_user.uid).first()
+
+  if (existingUser) return
+
+  await db('users').insert(my_user)
+
+  for (const game of game_data) {
+    await db('games').insert(game)
+  }
+}
+
+run().then(() => {
+  console.log('Seeding complete')
+  process.exit(0)
 })
