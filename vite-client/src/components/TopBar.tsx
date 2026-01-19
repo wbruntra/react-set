@@ -1,9 +1,5 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
 import { Players } from '../utils/models'
-import { colors } from '../config'
 import { countSets } from '../utils/helpers'
-import useInterval from '../useInterval' // Not directly used in TopBar, but imported in original
 
 const formatTime = (seconds: number): string => {
   const pad = (ss: number): string => {
