@@ -1,5 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { Players } from '../utils/models'
+import { Players } from '../utils/models'
 import { colors } from '../config'
 import { countSets } from '../utils/helpers'
 import useInterval from '../useInterval' // Not directly used in TopBar, but imported in original
@@ -21,7 +23,7 @@ interface TopBarProps {
   board: string[]
   declarer: string | null
   setsFound?: any[] // Assuming this is an array of sets found in puzzle mode
-  players: any // TODO: Define proper type for Players
+  players: Players
   elapsedTime?: number
   timeLeft?: number | string
 }
