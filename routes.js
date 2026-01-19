@@ -31,7 +31,6 @@ router.get('/user/stats/:uid', async (req, res) => {
       .sum('player_won', { as: 'games_won' })
       .groupBy('difficulty_level')
       .where({ player_uid: uid })
-    console.log(q.toString())
     const rows = await q
     return res.send(rows)
   } catch (e) {
@@ -64,7 +63,6 @@ router.post('/user', async (req, res) => {
 
 router.get('/games', async (req, res) => {
   const games = await db('games').count('*', { as: 'games_played' }).groupBy('player_uid')
-  console.log(games)
   return res.send(games)
 })
 
