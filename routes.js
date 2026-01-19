@@ -7,7 +7,11 @@ router.get('/', function (req, res) {
 })
 
 router.get('/users', async (req, res) => {
-  const users = await db('users').select()
+  const page = parseInt(req.query.page, 10) || 1
+  const pageSize = parseInt(req.query.pageSize, 10) || 10
+  const offset = (page - 1) * pageSize
+
+  const users = await db('users').select().limit(pageSize).offset(offset)
   return res.send(users)
 })
 
