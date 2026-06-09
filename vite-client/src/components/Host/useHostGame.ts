@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { findKey, isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 import {
   doc,
@@ -114,7 +113,7 @@ export const useHostGame = (user: any): UseHostGameReturn => {
 
   // Check for existing games when user loads
   useEffect(() => {
-    if (user && !isEmpty(user.uid)) {
+    if (user && user.uid) {
       const gamesQuery = query(
         collection(firestore, 'games'),
         where('creator_uid', '==', user.uid),
@@ -312,7 +311,9 @@ export const useHostGame = (user: any): UseHostGameReturn => {
   }
 
   const reloadGame = () => {
-    const host = findKey(gameInProgress.players, (player: any) => player.host)
+    const host = Object.keys(gameInProgress.players).find(
+      (key: string) => (gameInProgress.players as any)[key].host,
+    )
     const { gameTitle } = gameInProgress
     setState({ gameTitle })
     subscribeToGame(gameTitle)
@@ -328,7 +329,7 @@ export const useHostGame = (user: any): UseHostGameReturn => {
   const handleCreateGame = (e: React.FormEvent) => {
     e.preventDefault()
     const { myName, board, deck, selected, players, gameOver, gameStarted } = currentState.current
-    const officialTitle = !isEmpty(gameTitle) ? gameTitle : `${myName}'s game`
+    const officialTitle = gameTitle ? gameTitle : `${myName}'s game`
     setGameTitle(officialTitle)
     firebaseRefs.game = doc(firestore, 'games', officialTitle)
     setDoc(firebaseRefs.game, {

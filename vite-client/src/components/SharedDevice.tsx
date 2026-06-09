@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { cloneDeep, shuffle, map, get } from 'lodash'
 import {
   makeDeck,
   cardToggle,
@@ -74,7 +73,7 @@ const initialState: Omit<SharedDeviceState, 'board' | 'deck'> = {
 
 const SharedDevice: React.FC = () => {
   const [state, setState] = useState<SharedDeviceState>(() => ({
-    ...cloneDeep(initialState),
+    ...JSON.parse(JSON.stringify(initialState)),
     ...createGameState(),
   }))
 
@@ -260,7 +259,7 @@ const SharedDevice: React.FC = () => {
       undeclareTimeoutRef.current = null
     }
     setState({
-      ...cloneDeep(initialState),
+      ...JSON.parse(JSON.stringify(initialState)),
       ...createGameState(),
     })
   }
@@ -313,7 +312,7 @@ const SharedDevice: React.FC = () => {
   }
 
   // Convert players object to array for easier handling
-  const playersArray = map(players, (info, name) => ({
+  const playersArray = Object.entries(players).map(([name, info]) => ({
     name,
     ...info,
   }))
@@ -326,7 +325,7 @@ const SharedDevice: React.FC = () => {
   // Get border color for selected cards
   const getBorderColor = () => {
     if (declarer) {
-      return get(players, `${declarer}.color`, '')
+      return players[declarer]?.color ?? ''
     }
     return '#007bff' // Default blue
   }

@@ -20,11 +20,4 @@ export default defineConfig({
       styles: path.resolve(__dirname, './src/styles'),
     },
   },
-  css: {
-    preprocessorOptions: {
-      scss: {
-        silenceDeprecations: ['import', 'mixed-decls'],
-      },
-    },
-  },
 })

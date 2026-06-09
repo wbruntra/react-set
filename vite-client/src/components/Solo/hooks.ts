@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import { shuffle } from 'lodash'
 import {
   nameThird,
   isSet,
   cardToggle,
   removeSelected as removeSelectedCards,
   countSets,
+  shuffle,
 } from '../../utils/helpers'
 import { SoloState, Players } from '../../utils/models'
 import { GAME_CONFIG } from './constants'

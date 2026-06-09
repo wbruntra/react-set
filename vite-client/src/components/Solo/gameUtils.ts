@@ -1,7 +1,6 @@
 import { SoloState, GameState, Players } from '../../utils/models'
 import { GAME_CONFIG, DIFFICULTY_CONFIG } from './constants'
 import { makeDeck, reshuffle } from '../../utils/helpers'
-import { cloneDeep } from 'lodash'
 
 /**
  * Calculate CPU turn interval based on difficulty level

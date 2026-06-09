@@ -1,5 +1,4 @@
 import React, { Fragment, useEffect, useState } from 'react'
-import { debounce, get, isEmpty, map } from 'lodash'
 
 import Card from './Card'
 import GameOver from './GameOver'
@@ -45,14 +44,19 @@ function Board(props: BoardProps) {
   const sharedDevice = gameMode === 'shared-device'
 
   useEffect(() => {
-    const resize = debounce(() => {
-      setWindowHeight(window.innerHeight)
-    }, 150)
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+    const handleResize = () => {
+      if (timeoutId) clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        setWindowHeight(window.innerHeight)
+      }, 150)
+    }
 
-    window.addEventListener('resize', resize)
+    window.addEventListener('resize', handleResize)
 
     return function cleanup() {
-      window.removeEventListener('resize', resize)
+      window.removeEventListener('resize', handleResize)
+      if (timeoutId) clearTimeout(timeoutId)
     }
   }, [])
 
@@ -68,14 +72,14 @@ function Board(props: BoardProps) {
     players: Players
   }) => {
     if (declarer) {
-      return get(players, `${declarer}.color`, '')
+      return players[declarer]?.color ?? ''
     }
-    return get(players, `${myName}.color`, '')
+    return players[myName]?.color ?? ''
   }
 
   const borderColor = getBorderColor(props)
 
-  if (!isEmpty(gameOver)) {
+  if (gameOver != null && gameOver !== '' && gameOver !== false) {
     const winner = typeof gameOver === 'string' ? gameOver : ''
     return (
       <GameOver
@@ -89,7 +93,7 @@ function Board(props: BoardProps) {
     )
   }
 
-  const playersArray = map(players, (info, name) => {
+  const playersArray = Object.entries(players).map(([name, info]) => {
     return {
       name,
       ...info,
@@ -102,7 +106,7 @@ function Board(props: BoardProps) {
 
   return (
     <Fragment>
-      {(isEmpty(players) || !Object.keys(players).includes(myName)) && (
+      {(Object.keys(players).length === 0 || !Object.keys(players).includes(myName)) && (
         <Modal show>
           <Modal.Header>
             <Modal.Title>Waiting to join...</Modal.Title>
@@ -110,11 +114,11 @@ function Board(props: BoardProps) {
           <Modal.Body>
             <h4>Players:</h4>
             <ul className="collection">
-              {map(players, (info, name) => {
+              {Object.entries(players).map(([name, info]) => {
                 return (
                   <li key={name} className="collection-item">
                     <span className={`player-name`}>
-                      {name} {info.host && '(host)'}
+                      {name} {(info as any).host && '(host)'}
                     </span>
                   </li>
                 )
@@ -164,7 +168,7 @@ function Board(props: BoardProps) {
           </div>
           {!sharedDevice && !['puzzle', 'training'].includes(gameMode) && (
             <div className="row my-1 text-center fixed-bottom">
-              {map(players, (info, name) => {
+              {Object.entries(players).map(([name, info]) => {
                 return (
                   <div key={name} className="col s4 m3">
                     <span className={`player-name bg-${info.color}`}>

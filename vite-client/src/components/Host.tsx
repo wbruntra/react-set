@@ -1,5 +1,4 @@
 import React from 'react'
-import { isEmpty } from 'lodash'
 import { useSelector } from 'react-redux'
 
 import Board from './Board'
@@ -51,7 +50,7 @@ function Host() {
     return 'Loading...'
   }
 
-  if (isEmpty(user)) {
+  if (!user) {
     return <SignInPrompt />
   }
 

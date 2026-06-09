@@ -1,5 +1,4 @@
 import React from 'react'
-import { map, findKey } from 'lodash'
 import { MultiPlayers } from '../utils/models' // Assuming MultiPlayers is the correct type for players
 
 interface PlayerListProps {
@@ -10,13 +9,13 @@ interface PlayerListProps {
 }
 
 function PlayerList({ isHost, players, setState, setAndSendState }: PlayerListProps) {
-  const host = findKey(players, (player) => player.host)
+  const host = Object.keys(players).find((key) => players[key].host)
 
   return (
     <div className="container mt-4">
       <h4>Players:</h4>
       <ul className="collection">
-        {map(players, (info, name) => {
+        {Object.entries(players).map(([name, info]) => {
           return (
             <li key={name} className="collection-item">
               <span className={`player-name`}>

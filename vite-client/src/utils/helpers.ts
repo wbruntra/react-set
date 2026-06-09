@@ -11,7 +11,6 @@ import {
 } from 'firebase/firestore'
 
 import { CommonState, GameState, Player } from './models'
-import { find, isNil } from 'lodash'
 import {
   range,
   countSets,
@@ -34,6 +33,15 @@ export {
   reshuffle,
   getRandomSet,
   getBoardStartingWithSet,
+}
+
+export function shuffle<T>(array: T[]): T[] {
+  const result = [...array]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
 }
 
 export const serializeGame = (state: CommonState) => {
@@ -128,6 +136,6 @@ export const sendAction = (gameId: string, action: any) => {
 }
 
 export const playerNotRegistered = (players: Player[], name: string): boolean => {
-  const player = find(players, ['name', name])
-  return isNil(player)
+  const player = players.find((p) => p.name === name)
+  return player == null
 }

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { cloneDeep } from 'lodash'
 import { SoloState } from '@/utils/models'
 import {
   cardToggle,
@@ -55,7 +54,7 @@ export const useSoloGame = (user: any): UseSoloGameReturn => {
   // Initialize state
   const [state, setState] = useState<SoloState & { difficulty: number; elapsedSeconds: number }>(
     () => ({
-      ...cloneDeep(createInitialState()),
+      ...createInitialState(),
       ...createGameState(),
       difficulty: getSavedDifficulty(),
       elapsedSeconds: 0,
@@ -294,7 +293,7 @@ export const useSoloGame = (user: any): UseSoloGameReturn => {
 
   const resetGame = () => {
     setState((prevState) => ({
-      ...cloneDeep(createInitialState()),
+      ...createInitialState(),
       ...createGameState(),
       difficulty: prevState.difficulty,
       cpuTurnInterval: prevState.cpuTurnInterval,

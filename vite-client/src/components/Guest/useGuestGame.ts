@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
-import { isEmpty } from 'lodash'
 import {
   doc,
   collection,
@@ -94,7 +93,7 @@ export function useGuestGame(user: User | null): UseGuestGameReturn {
 
   const resetLocalSelected = () => {
     const { declarer, selected } = currentState.current
-    if (isEmpty(declarer) && selected.length === 3 && !isSet(selected)) {
+    if (!declarer && selected.length === 3 && !isSet(selected)) {
       setState({
         selected: [],
       })
@@ -139,7 +138,7 @@ export function useGuestGame(user: User | null): UseGuestGameReturn {
   const processUpdate = (doc: any) => {
     const updatedState = { ...doc.data() } as GuestState
     const { selected: mySelected } = currentState.current
-    if (isEmpty(updatedState)) {
+    if (!updatedState || Object.keys(updatedState).length === 0) {
       return
     }
     console.log('Updating guest state with:', updatedState)
@@ -152,7 +151,7 @@ export function useGuestGame(user: User | null): UseGuestGameReturn {
     }
 
     const newSelected =
-      mySelected.length < 3 && isEmpty(updatedState.declarer) ? mySelected : updatedState.selected
+      mySelected.length < 3 && !updatedState.declarer ? mySelected : updatedState.selected
     console.log('New selected', newSelected)
     setState({
       ...updatedState,
@@ -196,7 +195,7 @@ export function useGuestGame(user: User | null): UseGuestGameReturn {
   const handleSetName = async (e: React.FormEvent) => {
     e.preventDefault()
     const nameInput = user?.nickname
-    if (isEmpty(nameInput)) {
+    if (!nameInput) {
       return
     }
     setMyName(nameInput)

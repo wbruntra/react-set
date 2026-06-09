@@ -1,6 +1,5 @@
 import React, { Fragment } from 'react'
 import { useSelector } from 'react-redux'
-import { isEmpty } from 'lodash'
 import { RootState } from '../store'
 import { useGuestGame, GuestSignIn, NicknameSetup, GameBoard } from './Guest/index'
 import PlayerList from './PlayerList'
@@ -19,7 +18,7 @@ function Guest() {
   }
 
   // Allow guests to join without authentication
-  if (isEmpty(user)) {
+  if (!user) {
     return <GuestSignIn onGuestJoin={() => {}} />
   }
 
