@@ -11,6 +11,7 @@
     "dev": "concurrently \"bun run client\" \"bun run server:dev\"",
     "dev:db": "cd db; docker-compose up -d",
     "server:dev": "bun --watch server.js",
+    "test:countsets": "bun tests/test-countsets-efficiency.js",
     "predeploy": "cd vite-client && npm run build",
     "deploy": "gh-pages -d vite-client/dist -b rp-pages -e client/",
     "prepare": "husky"

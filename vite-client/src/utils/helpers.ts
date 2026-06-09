@@ -59,12 +59,28 @@ export const countSets = (
   { debug = false, returnWhenFound = false } = {},
 ): number => {
   let count = 0
-  let candidate: string[] = []
-  for (let a = 0; a < board.length - 2; a++) {
-    for (let b = a + 1; b < board.length - 1; b++) {
-      for (let c = b + 1; c < board.length; c++) {
-        candidate = [board[a], board[b], board[c]]
-        if (isSet(candidate)) {
+  const indicesByCard = new Map<string, number[]>()
+
+  for (let i = 0; i < board.length; i++) {
+    const card = board[i]
+    const existing = indicesByCard.get(card)
+    if (existing) {
+      existing.push(i)
+    } else {
+      indicesByCard.set(card, [i])
+    }
+  }
+
+  for (let a = 0; a < board.length - 1; a++) {
+    for (let b = a + 1; b < board.length; b++) {
+      const needed = nameThird(board[a], board[b])
+      const matchingIndices = indicesByCard.get(needed)
+      if (!matchingIndices) {
+        continue
+      }
+
+      for (const c of matchingIndices) {
+        if (c > b) {
           if (debug) {
             displaySet([a, b, c])
           }
