@@ -1,14 +1,12 @@
-import { useState, useEffect, useRef } from 'preact/hooks'
+import { useSignal, useComputed, useSignalEffect } from '@preact/signals'
 import { countSets, isSet, calculateDynamicCPUInterval, GAME_CONFIG } from '@/utils/helpers'
 import { Board } from '@/components/Board'
-import { FlashOverlay } from '@/components/FlashOverlay'
 import { DifficultySetup } from './DifficultySetup'
 import { SoloGameOver } from './SoloGameOver'
 import {
   createInitialState,
   createGameState,
   handleCardClick,
-  handleRedeal,
   handleStartGame,
   handleDifficultyChange,
   resetGame,
@@ -24,150 +22,153 @@ interface SoloProps {
   onNavigateHome: () => void
 }
 
+// --- Signals demo ---
+// This is the same Solo game as before, rewritten with @preact/signals instead
+// of useState + useRef. The whole component holds ZERO refs.
+//
+// Why the refs are gone: a signal is a stable box whose `.value` is always
+// current. A setInterval/setTimeout callback can read `game.value` and get
+// fresh state every tick — no stale closure, so no `gameStateRef` needed.
+//
+// Why the dependency arrays are gone: `useSignalEffect` auto-tracks the signals
+// it reads *synchronously*. We read narrow `useComputed` guard signals at the
+// top of each effect, so the timer restarts on exactly the same triggers the
+// old dependency arrays expressed — but we never hand-maintain a dep list.
+// (Reads inside the async timer body are NOT tracked, which is exactly what we
+// want: the body sees fresh state without re-subscribing the effect.)
 export function Solo({ onNavigateHome }: SoloProps) {
-  const [gameState, setGameState] = useState<GameState>(createInitialState)
-  const [showCpuFlash, setShowCpuFlash] = useState(false)
-  const [showUserFlash, setShowUserFlash] = useState(false)
-  const [roundStartTime, setRoundStartTime] = useState<number | null>(null)
-
-  const gameStateRef = useRef(gameState)
-  gameStateRef.current = gameState
-
-  const roundStartRef = useRef(roundStartTime)
-  roundStartRef.current = roundStartTime
+  const game = useSignal<GameState>(createInitialState())
+  const showCpuFlash = useSignal(false)
+  const showUserFlash = useSignal(false)
+  const roundStartTime = useSignal<number | null>(null)
 
   function triggerCpuFlash() {
-    setShowCpuFlash(true)
-    setTimeout(() => setShowCpuFlash(false), 800)
+    showCpuFlash.value = true
+    setTimeout(() => (showCpuFlash.value = false), 800)
   }
 
   function triggerUserFlash() {
-    setShowUserFlash(true)
-    setTimeout(() => setShowUserFlash(false), 800)
+    showUserFlash.value = true
+    setTimeout(() => (showUserFlash.value = false), 800)
   }
 
+  // Event handlers read game.value directly — no ref, always the latest state.
   function onCardClick(card: string) {
-    const newState = handleCardClick(gameStateRef.current, card)
-    if (newState.setFound && newState.declarer === newState.myName) {
+    const next = handleCardClick(game.value, card)
+    if (next.setFound && next.declarer === next.myName) {
       triggerUserFlash()
     }
-    setGameState(newState)
-  }
-
-  function onRedeal() {
-    setGameState(handleRedeal(gameStateRef.current))
+    game.value = next
   }
 
   function onResetGame() {
-    setGameState(resetGame(gameStateRef.current))
-    setRoundStartTime(null)
+    game.value = resetGame(game.value)
+    roundStartTime.value = null
   }
 
   function onStartGame() {
-    const newState = handleStartGame(gameStateRef.current)
-    setGameState({ ...newState, ...createGameState() })
-    setRoundStartTime(Date.now())
+    game.value = { ...handleStartGame(game.value), ...createGameState() }
+    roundStartTime.value = Date.now()
   }
 
   function onDifficultyChange(newDifficulty: number) {
-    setGameState(handleDifficultyChange(gameStateRef.current, newDifficulty))
+    game.value = handleDifficultyChange(game.value, newDifficulty)
   }
 
-  // Elapsed time timer
-  useEffect(() => {
-    if (!gameState.gameStarted || gameState.gameOver) return
-
+  // Elapsed time ticker — active while a game is in progress.
+  const elapsedActive = useComputed(() => game.value.gameStarted && !game.value.gameOver)
+  useSignalEffect(() => {
+    if (!elapsedActive.value) return
     const timer = window.setInterval(() => {
-      setGameState((prev) => ({
-        ...prev,
-        elapsedSeconds: Math.floor((Date.now() - prev.startTime.getTime()) / 1000),
-      }))
+      const g = game.value
+      game.value = {
+        ...g,
+        elapsedSeconds: Math.floor((Date.now() - g.startTime.getTime()) / 1000),
+      }
     }, 1000)
-
     return () => clearInterval(timer)
-  }, [gameState.gameStarted, gameState.gameOver])
+  })
 
-  // CPU Turn Timer
-  useEffect(() => {
-    const isActive =
-      gameState.gameStarted && !gameState.gameOver && !gameState.declarer && !gameState.setFound
-
-    if (!isActive) return
-
-    const interval = calculateDynamicCPUInterval(gameState.difficulty, countSets(gameState.board))
-
+  // CPU turn timer — restart when the CPU becomes free to move, or when the
+  // board/difficulty change (those feed the interval length). The key string
+  // collapses all of that into a single value that only changes on real
+  // triggers, replacing the old [gameStarted, gameOver, declarer, setFound,
+  // board, difficulty] dependency array.
+  const cpuTurnKey = useComputed(() => {
+    const g = game.value
+    const active = g.gameStarted && !g.gameOver && !g.declarer && !g.setFound
+    return active ? `${g.difficulty}:${g.board.join(',')}` : null
+  })
+  useSignalEffect(() => {
+    if (cpuTurnKey.value === null) return
+    const g0 = game.peek() // peek(): read without subscribing — we only track the key
+    const interval = calculateDynamicCPUInterval(g0.difficulty, countSets(g0.board))
     const timer = window.setInterval(() => {
-      const gs = gameStateRef.current
-      if (gs.declarer || gs.gameOver || gs.setFound) return
-
-      const found = findCpuSet(gs.board)
+      const g = game.value
+      if (g.declarer || g.gameOver || g.setFound) return
+      const found = findCpuSet(g.board)
       if (found) {
         triggerCpuFlash()
-        setGameState(handleCpuFoundSet(gs, ...found))
+        game.value = handleCpuFoundSet(g, ...found)
       }
     }, interval)
-
     return () => clearInterval(timer)
-  }, [
-    gameState.gameStarted,
-    gameState.gameOver,
-    gameState.declarer,
-    gameState.setFound,
-    gameState.board,
-    gameState.difficulty,
-  ])
+  })
 
-  // CPU Animation Timer
-  useEffect(() => {
-    const isAnimating =
-      gameState.declarer === 'cpu' && gameState.cpuFound && gameState.cpuFound.length > 0
-
-    if (!isAnimating) return
-
+  // CPU animation — reveal the CPU's queued cards one at a time.
+  const cpuAnimating = useComputed(
+    () => game.value.declarer === 'cpu' && game.value.cpuFound.length > 0,
+  )
+  useSignalEffect(() => {
+    if (!cpuAnimating.value) return
     const timer = window.setInterval(() => {
-      setGameState((prev) => handleCpuAnimationStep(prev))
+      game.value = handleCpuAnimationStep(game.value)
     }, GAME_CONFIG.cpuDelay)
-
     return () => clearInterval(timer)
-  }, [gameState.declarer, gameState.cpuFound])
+  })
 
-  // Set Found Timer
-  useEffect(() => {
-    if (!gameState.setFound || gameState.selected.length !== 3 || !isSet(gameState.selected))
-      return
-
+  // Set-found resolution — once a valid set is locked in, clear it after a beat.
+  const setFoundReady = useComputed(() => {
+    const g = game.value
+    return g.setFound && g.selected.length === 3 && isSet(g.selected)
+  })
+  useSignalEffect(() => {
+    if (!setFoundReady.value) return
     const timer = window.setTimeout(() => {
-      const gs = gameStateRef.current
-      const newState = processFoundSet(gs, gs.selected, gs.declarer!, roundStartRef.current)
-      setGameState(newState)
-      setRoundStartTime(Date.now())
+      const g = game.value
+      game.value = processFoundSet(g, g.selected, g.declarer!, roundStartTime.value)
+      roundStartTime.value = Date.now()
     }, GAME_CONFIG.setDisplayTime)
-
     return () => clearTimeout(timer)
-  }, [gameState.setFound, gameState.selected])
+  })
 
-  // Declaration Expiration Timer
-  useEffect(() => {
-    if (!gameState.declarer || !gameState.timeDeclared || gameState.setFound) return
-
+  // Declaration expiry — a declarer who doesn't complete a set gets penalized.
+  // Keyed on timeDeclared so each fresh declaration restarts the countdown.
+  const declarationDeadline = useComputed(() => {
+    const g = game.value
+    return g.declarer && g.timeDeclared && !g.setFound ? g.timeDeclared : null
+  })
+  useSignalEffect(() => {
+    if (declarationDeadline.value === null) return
     const timer = window.setTimeout(() => {
-      setGameState((prev) => handleDeclarationExpired(prev))
+      game.value = handleDeclarationExpired(game.value)
     }, GAME_CONFIG.turnTime)
-
     return () => clearTimeout(timer)
-  }, [gameState.declarer, gameState.timeDeclared, gameState.setFound])
+  })
 
-  // Track round start when game starts
-  useEffect(() => {
-    if (gameState.gameStarted && roundStartTime === null) {
-      setRoundStartTime(Date.now())
+  // Stamp the first round's start time once the game begins.
+  useSignalEffect(() => {
+    if (game.value.gameStarted && roundStartTime.value === null) {
+      roundStartTime.value = Date.now()
     }
-  }, [gameState.gameStarted, roundStartTime])
+  })
 
-  if (!gameState.gameStarted) {
+  const g = game.value
+
+  if (!g.gameStarted) {
     return (
       <DifficultySetup
-        difficulty={gameState.difficulty}
+        difficulty={g.difficulty}
         onDifficultyChange={onDifficultyChange}
         onStartGame={onStartGame}
         onNavigateHome={onNavigateHome}
@@ -175,11 +176,11 @@ export function Solo({ onNavigateHome }: SoloProps) {
     )
   }
 
-  if (gameState.gameOver) {
+  if (g.gameOver) {
     return (
       <SoloGameOver
-        winner={gameState.gameOver}
-        players={gameState.players}
+        winner={g.gameOver}
+        players={g.players}
         onReset={onResetGame}
         onMainMenu={onNavigateHome}
       />
@@ -189,20 +190,20 @@ export function Solo({ onNavigateHome }: SoloProps) {
   return (
     <>
       <Board
-        board={gameState.board}
-        selected={gameState.selected}
-        declarer={gameState.declarer}
+        board={g.board}
+        selected={g.selected}
+        declarer={g.declarer}
         gameMode="versus"
         onCardClick={onCardClick}
-        setFound={gameState.setFound}
-        gameOver={!!gameState.gameOver}
-        score={gameState.players.you.score}
-        elapsedTime={gameState.elapsedSeconds}
-        players={gameState.players as any}
+        setFound={g.setFound}
+        gameOver={!!g.gameOver}
+        score={g.players.you.score}
+        elapsedTime={g.elapsedSeconds}
+        players={g.players as any}
       />
 
-      {showCpuFlash && <div class="flash-overlay cpu-flash" />}
-      {showUserFlash && <div class="flash-overlay user-flash" />}
+      {showCpuFlash.value && <div class="flash-overlay cpu-flash" />}
+      {showUserFlash.value && <div class="flash-overlay user-flash" />}
     </>
   )
 }

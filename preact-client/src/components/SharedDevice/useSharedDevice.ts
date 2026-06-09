@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from 'preact/hooks'
+import { useEffect, useMemo, useRef } from 'preact/hooks'
+import { useSignal } from '@preact/signals'
 import {
   createMultiGame,
-  applyFound,
   removeSet,
   applyPenalty,
   multiCardClick,
@@ -42,62 +42,60 @@ export function useSharedDevice(): {
   state: SharedDeviceState
   actions: SharedDeviceActions
 } {
-  const [state, setState] = useState<SharedDeviceState>(() => ({
-    ...createMultiGame('P1'),
-    numPlayers: null,
-    players: createPlayers(2),
-  }))
+  // State as a signal: `state.value` is always current, so timer callbacks
+  // read it directly — no `stateRef` stale-closure workaround needed.
+  const state = useSignal<SharedDeviceState>(
+    useMemo(() => ({ ...createMultiGame('P1'), numPlayers: null, players: createPlayers(2) }), []),
+  )
 
-  const stateRef = useRef(state)
-  stateRef.current = state
-
+  // These stay refs: they're imperative timer handles, not state.
   const declareTimeoutRef = useRef<number | null>(null)
   const setDisplayTimeoutRef = useRef<number | null>(null)
 
-  const clearDeclareTimeout = useCallback(() => {
+  function clearDeclareTimeout() {
     if (declareTimeoutRef.current !== null) {
       clearTimeout(declareTimeoutRef.current)
       declareTimeoutRef.current = null
     }
-  }, [])
+  }
 
-  const clearSetDisplayTimeout = useCallback(() => {
+  function clearSetDisplayTimeout() {
     if (setDisplayTimeoutRef.current !== null) {
       clearTimeout(setDisplayTimeoutRef.current)
       setDisplayTimeoutRef.current = null
     }
-  }, [])
+  }
 
   function expireDeclaration() {
-    const s = stateRef.current
+    const s = state.value
     if (s.declarer && !isSet(s.selected)) {
       const penalised = applyPenalty(s, s.declarer)
-      setState((prev) => ({ ...prev, players: penalised, declarer: null, selected: [] }))
+      state.value = { ...s, players: penalised, declarer: null, selected: [] }
     }
   }
 
   function scheduleSetRemoval() {
     clearSetDisplayTimeout()
     setDisplayTimeoutRef.current = window.setTimeout(() => {
-      const s = stateRef.current
+      const s = state.value
       if (s.declarer && isSet(s.selected)) {
-        setState((prev) => ({ ...prev, ...removeSet(prev, s.declarer!) }))
+        state.value = { ...s, ...removeSet(s, s.declarer) }
       }
     }, GAME_CONFIG.setDisplayTime)
   }
 
-  const startGame = useCallback((num: number) => {
-    setState((prev) => ({
-      ...prev,
+  function startGame(num: number) {
+    state.value = {
+      ...state.value,
       ...dealNewBoard(),
       numPlayers: num,
       players: createPlayers(num),
       gameStarted: true,
-    }))
-  }, [])
+    }
+  }
 
-  const declare = useCallback((playerName: string) => {
-    const s = stateRef.current
+  function declare(playerName: string) {
+    const s = state.value
     if (s.declarer !== null) return
 
     clearDeclareTimeout()
@@ -105,37 +103,37 @@ export function useSharedDevice(): {
       expireDeclaration()
     }, GAME_CONFIG.turnTime)
 
-    setState((prev) => ({ ...prev, declarer: playerName }))
-  }, [])
+    state.value = { ...s, declarer: playerName }
+  }
 
-  const handleCardClick = useCallback((card: string) => {
-    const s = stateRef.current
+  function handleCardClick(card: string) {
+    const s = state.value
     if (!s.declarer || s.setFound) return
 
     const next = multiCardClick(s, card)
-    setState((prev) => ({ ...prev, ...next }))
+    state.value = { ...s, ...next }
 
     if (next.setFound && isSet(next.selected)) {
       clearDeclareTimeout()
       scheduleSetRemoval()
     }
-  }, [])
+  }
 
-  const resetGame = useCallback(() => {
+  function resetGame() {
     clearDeclareTimeout()
     clearSetDisplayTimeout()
-    setState((prev) => ({
-      ...prev,
+    state.value = {
+      ...state.value,
       ...createMultiGame('P1'),
       numPlayers: null,
       players: createPlayers(2),
       gameStarted: false,
-    }))
-  }, [])
+    }
+  }
 
-  const handleRedeal = useCallback(() => {
-    setState((prev) => ({ ...prev, ...redealMulti(prev) }))
-  }, [])
+  function handleRedeal() {
+    state.value = { ...state.value, ...redealMulti(state.value) }
+  }
 
   useEffect(() => {
     return () => {
@@ -145,13 +143,7 @@ export function useSharedDevice(): {
   }, [])
 
   return {
-    state,
-    actions: {
-      startGame,
-      declare,
-      handleCardClick,
-      resetGame,
-      handleRedeal,
-    },
+    state: state.value,
+    actions: { startGame, declare, handleCardClick, resetGame, handleRedeal },
   }
 }

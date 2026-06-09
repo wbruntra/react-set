@@ -1,3 +1,4 @@
+import { useMemo } from 'preact/hooks'
 import { countSets } from '@/utils/helpers'
 import { Card } from './Card'
 
@@ -34,9 +35,12 @@ export function Board({
   players = {},
   onCardClick,
 }: BoardProps) {
-  const setsOnBoard = countSets(board, {
-    debug: import.meta.env.DEV,
-  } as any)
+  // Only recompute when the board itself changes — not on every elapsed-time
+  // tick, which re-renders Board each second with the same board reference.
+  const setsOnBoard = useMemo(
+    () => countSets(board, { debug: import.meta.env.DEV } as any),
+    [board],
+  )
 
   function formatTime(seconds: number): string {
     const mm = Math.floor(seconds / 60)
@@ -44,7 +48,9 @@ export function Board({
     return `${mm}:${String(ss).padStart(2, '0')}`
   }
 
-  const borderColor = '#4fc3f7'
+  // Highlight selected cards in the declarer's color (e.g. the CPU's color when
+  // the CPU is picking), falling back to a neutral blue when nobody's declared.
+  const borderColor = (declarer && players[declarer]?.color) || '#4fc3f7'
 
   function isSelected(card: string): boolean {
     return selected.includes(card)

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'preact/hooks'
+import { useState, useEffect, useMemo } from 'preact/hooks'
 import { Board } from '@/components/Board'
 import { NicknameEntry } from '@/components/NicknameEntry'
 import { useGuestGame } from './useGuestGame'
@@ -125,7 +125,7 @@ export function Guest({ onNavigateHome, initialGameId }: GuestProps) {
   const [myName, setMyName] = useState(() => getNickname())
   const [showNickname, setShowNickname] = useState(!getNickname())
 
-  const transport = createFirebaseTransport()
+  const transport = useMemo(() => createFirebaseTransport(), [])
 
   const { state, handleCardClick } = useGuestGame({
     transport,

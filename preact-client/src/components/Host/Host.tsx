@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks'
+import { useMemo, useState } from 'preact/hooks'
 import { Board } from '@/components/Board'
 import { NicknameEntry } from '@/components/NicknameEntry'
 import { useHostGame, type HostState } from './useHostGame'
@@ -114,7 +114,7 @@ function GameResumePrompt({
 }
 
 export function Host({ onNavigateHome }: HostProps) {
-  const transport = createFirebaseTransport()
+  const transport = useMemo(() => createFirebaseTransport(), [])
   const uid = getUserId()
 
   const { state, gameInProgress, handlers } = useHostGame({ transport, uid })

@@ -18,18 +18,6 @@ export function Menu({ onNavigate }: MenuProps) {
           <p class="text-center">Solo Play</p>
         </div>
         <div class="col-9 col-md-4">
-          <button class="card shadow-sm mb-3 mb-md-4" onClick={() => onNavigate('training')}>
-            <Card desc="0012" />
-          </button>
-          <p class="text-center">Training Mode</p>
-        </div>
-        <div class="col-9 col-md-4">
-          <button class="card shadow-sm mb-3 mb-md-4" onClick={() => onNavigate('shared')}>
-            <Card desc="2020" />
-          </button>
-          <p class="text-center">Local Multiplayer</p>
-        </div>
-        <div class="col-9 col-md-4">
           <button class="card shadow-sm mb-3 mb-md-4" onClick={() => onNavigate('host')}>
             <Card desc="0101" />
           </button>
@@ -41,6 +29,21 @@ export function Menu({ onNavigate }: MenuProps) {
           </button>
           <p class="text-center">Join Game</p>
         </div>
+      </div>
+
+      <hr />
+
+      <div class="text-center mt-4">
+        <p>
+          <a href="#" onClick={(e) => (e.preventDefault(), onNavigate('training'))}>
+            Training Mode
+          </a>
+        </p>
+        <p>
+          <a href="#" onClick={(e) => (e.preventDefault(), onNavigate('shared'))}>
+            Local Multiplayer
+          </a>
+        </p>
       </div>
     </div>
   )

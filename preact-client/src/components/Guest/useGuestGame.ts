@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'preact/hooks'
+import { useEffect, useRef } from 'preact/hooks'
+import { useSignal } from '@preact/signals'
 import {
   mergeIncomingState,
   guestCardClick,
@@ -7,7 +8,6 @@ import {
   type MultiGameState,
 } from '@react-set/common'
 import type { GameTransport } from '../../multiplayer/transport'
-import { getNickname } from '../../auth'
 
 export interface GuestState extends MultiGameState {
   pending: string | null
@@ -20,8 +20,11 @@ interface GuestGameOptions {
   onGameOver?: () => void
 }
 
-export function useGuestGame({ transport, gameId, myName, onGameOver }: GuestGameOptions) {
-  const [state, setFullState] = useState<GuestState>({
+export function useGuestGame({ transport, gameId, myName }: GuestGameOptions) {
+  // State as a signal — subscription callbacks read `state.value` (always
+  // current) instead of a `stateRef`. `transport` is a stable prop (memoized by
+  // the component) and `myName` rides in the effect deps, so no refs for those.
+  const state = useSignal<GuestState>({
     board: [],
     deck: [],
     selected: [],
@@ -33,90 +36,62 @@ export function useGuestGame({ transport, gameId, myName, onGameOver }: GuestGam
     pending: null,
   })
 
-  const stateRef = useRef(state)
-  stateRef.current = state
-
-  const transportRef = useRef(transport)
-  transportRef.current = transport
-
-  const myNameRef = useRef(myName)
-  myNameRef.current = myName
-
+  // One-shot latch: stays a ref (it's an imperative "already fired" guard).
   const joinSentRef = useRef(false)
 
-  const setState = useCallback((update: Partial<GuestState>) => {
-    setFullState((prev) => ({ ...prev, ...update }))
-  }, [])
-
-  // Subscribe to game state
+  // Subscribe to host state. Re-subscribes if myName arrives later, so the
+  // merge always has the right name without a `myNameRef`.
   useEffect(() => {
-    const unsub = transportRef.current.subscribeState(gameId, (remote) => {
-      const local = stateRef.current
-      const merged = mergeIncomingState(local, remote, myNameRef.current)
-      setFullState((prev) => ({
-        ...prev,
-        ...merged,
-        pending: prev.pending,
-      }))
+    return transport.subscribeState(gameId, (remote) => {
+      const merged = mergeIncomingState(state.value, remote, myName)
+      state.value = { ...state.value, ...merged } // pending preserved (merged has none)
     })
-    return unsub
-  }, [gameId])
+  }, [transport, gameId, myName])
 
-  // Subscribe to actions for ACK
+  // Subscribe to actions to clear our pending marker once the host consumes it.
   useEffect(() => {
-    const unsub = transportRef.current.subscribeActions(gameId, (_action, actionId) => {
-      setFullState((prev) => {
-        if (prev.pending === actionId) {
-          return { ...prev, pending: null }
-        }
-        return prev
-      })
+    return transport.subscribeActions(gameId, (_action, actionId) => {
+      if (state.value.pending === actionId) {
+        state.value = { ...state.value, pending: null }
+      }
     })
-    return unsub
-  }, [gameId])
+  }, [transport, gameId])
 
-  // Auto-join when name is set
+  // Auto-join once the name is set.
   useEffect(() => {
     if (myName && !joinSentRef.current) {
       joinSentRef.current = true
-      transportRef.current.sendAction(gameId, {
-        type: 'join',
-        payload: { name: myName },
+      transport.sendAction(gameId, { type: 'join', payload: { name: myName } })
+    }
+  }, [transport, myName, gameId])
+
+  function handleCardClick(card: string) {
+    const s = state.value
+    if (s.declarer || s.gameOver) return
+
+    const { state: next, action } = guestCardClick(s, card, myName)
+    state.value = { ...s, selected: next.selected, setFound: next.setFound }
+
+    if (action) {
+      transport.sendAction(gameId, action).then((actionId) => {
+        state.value = { ...state.value, pending: actionId }
       })
     }
-  }, [myName, gameId])
+  }
 
-  const handleCardClick = useCallback(
-    (card: string) => {
-      const s = stateRef.current
-      if (s.declarer || s.gameOver) return
-
-      const { state: next, action } = guestCardClick(s, card, myNameRef.current)
-      setState({ selected: next.selected, setFound: next.setFound })
-
-      if (action) {
-        transportRef.current.sendAction(gameId, action).then((actionId) => {
-          setState({ pending: actionId })
-        })
-      }
-    },
-    [gameId, setState],
-  )
-
-  // Clear stale bad selection after 1000ms
+  // Clear a stale bad selection after a beat.
   useEffect(() => {
-    const s = stateRef.current
+    const s = state.value
     if (!s.declarer && s.selected.length === 3 && !isSet(s.selected)) {
       const timer = window.setTimeout(() => {
-        const reset = resetLocalSelected(stateRef.current)
-        setState({ selected: reset.selected })
+        state.value = { ...state.value, ...resetLocalSelected(state.value) }
       }, 1000)
       return () => clearTimeout(timer)
     }
-  }, [state.selected.join(','), state.declarer])
+  }, [state.value.selected.join(','), state.value.declarer])
 
   return {
-    state,
+    state: state.value,
     myName,
     handleCardClick,
   }

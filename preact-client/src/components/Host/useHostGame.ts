@@ -1,11 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from 'preact/hooks'
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
+import { useSignal } from '@preact/signals'
 import {
   createMultiGame,
   applyJoin,
   applyFound,
   removeSet,
-  markPoint,
-  applyPenalty,
   multiCardClick,
   redealMulti,
   dealNewBoard,
@@ -45,213 +44,174 @@ export interface HostGameReturn {
 
 export function useHostGame({ transport, uid }: HostGameOptions): HostGameReturn {
   const [gameInProgress, setGameInProgress] = useState<any>(undefined)
-  const [gameTitle, setGameTitle] = useState('')
-  const [readyToPlay, setReadyToPlay] = useState(false)
+  const [, setGameTitle] = useState('')
 
-  const [state, setFullState] = useState<HostState>(() => ({
-    ...createMultiGame(getNickname() || 'Host'),
-    gameTitle: '',
-    created: false,
-    myName: '',
-  }))
+  // State as a signal: every handler/subscription reads `state.value` fresh, so
+  // there's no `stateRef`. `transport` is a stable prop (memoized in Host.tsx).
+  const state = useSignal<HostState>(
+    useMemo(
+      () => ({
+        ...createMultiGame(getNickname() || 'Host'),
+        gameTitle: '',
+        created: false,
+        myName: '',
+      }),
+      [],
+    ),
+  )
 
-  const stateRef = useRef(state)
-  stateRef.current = state
-
-  const transportRef = useRef(transport)
-  transportRef.current = transport
-
+  // These stay refs — imperative handles (keepalive interval + unsubscribers).
   const updaterRef = useRef<number | null>(null)
   const actionsUnsubRef = useRef<(() => void) | null>(null)
   const gameUnsubRef = useRef<(() => void) | null>(null)
 
-  const setState = useCallback((update: Partial<HostState>) => {
-    setFullState((prev) => {
-      const next = { ...prev, ...update }
-      stateRef.current = next
-      return next
-    })
-  }, [])
+  function setState(update: Partial<HostState>) {
+    state.value = { ...state.value, ...update }
+  }
 
-  const setAndSend = useCallback(
-    (update: Partial<HostState>) => {
-      setState(update)
-      const s = stateRef.current
-      if (s.gameTitle) {
-        transportRef.current.updateState(s.gameTitle, update)
-      }
-    },
-    [setState],
-  )
+  function setAndSend(update: Partial<HostState>) {
+    setState(update)
+    // Signals update synchronously, so the title is already current here.
+    const s = state.value
+    if (s.gameTitle) {
+      transport.updateState(s.gameTitle, update)
+    }
+  }
 
-  const removeCurrentSet = useCallback(
-    (declarer: string) => {
-      const s = stateRef.current
-      if (!isSet(s.selected)) return
+  function removeCurrentSet(declarer: string) {
+    const s = state.value
+    if (!isSet(s.selected)) return
+    setAndSend(removeSet(s, declarer))
+  }
 
-      const next = removeSet(s, declarer)
-      setAndSend(next)
-    },
-    [setAndSend],
-  )
+  function processAction(action: any) {
+    const { type, payload } = action
+    const s = state.value
 
-  const processAction = useCallback(
-    (action: any) => {
-      const { type, payload } = action
-      const s = stateRef.current
+    if (type === 'join') {
+      const next = applyJoin(s, payload.name, payload.uid)
+      setAndSend({ players: next.players })
+    } else if (type === 'found') {
+      if (!s.declarer && cardsOnBoard(s.board, payload.selected)) {
+        const next = applyFound(s, payload.selected, payload.name)
+        setAndSend({ selected: next.selected, declarer: next.declarer, setFound: next.setFound })
 
-      if (type === 'join') {
-        const next = applyJoin(s, payload.name, payload.uid)
-        setAndSend({ players: next.players })
-      } else if (type === 'found') {
-        if (!s.declarer && cardsOnBoard(s.board, payload.selected)) {
-          const next = applyFound(s, payload.selected, payload.name)
-          setAndSend({ selected: next.selected, declarer: next.declarer, setFound: next.setFound })
-
-          setTimeout(() => {
-            removeCurrentSet(payload.name)
-          }, GAME_CONFIG.setDisplayTime)
-        }
-      }
-    },
-    [setAndSend, removeCurrentSet],
-  )
-
-  const handleCardClick = useCallback(
-    (card: string) => {
-      const s = stateRef.current
-      if (s.declarer) return
-
-      const next = multiCardClick({ ...s, declarer: s.myName }, card)
-      setState({ selected: next.selected, setFound: next.setFound })
-
-      if (next.setFound && isSet(next.selected)) {
         setTimeout(() => {
-          removeCurrentSet(s.myName)
+          removeCurrentSet(payload.name)
         }, GAME_CONFIG.setDisplayTime)
       }
-    },
-    [setState, removeCurrentSet],
-  )
+    }
+  }
 
-  const handleRedeal = useCallback(() => {
-    const next = redealMulti(stateRef.current)
-    setAndSend(next)
-  }, [setAndSend])
+  function handleCardClick(card: string) {
+    const s = state.value
+    if (s.declarer) return
 
-  const handleSetName = useCallback(
-    (name: string) => {
-      if (!name.trim()) return
+    const next = multiCardClick({ ...s, declarer: s.myName }, card)
+    setState({ selected: next.selected, setFound: next.setFound })
 
-      setState({
-        myName: name,
-        players: {
-          [name]: {
-            name,
-            color: GAME_CONFIG.colors[0],
-            score: 0,
-            host: true,
-            uid,
-          },
-        },
-      })
-    },
-    [setState, uid],
-  )
+    if (next.setFound && isSet(next.selected)) {
+      setTimeout(() => {
+        removeCurrentSet(s.myName)
+      }, GAME_CONFIG.setDisplayTime)
+    }
+  }
 
-  const handleCreateGame = useCallback(
-    async (title: string) => {
-      const s = stateRef.current
-      const officialTitle = title.trim() || `${s.myName}'s game`
-      setGameTitle(officialTitle)
+  function handleRedeal() {
+    setAndSend(redealMulti(state.value))
+  }
 
-      const { players, board, deck, selected, gameOver, gameStarted } = s
-      await transportRef.current.createGame(officialTitle, {
-        creator_uid: uid,
-        players,
-        board,
-        deck,
-        selected,
-        gameOver,
-        gameStarted,
-      })
+  function handleSetName(name: string) {
+    if (!name.trim()) return
 
-      // Keepalive every 30s
-      updaterRef.current = window.setInterval(() => {
-        transportRef.current.updateState(officialTitle, {} as any)
-      }, 30000)
+    setState({
+      myName: name,
+      players: {
+        [name]: { name, color: GAME_CONFIG.colors[0], score: 0, host: true, uid },
+      },
+    })
+  }
 
-      // Subscribe to guest actions
-      actionsUnsubRef.current?.()
-      actionsUnsubRef.current = transportRef.current.subscribeActions(
-        officialTitle,
-        (action, actionId) => {
-          processAction(action)
-          transportRef.current.consumeAction(officialTitle, actionId)
-        },
-      )
+  async function handleCreateGame(title: string) {
+    const s = state.value
+    const officialTitle = title.trim() || `${s.myName}'s game`
+    setGameTitle(officialTitle)
 
-      setState({ created: true, gameTitle: officialTitle })
-    },
-    [uid, processAction],
-  )
+    const { players, board, deck, selected, gameOver, gameStarted } = s
+    await transport.createGame(officialTitle, {
+      creator_uid: uid,
+      players,
+      board,
+      deck,
+      selected,
+      gameOver,
+      gameStarted,
+    })
 
-  const startGame = useCallback(() => {
-    const next = dealNewBoard()
-    setAndSend({ ...next, gameStarted: true })
-  }, [setAndSend])
+    // Keepalive every 30s
+    updaterRef.current = window.setInterval(() => {
+      transport.updateState(officialTitle, {} as any)
+    }, 30000)
 
-  const reloadGame = useCallback(
-    (gameId: string) => {
-      const oldGame = gameInProgress
-      if (!oldGame) return
+    // Subscribe to guest actions
+    actionsUnsubRef.current?.()
+    actionsUnsubRef.current = transport.subscribeActions(officialTitle, (action, actionId) => {
+      processAction(action)
+      transport.consumeAction(officialTitle, actionId)
+    })
 
-      const host = Object.keys(oldGame.players || {}).find((k: string) => oldGame.players[k]?.host)
+    setState({ created: true, gameTitle: officialTitle })
+  }
 
-      setGameTitle(gameId)
-      gameUnsubRef.current?.()
-      gameUnsubRef.current = transportRef.current.subscribeState(gameId, (remote) => {
-        setState({ ...remote, created: true, gameTitle: gameId })
-      })
+  function startGame() {
+    setAndSend({ ...dealNewBoard(), gameStarted: true })
+  }
 
-      actionsUnsubRef.current?.()
-      actionsUnsubRef.current = transportRef.current.subscribeActions(
-        gameId,
-        (action, actionId) => {
-          processAction(action)
-          transportRef.current.consumeAction(gameId, actionId)
-        },
-      )
+  function reloadGame(gameId: string) {
+    const oldGame = gameInProgress
+    if (!oldGame) return
 
-      setState({
-        myName: host || '',
-        created: true,
-        gameTitle: gameId,
-        ...oldGame,
-      })
-    },
-    [gameInProgress, processAction],
-  )
+    const host = Object.keys(oldGame.players || {}).find((k: string) => oldGame.players[k]?.host)
 
-  const handleRejectResume = useCallback(async () => {
+    setGameTitle(gameId)
+    gameUnsubRef.current?.()
+    gameUnsubRef.current = transport.subscribeState(gameId, (remote) => {
+      setState({ ...remote, created: true, gameTitle: gameId })
+    })
+
+    actionsUnsubRef.current?.()
+    actionsUnsubRef.current = transport.subscribeActions(gameId, (action, actionId) => {
+      processAction(action)
+      transport.consumeAction(gameId, actionId)
+    })
+
+    setState({
+      myName: host || '',
+      created: true,
+      gameTitle: gameId,
+      ...oldGame,
+    })
+  }
+
+  async function handleRejectResume() {
     const gip = gameInProgress
     if (gip?.gameTitle) {
-      await transportRef.current.deleteGame(gip.gameTitle)
+      await transport.deleteGame(gip.gameTitle)
     }
     setGameInProgress(undefined)
-  }, [gameInProgress])
+  }
 
-  // Check for resumable game when UID is ready
+  // Check for a resumable game when the UID is ready.
   useEffect(() => {
     if (!uid) return
-    transportRef.current.findResumable(uid).then((games) => {
+    transport.findResumable(uid).then((games) => {
       if (games.length > 0) {
         setGameInProgress(games[0])
       }
     })
-  }, [uid])
+  }, [transport, uid])
 
-  // Cleanup on unmount
+  // Cleanup imperative handles on unmount.
   useEffect(() => {
     return () => {
       if (updaterRef.current !== null) clearInterval(updaterRef.current)
@@ -261,7 +221,7 @@ export function useHostGame({ transport, uid }: HostGameOptions): HostGameReturn
   }, [])
 
   return {
-    state,
+    state: state.value,
     gameInProgress,
     handlers: {
       handleCardClick,
