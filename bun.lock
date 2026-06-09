@@ -36,6 +36,7 @@
       "dependencies": {
         "@react-set/common": "workspace:*",
         "bootstrap": "^5.3.8",
+        "firebase": "^11.10.0",
         "preact": "^10.29.1",
       },
       "devDependencies": {

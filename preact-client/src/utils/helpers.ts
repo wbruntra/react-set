@@ -16,4 +16,20 @@ export {
   formatTimeString,
   CPU_PERFORMANCE_DATA,
   getCPUPerformanceForSets,
+  TRAINING_CONFIG,
+  createMultiGame,
+  applyJoin,
+  applyFound,
+  markPoint,
+  applyPenalty,
+  removeSet,
+  multiCardClick,
+  redealMulti,
+  cardsOnBoard,
+  dealNewBoard,
+  guestCardClick,
+  mergeIncomingState,
+  resetLocalSelected,
 } from '@react-set/common'
+
+export type { MultiPlayer, MultiPlayers, MultiGameState, GameAction } from '@react-set/common'

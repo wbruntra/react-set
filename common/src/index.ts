@@ -61,3 +61,23 @@ export {
   type TrainingGameState,
   type TrainingClickOutcome,
 } from './game/training'
+
+export {
+  createMultiGame,
+  applyJoin,
+  applyFound,
+  markPoint,
+  applyPenalty,
+  removeSet,
+  multiCardClick,
+  redealMulti,
+  cardsOnBoard,
+  dealNewBoard,
+  guestCardClick,
+  mergeIncomingState,
+  resetLocalSelected,
+  type MultiPlayer,
+  type MultiPlayers,
+  type MultiGameState,
+  type GameAction,
+} from './game/multiplayer'
