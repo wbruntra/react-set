@@ -12,22 +12,37 @@ export function Menu({ onNavigate }: MenuProps) {
       <h1 class="d-none d-md-block text-center mb-3 mb-md-5">Main Menu</h1>
       <div class="row justify-content-center">
         <div class="col-9 col-md-4">
-          <button class="card shadow-sm mb-3 mb-md-4" onClick={() => onNavigate('solo')}>
+          <div
+            class="card shadow-sm mb-3 mb-md-4 cursor-pointer"
+            onClick={() => onNavigate('solo')}
+            role="button"
+            tabIndex={0}
+          >
+            <Card desc="0012" />
+          </div>
+          <p class="text-center">Solo/Local</p>
+        </div>
+        <div class="col-9 col-md-4">
+          <div
+            class="card shadow-sm mb-3 mb-md-4 cursor-pointer"
+            onClick={() => onNavigate('join')}
+            role="button"
+            tabIndex={0}
+          >
             <Card desc="1121" />
-          </button>
-          <p class="text-center">Solo Play</p>
-        </div>
-        <div class="col-9 col-md-4">
-          <button class="card shadow-sm mb-3 mb-md-4" onClick={() => onNavigate('host')}>
-            <Card desc="0101" />
-          </button>
-          <p class="text-center">Host Game</p>
-        </div>
-        <div class="col-9 col-md-4">
-          <button class="card shadow-sm mb-3 mb-md-4" onClick={() => onNavigate('join')}>
-            <Card desc="1210" />
-          </button>
+          </div>
           <p class="text-center">Join Game</p>
+        </div>
+        <div class="col-9 col-md-4">
+          <div
+            class="card shadow-sm mb-3 mb-md-4 cursor-pointer"
+            onClick={() => onNavigate('host')}
+            role="button"
+            tabIndex={0}
+          >
+            <Card desc="2200" />
+          </div>
+          <p class="text-center">Host Game</p>
         </div>
       </div>
 

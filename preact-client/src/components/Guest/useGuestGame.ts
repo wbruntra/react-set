@@ -42,6 +42,7 @@ export function useGuestGame({ transport, gameId, myName }: GuestGameOptions) {
   // Subscribe to host state. Re-subscribes if myName arrives later, so the
   // merge always has the right name without a `myNameRef`.
   useEffect(() => {
+    if (!gameId) return
     return transport.subscribeState(gameId, (remote) => {
       const merged = mergeIncomingState(state.value, remote, myName)
       state.value = { ...state.value, ...merged } // pending preserved (merged has none)
@@ -50,6 +51,7 @@ export function useGuestGame({ transport, gameId, myName }: GuestGameOptions) {
 
   // Subscribe to actions to clear our pending marker once the host consumes it.
   useEffect(() => {
+    if (!gameId) return
     return transport.subscribeActions(gameId, (_action, actionId) => {
       if (state.value.pending === actionId) {
         state.value = { ...state.value, pending: null }
@@ -59,13 +61,13 @@ export function useGuestGame({ transport, gameId, myName }: GuestGameOptions) {
 
   // Auto-join once the name is set.
   useEffect(() => {
-    if (myName && !joinSentRef.current) {
-      joinSentRef.current = true
-      transport.sendAction(gameId, { type: 'join', payload: { name: myName } })
-    }
+    if (!gameId || !myName || joinSentRef.current) return
+    joinSentRef.current = true
+    transport.sendAction(gameId, { type: 'join', payload: { name: myName } })
   }, [transport, myName, gameId])
 
   function handleCardClick(card: string) {
+    if (!gameId) return
     const s = state.value
     if (s.declarer || s.gameOver) return
 

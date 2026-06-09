@@ -7,16 +7,18 @@
     "common",
     "vite-client",
     "svelte-client",
-    "preact-client"
+    "preact-client",
+    "backend"
   ],
   "engines": {
     "node": ">=18.0.0"
   },
   "scripts": {
     "client": "cd vite-client && npm run dev",
-    "dev": "bun run --parallel client server:dev",
+    "dev": "bun run --parallel client backend:dev",
     "dev:db": "cd db; docker-compose up -d",
     "server:dev": "bun --watch server.js",
+    "backend:dev": "cd backend && bun run dev",
     "common:build": "cd common && bun run build",
     "common:dev": "cd common && bun run dev",
     "svelte:dev": "cd svelte-client && bun run dev",
