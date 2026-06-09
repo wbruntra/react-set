@@ -1,0 +1,10 @@
+@import 'bootstrap/scss/bootstrap.scss';
+@import '../../../common/src/styles/main.scss';
+@import './bts/variables';
+@import './bts/fonts';
+@import './bts/slider';
+@import './bts/custom';
+
+.mono-font {
+  font-family: 'Courier Prime', monospace;
+}

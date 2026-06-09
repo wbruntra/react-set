@@ -1,100 +1,48 @@
-import { useState } from 'preact/hooks'
-import preactLogo from './assets/preact.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './app.css'
+import './styles/main.scss'
+
+import { useState, useEffect, useCallback } from 'preact/hooks'
+import { Menu } from './components/Menu'
+import { Solo } from './components/Solo/Solo'
+import { Training } from './components/Training/Training'
+
+type Page = 'menu' | 'solo' | 'training'
+
+function readHash(): Page {
+  const h = window.location.hash.replace('#/', '').replace('#', '')
+  if (h === 'solo') return 'solo'
+  if (h === 'training') return 'training'
+  return 'menu'
+}
+
+function writeHash(page: Page) {
+  if (page === 'menu') {
+    window.location.hash = ''
+  } else {
+    window.location.hash = `#/${page}`
+  }
+}
 
 export function App() {
-  const [count, setCount] = useState(0)
+  const [page, setPage] = useState<Page>(readHash)
 
-  return (
-    <>
-      <section id="center">
-        <div class="hero">
-          <img src={heroImg} class="base" width="170" height="179" alt="" />
-          <img src={preactLogo} class="framework" alt="Preact logo" />
-          <img src={viteLogo} class="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/app.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button type="button" class="counter" onClick={() => setCount((count) => count + 1)}>
-          Count is {count}
-        </button>
-      </section>
+  const navigate = useCallback((p: Page) => {
+    writeHash(p)
+    setPage(p)
+  }, [])
 
-      <div class="ticks"></div>
+  useEffect(() => {
+    const onHash = () => setPage(readHash())
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg class="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img class="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://preactjs.com/" target="_blank">
-                <img class="button-icon" src={preactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg class="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg class="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg class="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg class="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg class="button-icon" role="presentation" aria-hidden="true">
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+  if (page === 'solo') {
+    return <Solo onNavigateHome={() => navigate('menu')} />
+  }
 
-      <div class="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+  if (page === 'training') {
+    return <Training onNavigateHome={() => navigate('menu')} />
+  }
+
+  return <Menu onNavigate={(p) => navigate(p)} />
 }

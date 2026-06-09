@@ -1,0 +1,29 @@
+@import './variables';
+
+$color-map: (
+  'darkPurple': $dark-purple,
+  'grey': $grey,
+  'lightOrange': $light-orange,
+  'darkOrange': $dark-orange,
+  'lightBlue': $light-blue,
+  'pink': $pink,
+  'amber': $amber,
+  'purple': $purple,
+  'lightGreen': $light-green,
+  'errorRed': #f44336,
+  'orange': $dark-orange,
+  'softBackground': $soft-background,
+  'softCardBackground': $soft-card-background,
+  'softBorderColor': $soft-border-color,
+  'softTextColor': $soft-text-color,
+  'lightPurpleBackground': $light-purple-background,
+  'cardGreen': $card-green,
+  'cardBlue': $card-blue,
+  'cardRed': $card-red,
+);
+
+:export {
+  @each $name, $color in $color-map {
+    #{$name}: $color;
+  }
+}
