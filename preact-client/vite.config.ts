@@ -5,6 +5,7 @@ import path from 'path'
 export default defineConfig({
   plugins: [preact()],
   server: {
+    host: true,
     port: 9001,
     proxy: {
       '/api': {

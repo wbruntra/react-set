@@ -6,6 +6,7 @@
 | ---------- | ------ | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-04-27 | self   | First O(n^2) benchmark version was slower at small board sizes due to string/map overhead | Use precomputed card-index third-card lookup table for countSets optimization benchmarks                                                                             |
 | 2026-06-09 | user   | Preact SVG shapes rendered with thin (default=1) outlines after porting from React        | In preact-client, SVG presentation attrs must be kebab-case (`stroke-width`, `stroke-dasharray`) — Preact does NOT translate camelCase `strokeWidth` like React does |
+| 2026-06-09 | self   | Heavy bootstrap.scss import (275kB) was slow to load and had outdated styles              | Replaced bootstrap entirely with a custom 15kB vanilla CSS grid, glassmorphism containers, neon glow buttons, and premium dark/cosmic theme styles.                  |
 
 ## User Preferences
 

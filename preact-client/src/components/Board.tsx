@@ -63,7 +63,7 @@ export function Board({
   return (
     <>
       {gameMode === 'versus' ? (
-        <div class="topbar py-2 bg-dark-orange">
+        <div class="topbar py-2">
           <nav class="text-white">
             <div class="d-flex justify-content-around text-center">
               <div>
@@ -77,7 +77,7 @@ export function Board({
           </nav>
         </div>
       ) : (
-        <div class="topbar py-2 bg-dark-orange">
+        <div class="topbar py-2">
           <nav>
             <div class="nav-wrapper d-flex justify-content-around">
               <div>
@@ -95,7 +95,7 @@ export function Board({
         </div>
       )}
 
-      <div class="container bg-light-purple">
+      <div class="container">
         <div class="board d-flex flex-column align-items-center">
           <div class="board-main-container">
             {board.map((card) => (
@@ -109,11 +109,11 @@ export function Board({
                   if (e.key === 'Enter' || e.key === ' ') onCardClick(card)
                 }}
               >
-                <div
-                  class="card-holder"
-                  style={isSelected(card) ? `background-color: ${borderColor}` : ''}
-                >
-                  <div class={`card ${shouldBlur(card) ? 'blurry' : ''}`}>
+                <div class="card-holder">
+                  <div
+                    class={`card ${shouldBlur(card) ? 'blurry' : ''} ${isSelected(card) ? 'selected' : ''}`}
+                    style={isSelected(card) ? `--select-color: ${borderColor}` : ''}
+                  >
                     <Card desc={card} />
                   </div>
                 </div>

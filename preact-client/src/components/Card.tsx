@@ -11,7 +11,7 @@ const cfg = {
   width: 120,
   height: 200,
   strokeWidth: 4,
-  padding: 25,
+  padding: 14,
 }
 
 function getFill(color: string, fill: string): string {
@@ -90,7 +90,7 @@ export function Card({ desc }: CardProps) {
           <g>
             <path
               stroke={strokeColor}
-              transform="rotate(270,58.8,98) scale(0.8 1) translate(10 0)"
+              transform="rotate(270,58.8,98) scale(0.9 1.05) translate(2 0)"
               d={SQUIGGLE_PATH}
               stroke-width={strokeWidth}
               fill={fillColor}
