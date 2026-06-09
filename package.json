@@ -3,14 +3,24 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "workspaces": [
+    "common",
+    "vite-client",
+    "svelte-client"
+  ],
   "engines": {
     "node": ">=18.0.0"
   },
   "scripts": {
     "client": "cd vite-client && npm run dev",
-    "dev": "concurrently \"bun run client\" \"bun run server:dev\"",
+    "dev": "bun run --parallel client server:dev",
     "dev:db": "cd db; docker-compose up -d",
     "server:dev": "bun --watch server.js",
+    "common:build": "cd common && bun run build",
+    "common:dev": "cd common && bun run dev",
+    "svelte:dev": "cd svelte-client && bun run dev",
+    "svelte:build": "cd svelte-client && bun run build",
+    "svelte:check": "cd svelte-client && bun run check",
     "test:countsets": "bun tests/test-countsets-efficiency.js",
     "predeploy": "cd vite-client && npm run build",
     "deploy": "gh-pages -d vite-client/dist -b rp-pages -e client/",

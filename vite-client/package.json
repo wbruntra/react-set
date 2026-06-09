@@ -4,12 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "portless set vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-set/common": "workspace:*",
     "@reduxjs/toolkit": "^2.9.2",
     "@types/axios": "^0.9.36",
     "@types/firebase": "^2.4.32",
@@ -24,7 +25,7 @@
     "react-dom": "^19.2.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.9.4",
-    "sass": "1.79.0"
+    "sass": "1.78"
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",
