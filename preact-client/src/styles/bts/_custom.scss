@@ -525,8 +525,7 @@ li.card {
   width: 100%;
 
   @media (max-width: 560px) {
-    gap: 0.75rem;
-    grid-row-gap: 4.8rem; // increased row gap on mobile to match the larger scale(1.28) rotation
+    gap: 4.8rem 0.75rem; // row-gap column-gap: extra row gap compensates for rotate(90deg) scale(1.28) on mobile
   }
 }
 
