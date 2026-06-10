@@ -158,9 +158,7 @@ export async function removeAction(gameId: string, actionId: string): Promise<bo
   return stored.actions.delete(actionId)
 }
 
-export async function findResumableGames(
-  ownerUid: string,
-): Promise<
+export async function findResumableGames(ownerUid: string): Promise<
   Array<{
     id: string
     gameTitle: string
@@ -260,14 +258,11 @@ export async function setGameStarted(gameId: string): Promise<void> {
 }
 
 export async function setGameFinished(gameId: string): Promise<void> {
-  const stored = games.get(gameId)
-  if (stored) {
-    stored.state = { ...stored.state, gameOver: stored.state.gameOver || 'finished' }
-  }
   await db('multiplayer_games').where('code', gameId).update({
     finished_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   })
+  games.delete(gameId)
 }
 
 /** Called on server startup: reload unfinished games into memory by replaying actions. */
@@ -284,7 +279,8 @@ export async function reloadActiveGames(): Promise<void> {
     let initialState: MultiGameState
     try {
       initialState = JSON.parse(row.initial_state)
-    } catch {
+    } catch (e) {
+      console.error(`Skipping multiplayer_games row ${row.code}: failed to parse initial_state`, e)
       continue
     }
 

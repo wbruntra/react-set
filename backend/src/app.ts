@@ -10,22 +10,24 @@ import { db } from './db'
 
 const app = new Hono()
 
-app.use('*', cors())
+const allowedOrigin = process.env.ALLOWED_ORIGIN || 'http://localhost:3000'
+app.use(
+  '*',
+  cors({
+    origin: allowedOrigin,
+    allowMethods: ['GET', 'POST'],
+    allowHeaders: ['Content-Type'],
+  }),
+)
 app.use('*', logger())
+
+app.onError((err, c) => {
+  console.error(err)
+  return c.json({ error: err.message }, 500)
+})
 
 // Health check: GET /api
 app.get('/api', (c) => c.json({ msg: 'Ping pong' }))
-
-// Explicit list routes (more specific, must be before parameterized routes)
-app.get('/api/users', async (c) => {
-  const rows = await db('users').select()
-  return c.json(rows)
-})
-
-app.get('/api/games', async (c) => {
-  const rows = await db('games').count('*', { as: 'games_played' }).groupBy('player_uid')
-  return c.json(rows)
-})
 
 // Parameterized routes mounted as sub-apps
 app.route('/api/user', users)

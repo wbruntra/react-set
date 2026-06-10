@@ -1,7 +1,16 @@
 // Benchmark script for countSets performance
 // Compares current O(n^3) implementation vs optimized O(n^2) approach
 
-const _ = require('lodash')
+const shuffle = (arr) => {
+  const result = [...arr]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
+
+const sampleSize = (arr, n) => shuffle(arr).slice(0, n)
 
 const range = (n) => [...Array(n).keys()]
 
@@ -114,7 +123,7 @@ const assertCorrectness = () => {
 
   for (const size of boardSizes) {
     for (let i = 0; i < samplesPerSize; i++) {
-      const board = _.sampleSize(deck, size)
+      const board = sampleSize(deck, size)
       const oldCount = countSetsCubic(board)
       const newCount = countSetsQuadratic(board)
 
@@ -161,7 +170,7 @@ const buildBoardPool = (boardSize, boardCount) => {
   const boards = []
 
   for (let i = 0; i < boardCount; i++) {
-    boards.push(_.sampleSize(deck, boardSize))
+    boards.push(sampleSize(deck, boardSize))
   }
 
   return boards

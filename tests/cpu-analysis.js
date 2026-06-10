@@ -1,7 +1,16 @@
 // CPU Game Analysis Script
 // This script simulates CPU gameplay to determine average attempts needed to find sets
 
-const _ = require('lodash')
+const shuffle = (arr) => {
+  const result = [...arr]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
+
+const sampleSize = (arr, n) => shuffle(arr).slice(0, n)
 
 // Helper functions extracted from helpers.ts for Node.js compatibility
 const range = (n) => [...Array(n).keys()]
@@ -69,12 +78,12 @@ const countSets = (board, { debug = false, returnWhenFound = false } = {}) => {
 }
 
 const reshuffle = ({ board = [], deck }, boardSize = 12, minimumSets = 1) => {
-  let newDeck = _.shuffle([...board, ...deck])
+  let newDeck = shuffle([...board, ...deck])
   while (
     countSets(newDeck.slice(0, boardSize)) < minimumSets &&
     countSets(newDeck, { returnWhenFound: true }) > 0
   ) {
-    newDeck = _.shuffle(newDeck)
+    newDeck = shuffle(newDeck)
   }
   return {
     deck: newDeck.slice(boardSize),
@@ -90,7 +99,7 @@ const simulateCPUTurn = (board) => {
     attempts++
 
     // Randomly choose 2 different cards
-    const indices = _.sampleSize(range(boardSize), 2)
+    const indices = sampleSize(range(boardSize), 2)
     const [card1, card2] = [board[indices[0]], board[indices[1]]]
 
     // Calculate what the third card should be
@@ -116,7 +125,7 @@ const generateBoardWithNSets = (targetSets, maxAttempts = 1000) => {
     attempts++
 
     // Start with a shuffled deck
-    let deck = _.shuffle(makeDeck())
+    let deck = shuffle(makeDeck())
     let board = deck.slice(0, 12)
     deck = deck.slice(12)
 
@@ -140,7 +149,7 @@ const generateBoardWithNSets = (targetSets, maxAttempts = 1000) => {
   console.warn(
     `Could not generate board with exactly ${targetSets} sets, using reshuffle fallback`,
   )
-  let deck = _.shuffle(makeDeck())
+  let deck = shuffle(makeDeck())
   let board = deck.slice(0, 12)
   deck = deck.slice(12)
   return reshuffle({ board, deck }, 12, Math.max(1, targetSets))

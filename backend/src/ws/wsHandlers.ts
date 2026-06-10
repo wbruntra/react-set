@@ -24,6 +24,10 @@ function sendError(ws: ServerWebSocket<unknown>, requestId: string | undefined, 
   send(ws, { type: 'error', requestId, message })
 }
 
+function generateGameCode(): string {
+  return Math.random().toString(36).slice(2, 7).toUpperCase()
+}
+
 export async function handleMessage(ws: ServerWebSocket<unknown>, raw: string) {
   let msg: any
   try {
@@ -42,9 +46,16 @@ export async function handleMessage(ws: ServerWebSocket<unknown>, raw: string) {
         sendError(ws, requestId, 'Missing gameId or state')
         return
       }
-      const code = Math.random().toString(36).slice(2, 7).toUpperCase()
-      if (getGame(code)) {
-        sendError(ws, requestId, 'Game code collision, try again')
+      let code: string | undefined
+      for (let i = 0; i < 5; i++) {
+        const candidate = generateGameCode()
+        if (!getGame(candidate)) {
+          code = candidate
+          break
+        }
+      }
+      if (!code) {
+        sendError(ws, requestId, 'Could not allocate a game code, try again')
         return
       }
       state.gameTitle = displayTitle
@@ -229,8 +240,4 @@ export async function handleMessage(ws: ServerWebSocket<unknown>, raw: string) {
     default:
       sendError(ws, requestId, `Unknown message type: ${type}`)
   }
-}
-
-export function handleClose(ws: ServerWebSocket<unknown>) {
-  if (ws.isSubscribed(TOPIC_STATE('__sentinel'))) return
 }
