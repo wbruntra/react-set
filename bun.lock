@@ -49,6 +49,7 @@
       "version": "1.0.0",
       "dependencies": {
         "knex": "^3.2.10",
+        "knex-bun-sqlite": "^1.4.0",
       },
       "devDependencies": {
         "typescript": "~5.8.3",

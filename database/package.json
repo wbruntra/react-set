@@ -1,14 +1,19 @@
 {
   "name": "@react-set/database",
   "version": "1.0.0",
-  "type": "commonjs",
+  "type": "module",
+  "main": "./db.ts",
+  "exports": {
+    ".": "./db.ts"
+  },
   "scripts": {
-    "migrate": "knex migrate:latest"
+    "migrate": "knex migrate:latest --knexfile knexfile.cjs"
   },
   "devDependencies": {
     "typescript": "~5.8.3"
   },
   "dependencies": {
-    "knex": "^3.2.10"
+    "knex": "^3.2.10",
+    "knex-bun-sqlite": "^1.4.0"
   }
 }
