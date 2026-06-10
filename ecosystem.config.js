@@ -1,5 +1,4 @@
 const BASE = '/home/william/web'
-const secrets = require('./secrets')
 
 module.exports = {
   name: 'react-set',
