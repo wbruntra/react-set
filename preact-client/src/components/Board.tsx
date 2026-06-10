@@ -1,6 +1,7 @@
 import { useMemo } from 'preact/hooks'
 import { countSets } from '@/utils/helpers'
 import { Card } from './Card'
+import { type Signal } from '@preact/signals'
 
 interface PlayerInfo {
   name: string
@@ -14,8 +15,8 @@ interface BoardProps {
   setFound: boolean
   gameOver: boolean
   score: number
-  elapsedTime?: number
-  timeLeft?: number
+  elapsedTime?: number | Signal<number>
+  timeLeft?: number | Signal<number>
   declarer?: string | null
   gameMode?: 'training' | 'versus'
   players?: Record<string, PlayerInfo>
@@ -41,6 +42,16 @@ export function Board({
     () => countSets(board, { debug: import.meta.env.DEV } as any),
     [board],
   )
+
+  const elapsed =
+    elapsedTime && typeof elapsedTime === 'object' && 'value' in elapsedTime
+      ? (elapsedTime as Signal<number>).value
+      : (elapsedTime as number) || 0
+
+  const timeL =
+    timeLeft && typeof timeLeft === 'object' && 'value' in timeLeft
+      ? (timeLeft as Signal<number>).value
+      : (timeLeft as number) || 0
 
   function formatTime(seconds: number): string {
     const mm = Math.floor(seconds / 60)
@@ -70,7 +81,7 @@ export function Board({
                 Sets: <span class="mono-font">{setsOnBoard}</span>
               </div>
               <div>
-                Time: <span class="mono-font">{formatTime(elapsedTime)}</span>
+                Time: <span class="mono-font">{formatTime(elapsed)}</span>
               </div>
               <div>{declarer ? `SET! ${declarer}` : ''}</div>
             </div>
@@ -81,14 +92,13 @@ export function Board({
           <nav>
             <div class="nav-wrapper d-flex justify-content-around">
               <div>
-                Time: <span class="mono-font">{formatTime(elapsedTime)}</span>
+                Time: <span class="mono-font">{formatTime(elapsed)}</span>
               </div>
               <div>
                 Score: <span class="mono-font">{score}</span>
               </div>
               <div>
-                Remaining:{' '}
-                <span class="mono-font">{timeLeft > 0 ? timeLeft.toFixed(1) : '0.0'}</span>
+                Remaining: <span class="mono-font">{timeL > 0 ? timeL.toFixed(1) : '0.0'}</span>
               </div>
             </div>
           </nav>

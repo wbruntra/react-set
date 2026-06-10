@@ -7,9 +7,10 @@ import { Training } from './components/Training/Training'
 import { SharedDevice } from './components/SharedDevice/SharedDevice'
 import { Host } from './components/Host/Host'
 import { Guest } from './components/Guest/Guest'
+import { Stats } from './components/Stats'
 import { ensureAnonymousAuth } from './auth'
 
-type Page = 'menu' | 'solo' | 'training' | 'shared' | 'host' | 'join'
+type Page = 'menu' | 'solo' | 'training' | 'shared' | 'host' | 'join' | 'stats'
 
 function readHash(): { page: Page; gameId?: string } {
   const h = window.location.hash.replace('#/', '').replace('#', '')
@@ -17,6 +18,7 @@ function readHash(): { page: Page; gameId?: string } {
   if (h === 'training') return { page: 'training' }
   if (h === 'shared') return { page: 'shared' }
   if (h === 'host') return { page: 'host' }
+  if (h === 'stats') return { page: 'stats' }
   if (h.startsWith('join/')) return { page: 'join', gameId: h.slice(5) }
   if (h === 'join') return { page: 'join' }
   return { page: 'menu' }
@@ -48,6 +50,14 @@ export function App() {
     setRoute({ page: p, gameId })
   }, [])
 
+  if (!authReady) {
+    return (
+      <div class="container mt-5 text-center">
+        <h3 class="text-white">Connecting...</h3>
+      </div>
+    )
+  }
+
   if (route.page === 'solo') {
     return <Solo onNavigateHome={() => navigate('menu')} />
   }
@@ -66,6 +76,10 @@ export function App() {
 
   if (route.page === 'join') {
     return <Guest onNavigateHome={() => navigate('menu')} initialGameId={route.gameId} />
+  }
+
+  if (route.page === 'stats') {
+    return <Stats onNavigateHome={() => navigate('menu')} />
   }
 
   return <Menu onNavigate={navigate} />

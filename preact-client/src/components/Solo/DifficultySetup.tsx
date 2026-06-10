@@ -1,4 +1,5 @@
 import { GAME_CONFIG, calculateDynamicCPUInterval } from '@react-set/common'
+import { currentUser, handleGoogleSignIn } from '@/auth'
 
 interface DifficultySetupProps {
   difficulty: number
@@ -13,6 +14,8 @@ export function DifficultySetup({
   onStartGame,
   onNavigateHome,
 }: DifficultySetupProps) {
+  const isAnonymous = currentUser.value ? currentUser.value.isAnonymous : true
+
   return (
     <div class="container mt-3 mt-md-5 p-4">
       <h1 class="text-center mb-3 mb-md-5">Solo Play</h1>
@@ -58,6 +61,26 @@ export function DifficultySetup({
           Start Game
         </button>
       </div>
+
+      {isAnonymous && (
+        <div class="row justify-content-center mb-4">
+          <div class="col-md-8 col-lg-6">
+            <div class="card p-3 text-center bg-dark border-info">
+              <h5 class="card-title text-info mb-1">Save Your Progress</h5>
+              <p class="text-muted small mb-2">
+                Sign in with Google to track your stats and performance timelines!
+              </p>
+              <button
+                onClick={() => handleGoogleSignIn().catch(console.error)}
+                class="btn btn-info btn-sm mx-auto"
+                style={{ maxWidth: '200px' }}
+              >
+                Sign in with Google
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div class="text-center">
         <button class="btn btn-outline-secondary btn-sm me-2" onClick={onNavigateHome}>

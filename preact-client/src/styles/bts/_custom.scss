@@ -904,3 +904,63 @@ li.card {
     opacity: 1;
   }
 }
+
+// Background utility classes
+.bg-success {
+  background-color: #10ac84 !important; // Match theme colors
+  color: #ffffff !important;
+}
+.bg-danger {
+  background-color: #ff6b6b !important;
+  color: #ffffff !important;
+}
+.bg-info {
+  background-color: #0abde3 !important;
+  color: #ffffff !important;
+}
+.bg-warning {
+  background-color: #feca57 !important;
+  color: #080410 !important;
+}
+.bg-dark {
+  background-color: #1a0f2e !important;
+  color: #ffffff !important;
+}
+.bg-secondary {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+// Table styling for statistics
+.table {
+  width: 100%;
+  margin-bottom: 1.5rem;
+  color: #f1f5f9;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 1rem 1.25rem;
+    vertical-align: middle;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    text-align: left;
+  }
+
+  thead th {
+    vertical-align: bottom;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.12);
+    color: #ff9ff3; // Pink color matching theme
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+  }
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.gap-4 {
+  gap: 1.5rem;
+}

@@ -1,3 +1,4 @@
+import { useMemo } from 'preact/hooks'
 import { countSets, GAME_CONFIG } from '@react-set/common'
 import { Board } from '@/components/Board'
 import { useSharedDevice } from './useSharedDevice'
@@ -124,7 +125,10 @@ export function SharedDevice({ onNavigateHome }: SharedDeviceProps) {
     )
   }
 
-  const setsOnBoard = countSets(board, { debug: import.meta.env.DEV } as any)
+  const setsOnBoard = useMemo(
+    () => countSets(board, { debug: import.meta.env.DEV } as any),
+    [board],
+  )
 
   return (
     <>

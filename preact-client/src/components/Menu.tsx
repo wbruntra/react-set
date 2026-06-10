@@ -1,6 +1,6 @@
 import { Card } from './Card'
 
-type Page = 'menu' | 'solo' | 'training' | 'shared' | 'host' | 'join'
+type Page = 'menu' | 'solo' | 'training' | 'shared' | 'host' | 'join' | 'stats'
 
 interface MenuProps {
   onNavigate: (page: Page, gameId?: string) => void
@@ -57,6 +57,11 @@ export function Menu({ onNavigate }: MenuProps) {
         <p>
           <a href="#" onClick={(e) => (e.preventDefault(), onNavigate('shared'))}>
             Local Multiplayer
+          </a>
+        </p>
+        <p>
+          <a href="#" onClick={(e) => (e.preventDefault(), onNavigate('stats'))}>
+            View Statistics
           </a>
         </p>
       </div>

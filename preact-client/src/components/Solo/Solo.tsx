@@ -3,6 +3,7 @@ import { countSets, isSet, calculateDynamicCPUInterval, GAME_CONFIG } from '@/ut
 import { Board } from '@/components/Board'
 import { DifficultySetup } from './DifficultySetup'
 import { SoloGameOver } from './SoloGameOver'
+import { getUserId } from '@/auth'
 import {
   createInitialState,
   createGameState,
@@ -41,6 +42,12 @@ export function Solo({ onNavigateHome }: SoloProps) {
   const showCpuFlash = useSignal(false)
   const showUserFlash = useSignal(false)
   const roundStartTime = useSignal<number | null>(null)
+  const elapsedSeconds = useSignal(0)
+
+  const boardSignal = useComputed(() => game.value.board)
+  const setsOnBoard = useComputed(() =>
+    countSets(boardSignal.value, { debug: import.meta.env.DEV } as any),
+  )
 
   function triggerCpuFlash() {
     showCpuFlash.value = true
@@ -61,14 +68,56 @@ export function Solo({ onNavigateHome }: SoloProps) {
     game.value = next
   }
 
+  // Report game statistics to the server when the game ends
+  const gameEnded = useComputed(() => {
+    const g = game.value
+    return g.gameOver
+      ? {
+          gameOver: g.gameOver,
+          startTime: g.startTime,
+          difficulty: g.difficulty,
+          players: g.players,
+          actions: g.actions,
+        }
+      : null
+  })
+
+  useSignalEffect(() => {
+    const endState = gameEnded.value
+    if (!endState) return
+
+    const uid = getUserId() || 'anonymous'
+    const player_won = endState.gameOver === 'you' ? 1 : 0
+    const total_time = Math.round((Date.now() - endState.startTime.getTime()) / 1000)
+    const winning_score = endState.players[endState.gameOver].score
+    const gameData = { actions: endState.actions }
+
+    fetch('/api/game', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        uid,
+        total_time,
+        player_won,
+        difficulty_level: endState.difficulty,
+        winning_score,
+        data: gameData,
+      }),
+    }).catch((err) => console.error('Error reporting game statistics:', err))
+  })
+
   function onResetGame() {
     game.value = resetGame(game.value)
     roundStartTime.value = null
+    elapsedSeconds.value = 0
   }
 
   function onStartGame() {
     game.value = { ...handleStartGame(game.value), ...createGameState() }
     roundStartTime.value = Date.now()
+    elapsedSeconds.value = 0
   }
 
   function onDifficultyChange(newDifficulty: number) {
@@ -80,11 +129,8 @@ export function Solo({ onNavigateHome }: SoloProps) {
   useSignalEffect(() => {
     if (!elapsedActive.value) return
     const timer = window.setInterval(() => {
-      const g = game.value
-      game.value = {
-        ...g,
-        elapsedSeconds: Math.floor((Date.now() - g.startTime.getTime()) / 1000),
-      }
+      const g = game.peek()
+      elapsedSeconds.value = Math.floor((Date.now() - g.startTime.getTime()) / 1000)
     }, 1000)
     return () => clearInterval(timer)
   })
@@ -101,8 +147,8 @@ export function Solo({ onNavigateHome }: SoloProps) {
   })
   useSignalEffect(() => {
     if (cpuTurnKey.value === null) return
-    const g0 = game.peek() // peek(): read without subscribing — we only track the key
-    const interval = calculateDynamicCPUInterval(g0.difficulty, countSets(g0.board))
+    const difficulty = game.peek().difficulty
+    const interval = calculateDynamicCPUInterval(difficulty, setsOnBoard.value)
     const timer = window.setInterval(() => {
       const g = game.value
       if (g.declarer || g.gameOver || g.setFound) return
@@ -183,6 +229,9 @@ export function Solo({ onNavigateHome }: SoloProps) {
         players={g.players}
         onReset={onResetGame}
         onMainMenu={onNavigateHome}
+        difficulty={g.difficulty}
+        startTime={g.startTime}
+        actions={g.actions}
       />
     )
   }
@@ -198,7 +247,7 @@ export function Solo({ onNavigateHome }: SoloProps) {
         setFound={g.setFound}
         gameOver={!!g.gameOver}
         score={g.players.you.score}
-        elapsedTime={g.elapsedSeconds}
+        elapsedTime={elapsedSeconds}
         players={g.players as any}
       />
 

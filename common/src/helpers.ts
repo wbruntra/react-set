@@ -41,10 +41,23 @@ const displaySet = (tuple: number[], rowSize = 3) => {
   console.log(matrix.join('\n'))
 }
 
+const countSetsCache = new Map<string, number>()
+
 export const countSets = (
   board: string[],
   { debug = true, returnWhenFound = false } = {},
 ): number => {
+  // Generate a stable cache key based on the board cards and the returnWhenFound flag
+  const cacheKey = `${board.slice().sort().join(',')}:${returnWhenFound}`
+  if (countSetsCache.has(cacheKey)) {
+    return countSetsCache.get(cacheKey)!
+  }
+
+  // Clear cache if it gets too large to prevent memory leaks in long sessions
+  if (countSetsCache.size > 500) {
+    countSetsCache.clear()
+  }
+
   let count = 0
   const indicesByCard = new Map<string, number[]>()
 
@@ -73,12 +86,15 @@ export const countSets = (
           }
           count++
           if (returnWhenFound) {
+            countSetsCache.set(cacheKey, count)
             return count
           }
         }
       }
     }
   }
+
+  countSetsCache.set(cacheKey, count)
   return count
 }
 
