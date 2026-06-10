@@ -7,7 +7,7 @@ export interface GameSession {
 
 const KEY = 'activeGameSession'
 
-export function saveSession(session: GameSession): void {
+export function saveSession(session: Omit<GameSession, 'savedAt'>): void {
   localStorage.setItem(KEY, JSON.stringify({ ...session, savedAt: Date.now() }))
 }
 
