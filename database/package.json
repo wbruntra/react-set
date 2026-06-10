@@ -1,0 +1,14 @@
+{
+  "name": "@react-set/database",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "migrate": "knex migrate:latest"
+  },
+  "devDependencies": {
+    "typescript": "~5.8.3"
+  },
+  "dependencies": {
+    "knex": "^3.2.10"
+  }
+}
