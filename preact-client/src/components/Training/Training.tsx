@@ -64,6 +64,7 @@ export function Training({ onNavigateHome }: TrainingProps) {
         elapsedTime={elapsedTime}
         timeLeft={timeRemaining}
         onCardClick={handleCardClick}
+        trainingMode={gameState.mode}
       />
 
       <IntroModal show={!gameState.initialized} onStart={startInitialGame} />

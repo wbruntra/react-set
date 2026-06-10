@@ -19,6 +19,7 @@ interface BoardProps {
   timeLeft?: number | Signal<number>
   declarer?: string | null
   gameMode?: 'training' | 'versus'
+  trainingMode?: 'two-card-hint' | 'one-card-hint'
   players?: Record<string, PlayerInfo>
   onCardClick: (card: string) => void
 }
@@ -33,6 +34,7 @@ export function Board({
   timeLeft = 0,
   declarer = null,
   gameMode = 'training',
+  trainingMode,
   players = {},
   onCardClick,
 }: BoardProps) {
@@ -71,6 +73,23 @@ export function Board({
     return setFound && selected.length === 3 && !selected.includes(card)
   }
 
+  const isCorrectOption = useMemo(() => {
+    if (!gameOver || gameMode !== 'training' || !trainingMode) return () => false
+
+    return (card: string) => {
+      // Must be part of the final selected set
+      if (!selected.includes(card)) return false
+
+      if (trainingMode === 'two-card-hint') {
+        // In two-card-hint, correct card is the one that is not the first two board items (hints)
+        return card !== board[0] && card !== board[1]
+      } else {
+        // In one-card-hint, correct cards are the ones that are not the first board item (hint)
+        return card !== board[0]
+      }
+    }
+  }, [gameOver, gameMode, selected, board, trainingMode])
+
   return (
     <>
       {gameMode === 'versus' ? (
@@ -108,27 +127,32 @@ export function Board({
       <div class="container">
         <div class="board d-flex flex-column align-items-center">
           <div class="board-main-container">
-            {board.map((card) => (
-              <div
-                key={card}
-                class="card-wrapper"
-                role="button"
-                tabindex={0}
-                onClick={() => onCardClick(card)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') onCardClick(card)
-                }}
-              >
-                <div class="card-holder">
-                  <div
-                    class={`card ${shouldBlur(card) ? 'blurry' : ''} ${isSelected(card) ? 'selected' : ''}`}
-                    style={isSelected(card) ? `--select-color: ${borderColor}` : ''}
-                  >
-                    <Card desc={card} />
+            {board.map((card) => {
+              const isCorrect = isCorrectOption(card)
+              return (
+                <div
+                  key={card}
+                  class="card-wrapper"
+                  role="button"
+                  tabindex={0}
+                  onClick={() => onCardClick(card)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') onCardClick(card)
+                  }}
+                >
+                  <div class="card-holder">
+                    <div
+                      class={`card ${shouldBlur(card) ? 'blurry' : ''} ${isSelected(card) ? 'selected' : ''} ${isCorrect ? 'correct-card flash' : ''}`}
+                      style={
+                        isSelected(card) && !isCorrect ? `--select-color: ${borderColor}` : ''
+                      }
+                    >
+                      <Card desc={card} />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           {gameMode === 'versus' && Object.keys(players).length > 0 && (
