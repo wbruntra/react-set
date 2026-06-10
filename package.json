@@ -8,7 +8,7 @@
     "vite-client",
     "preact-client",
     "backend",
-    "db"
+    "database"
   ],
   "engines": {
     "bun": ">=1.3.0"
