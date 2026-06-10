@@ -6,11 +6,7 @@ import { GameOverModal } from './GameOverModal'
 import { useTrainingGame } from './useTrainingGame'
 import { useTrainingTimer } from './useTrainingTimer'
 
-interface TrainingProps {
-  onNavigateHome: () => void
-}
-
-export function Training({ onNavigateHome }: TrainingProps) {
+export function Training() {
   const [showSuccessFlash, setShowSuccessFlash] = useState(false)
   const [showErrorFlash, setShowErrorFlash] = useState(false)
 
@@ -74,7 +70,6 @@ export function Training({ onNavigateHome }: TrainingProps) {
         finalScore={gameState.score}
         mode={gameState.mode}
         onRestart={resetGame}
-        onMainMenu={onNavigateHome}
       />
     </>
   )

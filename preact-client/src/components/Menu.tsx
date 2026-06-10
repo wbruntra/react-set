@@ -1,12 +1,9 @@
+import { useLocation, Link } from 'wouter-preact'
 import { Card } from './Card'
 
-type Page = 'menu' | 'solo' | 'training' | 'shared' | 'host' | 'join' | 'stats'
+export function Menu() {
+  const [, navigate] = useLocation()
 
-interface MenuProps {
-  onNavigate: (page: Page, gameId?: string) => void
-}
-
-export function Menu({ onNavigate }: MenuProps) {
   return (
     <div class="container bg-light-purple mt-3 mt-md-5 p-4">
       <h1 class="d-none d-md-block text-center mb-3 mb-md-5">Main Menu</h1>
@@ -14,7 +11,7 @@ export function Menu({ onNavigate }: MenuProps) {
         <div class="col-9 col-md-4">
           <div
             class="card shadow-sm mb-3 mb-md-4 cursor-pointer"
-            onClick={() => onNavigate('solo')}
+            onClick={() => navigate('/solo')}
             role="button"
             tabIndex={0}
           >
@@ -25,7 +22,7 @@ export function Menu({ onNavigate }: MenuProps) {
         <div class="col-9 col-md-4">
           <div
             class="card shadow-sm mb-3 mb-md-4 cursor-pointer"
-            onClick={() => onNavigate('join')}
+            onClick={() => navigate('/join')}
             role="button"
             tabIndex={0}
           >
@@ -36,7 +33,7 @@ export function Menu({ onNavigate }: MenuProps) {
         <div class="col-9 col-md-4">
           <div
             class="card shadow-sm mb-3 mb-md-4 cursor-pointer"
-            onClick={() => onNavigate('host')}
+            onClick={() => navigate('/host')}
             role="button"
             tabIndex={0}
           >
@@ -50,19 +47,13 @@ export function Menu({ onNavigate }: MenuProps) {
 
       <div class="text-center mt-4">
         <p>
-          <a href="#" onClick={(e) => (e.preventDefault(), onNavigate('training'))}>
-            Training Mode
-          </a>
+          <Link href="/training">Training Mode</Link>
         </p>
         <p>
-          <a href="#" onClick={(e) => (e.preventDefault(), onNavigate('shared'))}>
-            Local Multiplayer
-          </a>
+          <Link href="/shared">Local Multiplayer</Link>
         </p>
         <p>
-          <a href="#" onClick={(e) => (e.preventDefault(), onNavigate('stats'))}>
-            View Statistics
-          </a>
+          <Link href="/stats">View Statistics</Link>
         </p>
       </div>
     </div>

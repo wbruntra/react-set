@@ -1,3 +1,4 @@
+import { useLocation } from 'wouter-preact'
 import { getHighScoreKey } from './constants'
 import type { TrainingMode } from './types'
 
@@ -6,16 +7,10 @@ interface GameOverModalProps {
   finalScore: number
   mode: TrainingMode
   onRestart: () => void
-  onMainMenu: () => void
 }
 
-export function GameOverModal({
-  show,
-  finalScore,
-  mode,
-  onRestart,
-  onMainMenu,
-}: GameOverModalProps) {
+export function GameOverModal({ show, finalScore, mode, onRestart }: GameOverModalProps) {
+  const [, navigate] = useLocation()
   if (!show) return null
 
   const highScoreKey = getHighScoreKey(mode)
@@ -45,7 +40,7 @@ export function GameOverModal({
             <button class="btn btn-primary" onClick={onRestart}>
               Restart
             </button>
-            <button class="btn btn-secondary" onClick={onMainMenu}>
+            <button class="btn btn-secondary" onClick={() => navigate('/')}>
               Main Menu
             </button>
           </div>

@@ -19,25 +19,7 @@ import {
   type GameState,
 } from './gameState'
 
-interface SoloProps {
-  onNavigateHome: () => void
-}
-
-// --- Signals demo ---
-// This is the same Solo game as before, rewritten with @preact/signals instead
-// of useState + useRef. The whole component holds ZERO refs.
-//
-// Why the refs are gone: a signal is a stable box whose `.value` is always
-// current. A setInterval/setTimeout callback can read `game.value` and get
-// fresh state every tick — no stale closure, so no `gameStateRef` needed.
-//
-// Why the dependency arrays are gone: `useSignalEffect` auto-tracks the signals
-// it reads *synchronously*. We read narrow `useComputed` guard signals at the
-// top of each effect, so the timer restarts on exactly the same triggers the
-// old dependency arrays expressed — but we never hand-maintain a dep list.
-// (Reads inside the async timer body are NOT tracked, which is exactly what we
-// want: the body sees fresh state without re-subscribing the effect.)
-export function Solo({ onNavigateHome }: SoloProps) {
+export function Solo() {
   const game = useSignal<GameState>(createInitialState())
   const showCpuFlash = useSignal(false)
   const showUserFlash = useSignal(false)
@@ -217,7 +199,6 @@ export function Solo({ onNavigateHome }: SoloProps) {
         difficulty={g.difficulty}
         onDifficultyChange={onDifficultyChange}
         onStartGame={onStartGame}
-        onNavigateHome={onNavigateHome}
       />
     )
   }
@@ -228,7 +209,6 @@ export function Solo({ onNavigateHome }: SoloProps) {
         winner={g.gameOver}
         players={g.players}
         onReset={onResetGame}
-        onMainMenu={onNavigateHome}
         difficulty={g.difficulty}
         startTime={g.startTime}
         actions={g.actions}

@@ -8,6 +8,7 @@
 | 2026-06-09 | user   | Preact SVG shapes rendered with thin (default=1) outlines after porting from React        | In preact-client, SVG presentation attrs must be kebab-case (`stroke-width`, `stroke-dasharray`) — Preact does NOT translate camelCase `strokeWidth` like React does |
 | 2026-06-09 | self   | Heavy bootstrap.scss import (275kB) was slow to load and had outdated styles              | Replaced bootstrap entirely with a custom 15kB vanilla CSS grid, glassmorphism containers, neon glow buttons, and premium dark/cosmic theme styles.                  |
 | 2026-06-10 | user   | Cards overlapped in Training mode; Training link on Solo Play setup screen did nothing    | Remove redundant wrapper divs around Board in Training; update window.location.hash to '#/training' on the Solo setup screen's Training Mode button.                 |
+| 2026-06-10 | user   | Selecting wrong card in Training did not clearly highlight the correct completion option  | Pass trainingMode to Board to identify correct completion cards, styled with red border (`correct-card` class) and a 3-times flash animation on game-over.           |
 
 ## User Preferences
 

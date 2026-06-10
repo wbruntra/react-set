@@ -1,3 +1,4 @@
+import { useLocation, Link } from 'wouter-preact'
 import { GAME_CONFIG, calculateDynamicCPUInterval } from '@react-set/common'
 import { currentUser, handleGoogleSignIn } from '@/auth'
 
@@ -5,15 +6,14 @@ interface DifficultySetupProps {
   difficulty: number
   onDifficultyChange: (difficulty: number) => void
   onStartGame: () => void
-  onNavigateHome: () => void
 }
 
 export function DifficultySetup({
   difficulty,
   onDifficultyChange,
   onStartGame,
-  onNavigateHome,
 }: DifficultySetupProps) {
+  const [, navigate] = useLocation()
   const isAnonymous = currentUser.value ? currentUser.value.isAnonymous : true
 
   return (
@@ -83,17 +83,12 @@ export function DifficultySetup({
       )}
 
       <div class="text-center">
-        <button class="btn btn-outline-secondary btn-sm me-2" onClick={onNavigateHome}>
+        <button class="btn btn-outline-secondary btn-sm me-2" onClick={() => navigate('/')}>
           Main Menu
         </button>
-        <button
-          class="btn btn-outline-info btn-sm"
-          onClick={() => {
-            window.location.hash = '#/training'
-          }}
-        >
+        <Link href="/training" class="btn btn-outline-info btn-sm">
           Training Mode
-        </button>
+        </Link>
       </div>
     </div>
   )

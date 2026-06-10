@@ -1,16 +1,16 @@
 import { useMemo, useState, useEffect } from 'preact/hooks'
+import { useLocation } from 'wouter-preact'
 import { Board } from '@/components/Board'
 import { GameOverMulti } from '@/components/GameOverMulti'
 import { NicknameEntry } from '@/components/NicknameEntry'
-import { useHostGame, type HostState } from './useHostGame'
+import { useHostGame } from './useHostGame'
 import { useElapsedTimer } from '@/hooks/useElapsedTimer'
 import { createTransport } from '@/multiplayer/transportFactory'
 import { getNickname, getUserId } from '@/auth'
 import { saveSession, getSession, clearSession } from '@/session'
 
 interface HostProps {
-  onNavigateHome: () => void
-  initialGameId?: string
+  gameId?: string
 }
 
 function GameCreation({
@@ -129,7 +129,8 @@ function GameResumePrompt({
   )
 }
 
-export function Host({ onNavigateHome, initialGameId }: HostProps) {
+export function Host({ gameId }: HostProps) {
+  const [, navigate] = useLocation()
   const transport = useMemo(() => createTransport(), [])
   const uid = getUserId()
 
@@ -152,26 +153,26 @@ export function Host({ onNavigateHome, initialGameId }: HostProps) {
 
   function clearAndLeave() {
     clearSession()
-    onNavigateHome()
+    navigate('/')
   }
 
   // Persist session + update URL when game is created
   useEffect(() => {
     if (created && gameTitle && myName) {
       saveSession({ gameId: gameTitle, myName, role: 'host' })
-      window.location.hash = `#/host/${encodeURIComponent(gameTitle)}`
+      navigate('/host/' + encodeURIComponent(gameTitle))
     }
   }, [created, gameTitle, myName])
 
   // Rejoin by URL code on mount
   useEffect(() => {
-    if (initialGameId) {
+    if (gameId) {
       const hostName = persisted?.myName || getNickname()
       if (hostName) {
-        handlers.rejoinGame(initialGameId, hostName)
+        handlers.rejoinGame(gameId, hostName)
       }
     }
-  }, [initialGameId])
+  }, [gameId])
 
   const elapsed = useElapsedTimer(gameStarted, !!gameOver)
 
@@ -186,7 +187,7 @@ export function Host({ onNavigateHome, initialGameId }: HostProps) {
   }
 
   // Show resume prompt for findResumable matches (firebase compat)
-  if (gameInProgress && !created && !initialGameId) {
+  if (gameInProgress && !created && !gameId) {
     return (
       <GameResumePrompt
         game={gameInProgress}

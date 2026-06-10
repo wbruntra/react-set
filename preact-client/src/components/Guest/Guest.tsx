@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'preact/hooks'
+import { useLocation } from 'wouter-preact'
 import { Board } from '@/components/Board'
 import { GameOverMulti } from '@/components/GameOverMulti'
 import { NicknameEntry } from '@/components/NicknameEntry'
@@ -10,15 +11,12 @@ import { saveSession, getSession, clearSession } from '@/session'
 import type { GameSummary } from '@/multiplayer/transport'
 
 interface GuestProps {
-  onNavigateHome: () => void
-  initialGameId?: string
+  gameId?: string
 }
 
 function JoinGame({ onJoin, onBack }: { onJoin: (gameId: string) => void; onBack: () => void }) {
   const [games, setGames] = useState<GameSummary[]>([])
   const [loading, setLoading] = useState(true)
-  const [showNameInput, setShowNameInput] = useState(false)
-  const [gameId, setGameId] = useState('')
 
   useEffect(() => {
     const t = createTransport()
@@ -27,13 +25,6 @@ function JoinGame({ onJoin, onBack }: { onJoin: (gameId: string) => void; onBack
       setLoading(false)
     })
   }, [])
-
-  function handleSubmit(e: Event) {
-    e.preventDefault()
-    const trimmed = gameId.trim()
-    if (!trimmed) return
-    onJoin(trimmed)
-  }
 
   return (
     <div class="container bg-light-purple mt-3 mt-md-5 p-4">
@@ -66,34 +57,6 @@ function JoinGame({ onJoin, onBack }: { onJoin: (gameId: string) => void; onBack
         </div>
       ) : (
         <p class="text-center text-muted mb-4">No open games right now.</p>
-      )}
-
-      {!showNameInput ? (
-        <div class="text-center">
-          <button class="btn btn-outline-secondary btn-sm" onClick={() => setShowNameInput(true)}>
-            Join by name instead
-          </button>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit}>
-          <hr />
-          <div class="row justify-content-center">
-            <div class="col-md-6">
-              <input
-                autoFocus
-                class="form-control text-center mb-2"
-                placeholder="Enter game name"
-                value={gameId}
-                onInput={(e) => setGameId((e.target as HTMLInputElement).value)}
-              />
-              <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-outline-primary btn-sm">
-                  Join by name
-                </button>
-              </div>
-            </div>
-          </div>
-        </form>
       )}
 
       <div class="text-center mt-4">
@@ -162,10 +125,11 @@ function WaitingForStart({
   )
 }
 
-export function Guest({ onNavigateHome, initialGameId }: GuestProps) {
+export function Guest({ gameId: gameIdParam }: GuestProps) {
+  const [, navigate] = useLocation()
   const persisted = getSession()
-  const resolvedGameId = initialGameId || (persisted?.role === 'guest' ? persisted.gameId : null)
-  const [gameId, setGameId] = useState<string | null>(resolvedGameId || null)
+  const resolvedGameId = gameIdParam || (persisted?.role === 'guest' ? persisted.gameId : null)
+  const gameId = resolvedGameId || null
   const [myName, setMyName] = useState(() => getNickname() || persisted?.myName || '')
   const [showNickname, setShowNickname] = useState(!getNickname() && !persisted?.myName)
 
@@ -182,20 +146,27 @@ export function Guest({ onNavigateHome, initialGameId }: GuestProps) {
 
   function clearAndLeave() {
     clearSession()
-    onNavigateHome()
+    navigate('/')
   }
 
-  if (!gameId) {
-    return <JoinGame onJoin={(id) => setGameId(id)} onBack={onNavigateHome} />
-  }
-
-  // Persist session + update URL hash when gameId is known
+  // Update URL when gameId comes from session (not already in URL)
   useEffect(() => {
+    if (gameId && myName && !gameIdParam) {
+      navigate('/join/' + encodeURIComponent(gameId), { replace: true })
+    }
     if (gameId && myName) {
       saveSession({ gameId, myName, role: 'guest' })
-      window.location.hash = `#/join/${encodeURIComponent(gameId)}`
     }
   }, [gameId, myName])
+
+  if (!gameId) {
+    return (
+      <JoinGame
+        onJoin={(id) => navigate('/join/' + encodeURIComponent(id))}
+        onBack={() => navigate('/')}
+      />
+    )
+  }
 
   if (showNickname || !myName) {
     return (

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'preact/hooks'
+import { useLocation } from 'wouter-preact'
 import { getUserId, currentUser, handleGoogleSignIn, handleSignOut } from '../auth'
 
 interface StatRow {
@@ -7,11 +8,10 @@ interface StatRow {
   games_won: number
 }
 
-interface StatsProps {
-  onNavigateHome: () => void
-}
+interface StatsProps {}
 
-export function Stats({ onNavigateHome }: StatsProps) {
+export function Stats(props: StatsProps) {
+  const [, navigate] = useLocation()
   const [stats, setStats] = useState<StatRow[] | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -174,7 +174,7 @@ export function Stats({ onNavigateHome }: StatsProps) {
       )}
 
       <div class="d-flex justify-content-center gap-3 mt-3">
-        <button class="btn btn-outline-secondary" onClick={onNavigateHome}>
+        <button class="btn btn-outline-secondary" onClick={() => navigate('/')}>
           Main Menu
         </button>
       </div>

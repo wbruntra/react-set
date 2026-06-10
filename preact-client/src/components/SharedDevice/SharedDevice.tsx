@@ -1,11 +1,8 @@
 import { useMemo } from 'preact/hooks'
+import { useLocation } from 'wouter-preact'
 import { countSets, GAME_CONFIG } from '@react-set/common'
 import { Board } from '@/components/Board'
 import { useSharedDevice } from './useSharedDevice'
-
-interface SharedDeviceProps {
-  onNavigateHome: () => void
-}
 
 interface PlayerRowProps {
   players: Array<{ name: string; color: string; score: number }>
@@ -42,7 +39,8 @@ function PlayerRow({ players, declarer, onDeclare, position }: PlayerRowProps) {
   )
 }
 
-export function SharedDevice({ onNavigateHome }: SharedDeviceProps) {
+export function SharedDevice() {
+  const [, navigate] = useLocation()
   const { state, actions } = useSharedDevice()
   const { board, selected, declarer, players, numPlayers, setFound, gameOver, gameStarted } = state
 
@@ -83,7 +81,7 @@ export function SharedDevice({ onNavigateHome }: SharedDeviceProps) {
             cards.
           </p>
           <p class="text-muted small">First to {GAME_CONFIG.playingTo} points wins!</p>
-          <button class="btn btn-outline-secondary btn-sm mt-3" onClick={onNavigateHome}>
+          <button class="btn btn-outline-secondary btn-sm mt-3" onClick={() => navigate('/')}>
             Main Menu
           </button>
         </div>
@@ -117,7 +115,7 @@ export function SharedDevice({ onNavigateHome }: SharedDeviceProps) {
           <button class="btn btn-primary" onClick={actions.resetGame}>
             Play Again
           </button>
-          <button class="btn btn-secondary" onClick={onNavigateHome}>
+          <button class="btn btn-secondary" onClick={() => navigate('/')}>
             Main Menu
           </button>
         </div>

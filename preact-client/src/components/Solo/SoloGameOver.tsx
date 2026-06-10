@@ -1,3 +1,4 @@
+import { useLocation, Link } from 'wouter-preact'
 import { GAME_CONFIG } from '@react-set/common'
 import type { Players } from './gameState'
 import { GameTimeline } from '../Stats/GameTimeline'
@@ -7,7 +8,6 @@ interface SoloGameOverProps {
   winner: string | null
   players: Players
   onReset: () => void
-  onMainMenu: () => void
   difficulty: number
   startTime: Date
   actions: Array<[number, number, 'h' | 'c']>
@@ -17,11 +17,11 @@ export function SoloGameOver({
   winner,
   players,
   onReset,
-  onMainMenu,
   difficulty,
   startTime,
   actions,
 }: SoloGameOverProps) {
+  const [, navigate] = useLocation()
   const isYou = winner === 'you'
   const playerScore = players.you?.score ?? 0
   const cpuScore = players.cpu?.score ?? 0
@@ -61,13 +61,13 @@ export function SoloGameOver({
         <button class="btn btn-primary" onClick={onReset}>
           Play Again
         </button>
-        <button class="btn btn-secondary" onClick={onMainMenu}>
+        <button class="btn btn-secondary" onClick={() => navigate('/')}>
           Main Menu
         </button>
         {uid && (
-          <a href="#/stats" class="btn btn-outline-primary">
+          <Link href="/stats" class="btn btn-outline-primary">
             View All Stats
-          </a>
+          </Link>
         )}
       </div>
 
