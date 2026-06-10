@@ -26,8 +26,8 @@
     "preact:dev": "cd preact-client && bun run dev",
     "preact:build": "cd preact-client && bun run build",
     "test:countsets": "bun tests/test-countsets-efficiency.js",
-    "predeploy": "cd vite-client && npm run build",
-    "deploy": "gh-pages -d vite-client/dist -b rp-pages -e client/",
+    "predeploy": "cd preact-client && bun run build",
+    "deploy": "gh-pages -d preact-client/dist -e client/",
     "prepare": "husky"
   },
   "keywords": [],

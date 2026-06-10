@@ -55,20 +55,16 @@ export function Training({ onNavigateHome }: TrainingProps) {
     <>
       <FlashOverlay showSuccessFlash={showSuccessFlash} showErrorFlash={showErrorFlash} />
 
-      <div class="d-flex flex-column justify-content-between">
-        <div>
-          <Board
-            board={gameState.board}
-            selected={gameState.selected}
-            setFound={gameState.setFound}
-            gameOver={gameState.gameOver}
-            score={gameState.score}
-            elapsedTime={elapsedTime}
-            timeLeft={timeRemaining}
-            onCardClick={handleCardClick}
-          />
-        </div>
-      </div>
+      <Board
+        board={gameState.board}
+        selected={gameState.selected}
+        setFound={gameState.setFound}
+        gameOver={gameState.gameOver}
+        score={gameState.score}
+        elapsedTime={elapsedTime}
+        timeLeft={timeRemaining}
+        onCardClick={handleCardClick}
+      />
 
       <IntroModal show={!gameState.initialized} onStart={startInitialGame} />
 

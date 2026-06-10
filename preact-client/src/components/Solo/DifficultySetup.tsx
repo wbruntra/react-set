@@ -89,9 +89,7 @@ export function DifficultySetup({
         <button
           class="btn btn-outline-info btn-sm"
           onClick={() => {
-            window.history.pushState({}, '', '/training')
-            const evt = new CustomEvent('navigate-training')
-            window.dispatchEvent(evt)
+            window.location.hash = '#/training'
           }}
         >
           Training Mode
