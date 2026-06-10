@@ -1,4 +1,4 @@
-const db = require('./db_connection')
+const db = require('./database/db_connection')
 
 async function checkLastGame() {
   try {

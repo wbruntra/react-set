@@ -30,11 +30,12 @@ export function createFirebaseTransport(): GameTransport {
   async function createGame(
     id: string,
     state: Partial<MultiGameState> & { creator_uid?: string },
-  ): Promise<void> {
+  ): Promise<string> {
     await setDoc(gameDoc(id), {
       ...state,
       lastUpdate: serverTimestamp(),
     })
+    return id
   }
 
   async function updateState(id: string, partial: Partial<MultiGameState>): Promise<void> {

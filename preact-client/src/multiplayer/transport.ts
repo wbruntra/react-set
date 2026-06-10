@@ -10,7 +10,10 @@ export interface GameSummary {
 }
 
 export interface GameTransport {
-  createGame(id: string, state: Partial<MultiGameState> & { creator_uid?: string }): Promise<void>
+  createGame(
+    id: string,
+    state: Partial<MultiGameState> & { creator_uid?: string },
+  ): Promise<string>
   updateState(id: string, partial: Partial<MultiGameState>): Promise<void>
   subscribeState(id: string, cb: (state: MultiGameState) => void): Unsubscribe
   sendAction(id: string, action: GameAction): Promise<ActionId>

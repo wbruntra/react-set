@@ -19,7 +19,8 @@ function readHash(): { page: Page; gameId?: string } {
   if (h === 'shared') return { page: 'shared' }
   if (h === 'host') return { page: 'host' }
   if (h === 'stats') return { page: 'stats' }
-  if (h.startsWith('join/')) return { page: 'join', gameId: h.slice(5) }
+  if (h.startsWith('join/')) return { page: 'join', gameId: decodeURIComponent(h.slice(5)) }
+  if (h.startsWith('host/')) return { page: 'host', gameId: decodeURIComponent(h.slice(5)) }
   if (h === 'join') return { page: 'join' }
   return { page: 'menu' }
 }
@@ -28,7 +29,9 @@ function writeHash(page: Page, gameId?: string) {
   if (page === 'menu') {
     window.location.hash = ''
   } else if (page === 'join' && gameId) {
-    window.location.hash = `#/join/${gameId}`
+    window.location.hash = `#/join/${encodeURIComponent(gameId)}`
+  } else if (page === 'host' && gameId) {
+    window.location.hash = `#/host/${encodeURIComponent(gameId)}`
   } else {
     window.location.hash = `#/${page}`
   }
@@ -71,7 +74,7 @@ export function App() {
   }
 
   if (route.page === 'host') {
-    return <Host onNavigateHome={() => navigate('menu')} />
+    return <Host onNavigateHome={() => navigate('menu')} initialGameId={route.gameId} />
   }
 
   if (route.page === 'join') {

@@ -40,6 +40,7 @@ export interface HostGameReturn {
     setGameTitle: (title: string) => void
     startGame: () => void
     startNewGame: () => void
+    rejoinGame: (code: string, hostName: string) => void
   }
 }
 
@@ -112,6 +113,7 @@ export function useHostGame({ transport, uid }: HostGameOptions): HostGameReturn
     setState({ selected: next.selected, setFound: next.setFound })
 
     if (next.setFound && isSet(next.selected)) {
+      setAndSend({ selected: next.selected, setFound: true, declarer: s.myName })
       setTimeout(() => {
         removeCurrentSet(s.myName)
       }, GAME_CONFIG.setDisplayTime)
@@ -136,10 +138,9 @@ export function useHostGame({ transport, uid }: HostGameOptions): HostGameReturn
   async function handleCreateGame(title: string) {
     const s = state.value
     const officialTitle = title.trim() || `${s.myName}'s game`
-    setGameTitle(officialTitle)
 
     const { players, board, deck, selected, gameOver, gameStarted } = s
-    await transport.createGame(officialTitle, {
+    const gameCode = await transport.createGame(officialTitle, {
       creator_uid: uid,
       players,
       board,
@@ -149,19 +150,24 @@ export function useHostGame({ transport, uid }: HostGameOptions): HostGameReturn
       gameStarted,
     })
 
+    setGameTitle(gameCode)
+
     // Keepalive every 30s
+    if (updaterRef.current !== null) {
+      clearInterval(updaterRef.current)
+    }
     updaterRef.current = window.setInterval(() => {
-      transport.updateState(officialTitle, {} as any)
+      transport.updateState(gameCode, {} as any)
     }, 30000)
 
     // Subscribe to guest actions
     actionsUnsubRef.current?.()
-    actionsUnsubRef.current = transport.subscribeActions(officialTitle, (action, actionId) => {
+    actionsUnsubRef.current = transport.subscribeActions(gameCode, (action, actionId) => {
       processAction(action)
-      transport.consumeAction(officialTitle, actionId)
+      transport.consumeAction(gameCode, actionId)
     })
 
-    setState({ created: true, gameTitle: officialTitle })
+    setState({ created: true, gameTitle: gameCode })
   }
 
   function startGame() {
@@ -181,6 +187,35 @@ export function useHostGame({ transport, uid }: HostGameOptions): HostGameReturn
       declarer: null,
       setFound: false,
       players: resetPlayers,
+    })
+  }
+
+  function rejoinGame(code: string, hostName: string) {
+    setGameTitle(code)
+
+    gameUnsubRef.current?.()
+    gameUnsubRef.current = transport.subscribeState(code, (remote) => {
+      setState({ ...remote, created: true, gameTitle: code })
+    })
+
+    actionsUnsubRef.current?.()
+    actionsUnsubRef.current = transport.subscribeActions(code, (action, actionId) => {
+      processAction(action)
+      transport.consumeAction(code, actionId)
+    })
+
+    if (updaterRef.current !== null) {
+      clearInterval(updaterRef.current)
+      updaterRef.current = null
+    }
+    updaterRef.current = window.setInterval(() => {
+      transport.updateState(code, {} as any)
+    }, 30000)
+
+    setState({
+      myName: hostName,
+      created: true,
+      gameTitle: code,
     })
   }
 
@@ -250,6 +285,7 @@ export function useHostGame({ transport, uid }: HostGameOptions): HostGameReturn
       setGameTitle,
       startGame,
       startNewGame,
+      rejoinGame,
     },
   }
 }

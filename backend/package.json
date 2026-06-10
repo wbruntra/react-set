@@ -6,9 +6,12 @@
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "build": "tsc",
-    "start": "bun run src/index.ts"
+    "start": "bun run src/index.ts",
+    "migrate": "bun -e \"import { db } from './src/db'; await db.migrate.latest(); console.log('Migrations complete'); process.exit(0)\"",
+    "migrate:rollback": "bun -e \"import { db } from './src/db'; await db.migrate.rollback(); console.log('Rollback complete'); process.exit(0)\""
   },
   "dependencies": {
+    "@react-set/common": "workspace:*",
     "hono": "^4.6.0",
     "knex": "^3.1.0",
     "knex-bun-sqlite": "^1.4.0"

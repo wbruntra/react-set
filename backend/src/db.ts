@@ -18,4 +18,9 @@ export const db: Knex = knexLib({
   migrations: {
     directory: path.join(import.meta.dir, '..', '..', 'migrations'),
   },
+  pool: {
+    afterCreate: (conn: any, cb: (err: Error | null) => void) => {
+      conn.run('PRAGMA foreign_keys = ON', cb)
+    },
+  },
 })

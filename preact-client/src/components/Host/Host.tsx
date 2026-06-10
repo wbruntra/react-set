@@ -1,13 +1,16 @@
-import { useMemo, useState } from 'preact/hooks'
+import { useMemo, useState, useEffect } from 'preact/hooks'
 import { Board } from '@/components/Board'
 import { GameOverMulti } from '@/components/GameOverMulti'
 import { NicknameEntry } from '@/components/NicknameEntry'
 import { useHostGame, type HostState } from './useHostGame'
-import { createFirebaseTransport } from '@/multiplayer/firebaseTransport'
+import { useElapsedTimer } from '@/hooks/useElapsedTimer'
+import { createTransport } from '@/multiplayer/transportFactory'
 import { getNickname, getUserId } from '@/auth'
+import { saveSession, getSession, clearSession } from '@/session'
 
 interface HostProps {
   onNavigateHome: () => void
+  initialGameId?: string
 }
 
 function GameCreation({
@@ -51,19 +54,26 @@ function GameCreation({
 
 function Lobby({
   players,
+  gameId,
   onStart,
   onBack,
 }: {
   players: Record<string, any>
+  gameId?: string
   onStart: () => void
   onBack: () => void
 }) {
   const entries = Object.entries(players || {})
 
+  function copyJoinUrl() {
+    const url = `${window.location.origin}${window.location.pathname}#/join/${encodeURIComponent(gameId || '')}`
+    navigator.clipboard.writeText(url).catch(() => {})
+  }
+
   return (
     <div class="container bg-light-purple mt-3 mt-md-5 p-4">
       <h3 class="text-center mb-4">Game Lobby</h3>
-      <h5 class="text-center mb-3">Players:</h5>
+      <h5 class="text-center mb-3">Players ({entries.length}):</h5>
       <ul class="list-unstyled">
         {entries.map(([name, info]) => (
           <li key={name} class="card mb-2 p-2 text-center">
@@ -76,6 +86,11 @@ function Lobby({
         <button class="btn btn-primary btn-lg" onClick={onStart}>
           Start Game
         </button>
+        {gameId && (
+          <button class="btn btn-outline-primary" onClick={copyJoinUrl}>
+            Copy Join Link
+          </button>
+        )}
         <button class="btn btn-outline-secondary" onClick={onBack}>
           Back
         </button>
@@ -114,9 +129,11 @@ function GameResumePrompt({
   )
 }
 
-export function Host({ onNavigateHome }: HostProps) {
-  const transport = useMemo(() => createFirebaseTransport(), [])
+export function Host({ onNavigateHome, initialGameId }: HostProps) {
+  const transport = useMemo(() => createTransport(), [])
   const uid = getUserId()
+
+  const persisted = getSession()
 
   const { state, gameInProgress, handlers } = useHostGame({ transport, uid })
   const {
@@ -133,22 +150,51 @@ export function Host({ onNavigateHome }: HostProps) {
     gameTitle,
   } = state
 
+  function clearAndLeave() {
+    clearSession()
+    onNavigateHome()
+  }
+
+  // Persist session + update URL when game is created
+  useEffect(() => {
+    if (created && gameTitle && myName) {
+      saveSession({ gameId: gameTitle, myName, role: 'host' })
+      window.location.hash = `#/host/${encodeURIComponent(gameTitle)}`
+    }
+  }, [created, gameTitle, myName])
+
+  // Rejoin by URL code on mount
+  useEffect(() => {
+    if (initialGameId) {
+      const hostName = persisted?.myName || getNickname()
+      if (hostName) {
+        handlers.rejoinGame(initialGameId, hostName)
+      }
+    }
+  }, [initialGameId])
+
+  const elapsed = useElapsedTimer(gameStarted, !!gameOver)
+
   if (!myName) {
     return (
       <NicknameEntry
         onSetName={handlers.handleSetName}
-        onBack={onNavigateHome}
+        onBack={clearAndLeave}
         title="Host: Enter Nickname"
       />
     )
   }
 
-  if (gameInProgress && !created) {
+  // Show resume prompt for findResumable matches (firebase compat)
+  if (gameInProgress && !created && !initialGameId) {
     return (
       <GameResumePrompt
         game={gameInProgress}
         onResume={handlers.reloadGame}
-        onDelete={handlers.handleRejectResume}
+        onDelete={() => {
+          handlers.handleRejectResume()
+          clearSession()
+        }}
       />
     )
   }
@@ -161,10 +207,11 @@ export function Host({ onNavigateHome }: HostProps) {
     return (
       <Lobby
         players={players}
+        gameId={gameTitle}
         onStart={handlers.startGame}
         onBack={() => {
           handlers.handleRejectResume()
-          onNavigateHome()
+          clearAndLeave()
         }}
       />
     )
@@ -176,10 +223,15 @@ export function Host({ onNavigateHome }: HostProps) {
         winner={gameOver}
         players={players as any}
         isHost={true}
-        onPlayAgain={handlers.startNewGame}
+        onPlayAgain={() => {
+          handlers.startNewGame()
+          if (gameTitle) {
+            saveSession({ gameId: gameTitle, myName, role: 'host' })
+          }
+        }}
         onMainMenu={() => {
           transport.deleteGame(gameTitle)
-          onNavigateHome()
+          clearAndLeave()
         }}
       />
     )
@@ -196,6 +248,7 @@ export function Host({ onNavigateHome }: HostProps) {
       gameMode="versus"
       players={players as any}
       onCardClick={handlers.handleCardClick}
+      elapsedTime={elapsed}
     />
   )
 }

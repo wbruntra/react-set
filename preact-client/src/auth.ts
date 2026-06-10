@@ -9,11 +9,12 @@ import {
 import { auth } from './firebaseConfig'
 import { signal } from '@preact/signals'
 
+const IS_WS = import.meta.env.VITE_TRANSPORT === 'websocket'
+
 let uid: string | null = null
 
 export const currentUser = signal<User | null>(null)
 
-// Register/sync user with API
 async function syncUserWithDatabase(user: User) {
   try {
     const res = await fetch(`/api/user/${user.uid}`)
@@ -41,19 +42,20 @@ async function syncUserWithDatabase(user: User) {
   }
 }
 
-// Track auth changes
-onAuthStateChanged(auth, (user) => {
-  currentUser.value = user
-  if (user) {
-    uid = user.uid
-    syncUserWithDatabase(user)
-  } else {
-    uid = null
-  }
-})
+if (!IS_WS) {
+  onAuthStateChanged(auth, (user) => {
+    currentUser.value = user
+    if (user) {
+      uid = user.uid
+      syncUserWithDatabase(user)
+    } else {
+      uid = null
+    }
+  })
+}
 
 export function getUserId(): string {
-  if (currentUser.value) {
+  if (!IS_WS && currentUser.value) {
     return currentUser.value.uid
   }
   if (!uid) {
@@ -64,7 +66,10 @@ export function getUserId(): string {
 }
 
 export async function ensureAnonymousAuth(): Promise<string> {
-  // If we already have a user (anonymous or Google), just return its uid
+  if (IS_WS) {
+    return getUserId()
+  }
+
   if (auth.currentUser) {
     currentUser.value = auth.currentUser
     uid = auth.currentUser.uid
@@ -83,6 +88,8 @@ export async function ensureAnonymousAuth(): Promise<string> {
 }
 
 export async function handleGoogleSignIn(): Promise<User> {
+  if (IS_WS) throw new Error('Google sign-in not available in WebSocket mode')
+
   const provider = new GoogleAuthProvider()
   provider.addScope('email')
   provider.addScope('profile')
@@ -94,17 +101,20 @@ export async function handleGoogleSignIn(): Promise<User> {
 }
 
 export async function handleSignOut(): Promise<void> {
-  await firebaseSignOut(auth)
+  if (!IS_WS) {
+    await firebaseSignOut(auth)
+  }
   currentUser.value = null
   uid = null
   localStorage.removeItem('uid')
   localStorage.removeItem('nickname')
-  // Automatically re-authenticate anonymously so the app doesn't break
-  await ensureAnonymousAuth()
+  if (!IS_WS) {
+    await ensureAnonymousAuth()
+  }
 }
 
 export function getNickname(): string {
-  if (currentUser.value && !currentUser.value.isAnonymous) {
+  if (!IS_WS && currentUser.value && !currentUser.value.isAnonymous) {
     return currentUser.value.displayName || ''
   }
   return localStorage.getItem('nickname') || ''

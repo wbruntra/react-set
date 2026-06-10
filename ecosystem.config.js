@@ -3,7 +3,8 @@ const secrets = require('./secrets')
 
 module.exports = {
   name: 'react-set',
-  script: `${BASE}/react-set/server.js`,
+  cwd: `${BASE}/react-set/backend`,
+  script: `app.ts`,
   interpreter: '/usr/local/bin/bun',
   exec_mode: 'fork',
   instances: 1,

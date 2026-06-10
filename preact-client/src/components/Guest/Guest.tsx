@@ -3,8 +3,10 @@ import { Board } from '@/components/Board'
 import { GameOverMulti } from '@/components/GameOverMulti'
 import { NicknameEntry } from '@/components/NicknameEntry'
 import { useGuestGame } from './useGuestGame'
-import { createFirebaseTransport } from '@/multiplayer/firebaseTransport'
+import { useElapsedTimer } from '@/hooks/useElapsedTimer'
+import { createTransport } from '@/multiplayer/transportFactory'
 import { getNickname } from '@/auth'
+import { saveSession, getSession, clearSession } from '@/session'
 import type { GameSummary } from '@/multiplayer/transport'
 
 interface GuestProps {
@@ -19,7 +21,7 @@ function JoinGame({ onJoin, onBack }: { onJoin: (gameId: string) => void; onBack
   const [gameId, setGameId] = useState('')
 
   useEffect(() => {
-    const t = createFirebaseTransport()
+    const t = createTransport()
     t.listJoinableGames().then((list) => {
       setGames(list)
       setLoading(false)
@@ -46,7 +48,8 @@ function JoinGame({ onJoin, onBack }: { onJoin: (gameId: string) => void; onBack
             <div key={g.id} class="card mb-2 p-3">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
-                  <strong>{g.id}</strong>
+                  <strong>{g.gameTitle || g.id}</strong>
+                  <span class="text-muted small ms-1">({g.id})</span>
                   <div class="text-muted small">
                     {Object.keys(g.players || {}).length} player(s):{' '}
                     {Object.values(g.players || {})
@@ -102,17 +105,55 @@ function JoinGame({ onJoin, onBack }: { onJoin: (gameId: string) => void; onBack
   )
 }
 
-function WaitingForStart({ onBack }: { onBack: () => void }) {
+function WaitingForStart({
+  players,
+  gameId,
+  onBack,
+}: {
+  players: Record<string, any>
+  gameId?: string
+  onBack: () => void
+}) {
+  const entries = Object.entries(players || {})
+
+  function copyJoinUrl(e: Event) {
+    e.stopPropagation()
+    const url = `${window.location.origin}${window.location.pathname}#/join/${encodeURIComponent(gameId || '')}`
+    navigator.clipboard.writeText(url).catch(() => {})
+  }
+
   return (
     <div class="container bg-light-purple mt-3 mt-md-5 p-4 text-center">
       <h3 class="mb-4">Joined!</h3>
-      <p class="text-muted">Waiting for the host to start the game...</p>
-      <div class="mt-4">
-        <span class="badge bg-purple px-3 py-2" style="font-size: 1rem">
-          Waiting...
-        </span>
-      </div>
-      <div class="mt-4">
+      {entries.length > 0 ? (
+        <>
+          <h5 class="mb-3">Players ({entries.length}):</h5>
+          <ul class="list-unstyled">
+            {entries.map(([name, info]) => (
+              <li key={name} class="card mb-2 p-2 text-center">
+                <span style="font-weight: 600">{name}</span>
+                {info.host && <span class="badge bg-purple ms-2">Host</span>}
+              </li>
+            ))}
+          </ul>
+          <p class="text-muted">Waiting for the host to start the game...</p>
+        </>
+      ) : (
+        <>
+          <p class="text-muted">Waiting for the host to start the game...</p>
+          <div class="mt-4">
+            <span class="badge bg-purple px-3 py-2" style="font-size: 1rem">
+              Waiting...
+            </span>
+          </div>
+        </>
+      )}
+      <div class="mt-4 d-flex justify-content-center gap-2">
+        {gameId && (
+          <button class="btn btn-outline-primary btn-sm" onClick={copyJoinUrl}>
+            Copy Join Link
+          </button>
+        )}
         <button class="btn btn-outline-secondary btn-sm" onClick={onBack}>
           Leave
         </button>
@@ -122,11 +163,13 @@ function WaitingForStart({ onBack }: { onBack: () => void }) {
 }
 
 export function Guest({ onNavigateHome, initialGameId }: GuestProps) {
-  const [gameId, setGameId] = useState<string | null>(initialGameId || null)
-  const [myName, setMyName] = useState(() => getNickname())
-  const [showNickname, setShowNickname] = useState(!getNickname())
+  const persisted = getSession()
+  const resolvedGameId = initialGameId || (persisted?.role === 'guest' ? persisted.gameId : null)
+  const [gameId, setGameId] = useState<string | null>(resolvedGameId || null)
+  const [myName, setMyName] = useState(() => getNickname() || persisted?.myName || '')
+  const [showNickname, setShowNickname] = useState(!getNickname() && !persisted?.myName)
 
-  const transport = useMemo(() => createFirebaseTransport(), [])
+  const transport = useMemo(() => createTransport(), [])
 
   const { state, handleCardClick } = useGuestGame({
     transport,
@@ -135,9 +178,24 @@ export function Guest({ onNavigateHome, initialGameId }: GuestProps) {
   })
   const { board, selected, declarer, players, setFound, gameOver, gameStarted } = state
 
+  const elapsed = useElapsedTimer(gameStarted, !!gameOver)
+
+  function clearAndLeave() {
+    clearSession()
+    onNavigateHome()
+  }
+
   if (!gameId) {
     return <JoinGame onJoin={(id) => setGameId(id)} onBack={onNavigateHome} />
   }
+
+  // Persist session + update URL hash when gameId is known
+  useEffect(() => {
+    if (gameId && myName) {
+      saveSession({ gameId, myName, role: 'guest' })
+      window.location.hash = `#/join/${encodeURIComponent(gameId)}`
+    }
+  }, [gameId, myName])
 
   if (showNickname || !myName) {
     return (
@@ -146,14 +204,16 @@ export function Guest({ onNavigateHome, initialGameId }: GuestProps) {
           setMyName(name)
           setShowNickname(false)
         }}
-        onBack={onNavigateHome}
+        onBack={clearAndLeave}
         title="Enter Nickname"
       />
     )
   }
 
   if (!gameStarted) {
-    return <WaitingForStart onBack={onNavigateHome} />
+    return (
+      <WaitingForStart players={players} gameId={gameId || undefined} onBack={clearAndLeave} />
+    )
   }
 
   if (gameOver) {
@@ -162,7 +222,7 @@ export function Guest({ onNavigateHome, initialGameId }: GuestProps) {
         winner={gameOver}
         players={players as any}
         isHost={false}
-        onMainMenu={onNavigateHome}
+        onMainMenu={clearAndLeave}
       />
     )
   }
@@ -178,6 +238,7 @@ export function Guest({ onNavigateHome, initialGameId }: GuestProps) {
       gameMode="versus"
       players={players as any}
       onCardClick={handleCardClick}
+      elapsedTime={elapsed}
     />
   )
 }
