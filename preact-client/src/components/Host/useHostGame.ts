@@ -39,6 +39,7 @@ export interface HostGameReturn {
     reloadGame: (gameId: string) => void
     setGameTitle: (title: string) => void
     startGame: () => void
+    startNewGame: () => void
   }
 }
 
@@ -105,7 +106,7 @@ export function useHostGame({ transport, uid }: HostGameOptions): HostGameReturn
 
   function handleCardClick(card: string) {
     const s = state.value
-    if (s.declarer) return
+    if (s.declarer || s.gameOver) return
 
     const next = multiCardClick({ ...s, declarer: s.myName }, card)
     setState({ selected: next.selected, setFound: next.setFound })
@@ -165,6 +166,22 @@ export function useHostGame({ transport, uid }: HostGameOptions): HostGameReturn
 
   function startGame() {
     setAndSend({ ...dealNewBoard(), gameStarted: true })
+  }
+
+  function startNewGame() {
+    const s = state.value
+    const resetPlayers: Record<string, any> = {}
+    for (const name of Object.keys(s.players)) {
+      resetPlayers[name] = { ...s.players[name], score: 0 }
+    }
+    setAndSend({
+      ...dealNewBoard(),
+      gameStarted: true,
+      gameOver: null,
+      declarer: null,
+      setFound: false,
+      players: resetPlayers,
+    })
   }
 
   function reloadGame(gameId: string) {
@@ -232,6 +249,7 @@ export function useHostGame({ transport, uid }: HostGameOptions): HostGameReturn
       reloadGame,
       setGameTitle,
       startGame,
+      startNewGame,
     },
   }
 }

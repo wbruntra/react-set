@@ -133,16 +133,18 @@ export function Board({
 
           {gameMode === 'versus' && Object.keys(players).length > 0 && (
             <div class="row my-1 text-center fixed-bottom">
-              {Object.entries(players).map(([name, info]) => (
-                <div key={name} class="col s4 m3">
-                  <span
-                    class="player-name"
-                    style={`background-color: ${info.color}; color: white; border-radius: 4px;`}
-                  >
-                    {name}: {info.score}
-                  </span>
-                </div>
-              ))}
+              {Object.entries(players)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([name, info]) => (
+                  <div key={name} class="col s4 m3">
+                    <span
+                      class="player-name"
+                      style={`background-color: ${info.color}; color: white; border-radius: 4px;`}
+                    >
+                      {name}: {info.score}
+                    </span>
+                  </div>
+                ))}
             </div>
           )}
         </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'preact/hooks'
 import { Board } from '@/components/Board'
+import { GameOverMulti } from '@/components/GameOverMulti'
 import { NicknameEntry } from '@/components/NicknameEntry'
 import { useGuestGame } from './useGuestGame'
 import { createFirebaseTransport } from '@/multiplayer/firebaseTransport'
@@ -153,6 +154,17 @@ export function Guest({ onNavigateHome, initialGameId }: GuestProps) {
 
   if (!gameStarted) {
     return <WaitingForStart onBack={onNavigateHome} />
+  }
+
+  if (gameOver) {
+    return (
+      <GameOverMulti
+        winner={gameOver}
+        players={players as any}
+        isHost={false}
+        onMainMenu={onNavigateHome}
+      />
+    )
   }
 
   return (

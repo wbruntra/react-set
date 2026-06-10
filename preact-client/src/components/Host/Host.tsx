@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'preact/hooks'
 import { Board } from '@/components/Board'
+import { GameOverMulti } from '@/components/GameOverMulti'
 import { NicknameEntry } from '@/components/NicknameEntry'
 import { useHostGame, type HostState } from './useHostGame'
 import { createFirebaseTransport } from '@/multiplayer/firebaseTransport'
@@ -163,6 +164,21 @@ export function Host({ onNavigateHome }: HostProps) {
         onStart={handlers.startGame}
         onBack={() => {
           handlers.handleRejectResume()
+          onNavigateHome()
+        }}
+      />
+    )
+  }
+
+  if (gameOver) {
+    return (
+      <GameOverMulti
+        winner={gameOver}
+        players={players as any}
+        isHost={true}
+        onPlayAgain={handlers.startNewGame}
+        onMainMenu={() => {
+          transport.deleteGame(gameTitle)
           onNavigateHome()
         }}
       />
