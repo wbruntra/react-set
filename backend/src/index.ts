@@ -23,7 +23,7 @@ async function shutdown() {
 process.on('SIGTERM', shutdown)
 process.on('SIGINT', shutdown)
 
-export default {
+const config = {
   port,
   fetch(req: Request, srv: any) {
     const url = new URL(req.url)
@@ -42,9 +42,12 @@ export default {
   },
 }
 
+export default config
+
 async function main() {
   await reloadActiveGames()
-  console.log(`Server running on http://localhost:${port}`)
+  server = Bun.serve(config)
+  console.log(`Server running on http://localhost:${server.port}`)
 }
 
 main().catch((err) => {
