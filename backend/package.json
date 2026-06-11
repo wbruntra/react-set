@@ -15,8 +15,6 @@
     "@react-set/common": "workspace:*",
     "@react-set/database": "workspace:*",
     "hono": "^4.6.0",
-    "knex": "^3.2.10",
-    "knex-bun-sqlite": "^1.4.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
