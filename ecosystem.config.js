@@ -6,7 +6,7 @@ module.exports = {
       name: 'react-set',
       cwd: `${BASE}/react-set/backend/src`,
       script: 'index.ts',
-      interpreter: '/usr/local/bin/bun',
+      interpreter: 'bun',
       exec_mode: 'fork',
       instances: 1,
       autorestart: true,
@@ -15,7 +15,7 @@ module.exports = {
       watch: false,
       max_memory_restart: '128M',
       env: {
-        PORT: '5002',
+        PORT: '10817',
         NODE_ENV: 'production',
       },
     },
