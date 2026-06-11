@@ -6,7 +6,7 @@
       "name": "react-multiplayer",
       "dependencies": {
         "@types/bun": "^1.3.6",
-        "knex": "^3.1.0",
+        "knex": "^3.2.10",
         "knex-bun-sqlite": "^1.4.0",
         "sqlite3": "^5.1.7",
       },
@@ -26,7 +26,7 @@
         "@react-set/common": "workspace:*",
         "@react-set/database": "workspace:*",
         "hono": "^4.6.0",
-        "knex": "^3.1.0",
+        "knex": "^3.2.10",
         "knex-bun-sqlite": "^1.4.0",
         "zod": "^4.4.3",
       },
