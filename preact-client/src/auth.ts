@@ -42,20 +42,18 @@ async function syncUserWithDatabase(user: User) {
   }
 }
 
-if (!IS_WS) {
-  onAuthStateChanged(auth, (user) => {
-    currentUser.value = user
-    if (user) {
-      uid = user.uid
-      syncUserWithDatabase(user)
-    } else {
-      uid = null
-    }
-  })
-}
+onAuthStateChanged(auth, (user) => {
+  currentUser.value = user
+  if (user) {
+    uid = user.uid
+    syncUserWithDatabase(user)
+  } else {
+    uid = null
+  }
+})
 
 export function getUserId(): string {
-  if (!IS_WS && currentUser.value) {
+  if (currentUser.value) {
     return currentUser.value.uid
   }
   if (!uid) {
@@ -88,8 +86,6 @@ export async function ensureAnonymousAuth(): Promise<string> {
 }
 
 export async function handleGoogleSignIn(): Promise<User> {
-  if (IS_WS) throw new Error('Google sign-in not available in WebSocket mode')
-
   const provider = new GoogleAuthProvider()
   provider.addScope('email')
   provider.addScope('profile')
@@ -101,20 +97,16 @@ export async function handleGoogleSignIn(): Promise<User> {
 }
 
 export async function handleSignOut(): Promise<void> {
-  if (!IS_WS) {
-    await firebaseSignOut(auth)
-  }
+  await firebaseSignOut(auth)
   currentUser.value = null
   uid = null
   localStorage.removeItem('uid')
   localStorage.removeItem('nickname')
-  if (!IS_WS) {
-    await ensureAnonymousAuth()
-  }
+  await ensureAnonymousAuth()
 }
 
 export function getNickname(): string {
-  if (!IS_WS && currentUser.value && !currentUser.value.isAnonymous) {
+  if (currentUser.value && !currentUser.value.isAnonymous) {
     return currentUser.value.displayName || ''
   }
   return localStorage.getItem('nickname') || ''
