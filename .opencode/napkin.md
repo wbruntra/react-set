@@ -21,6 +21,7 @@
 
 - Review attached repo instructions (`AGENTS.md`, `.github/copilot-instructions.md`) before making code edits.
 - For Set-card computations, precomputing 81-card lookup tables removes runtime string math and yields large speedups.
+- `vite-plugin-pwa` with `registerType: 'autoUpdate'` + `generateSW` mode is the simplest PWA setup for a Vite SPA. Hash-based routing means no special navigation fallback gymnastics needed — just `navigateFallback: '/index.html'`.
 
 ## Patterns That Don't Work
 

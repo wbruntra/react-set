@@ -6,30 +6,26 @@ import { db } from './db'
 
 const port = parseInt(Bun.env.PORT || '5002', 10)
 
-let server: ReturnType<typeof Bun.serve> | null = null
 let shuttingDown = false
 
-async function shutdown() {
+async function shutdown(server: ReturnType<typeof Bun.serve>) {
   if (shuttingDown) return
   shuttingDown = true
   console.log('Shutting down...')
-  if (server) {
-    server.stop(true)
-  }
+  server.stop(true)
   await db.destroy()
   process.exit(0)
 }
 
-process.on('SIGTERM', shutdown)
-process.on('SIGINT', shutdown)
+await reloadActiveGames()
 
-const config = {
+const server = Bun.serve<undefined>({
   port,
-  fetch(req: Request, srv: any) {
+  fetch(req, srv) {
     const url = new URL(req.url)
     if (url.pathname === '/ws') {
       if (srv.upgrade(req)) {
-        return
+        return undefined
       }
       return new Response('WebSocket upgrade failed', { status: 426 })
     }
@@ -40,17 +36,9 @@ const config = {
       handleMessage(ws, message)
     },
   },
-}
-
-export default config
-
-async function main() {
-  await reloadActiveGames()
-  server = Bun.serve(config)
-  console.log(`Server running on http://localhost:${server.port}`)
-}
-
-main().catch((err) => {
-  console.error('Failed to start server:', err)
-  process.exit(1)
 })
+
+console.log(`Listening on http://localhost:${server.port}`)
+
+process.on('SIGTERM', () => shutdown(server))
+process.on('SIGINT', () => shutdown(server))
