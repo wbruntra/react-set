@@ -205,7 +205,7 @@ export function handleDeclarationExpired(state: SoloGameState): SoloGameState {
   return state
 }
 
-/** The CPU has spotted a set: show the first card, queue the rest for animation. */
+/** The CPU has spotted a set: select all three cards immediately. */
 export function handleCpuFoundSet(
   state: SoloGameState,
   a: string,
@@ -215,29 +215,10 @@ export function handleCpuFoundSet(
   return {
     ...state,
     declarer: 'cpu',
-    selected: [a],
-    cpuFound: [b, c],
+    selected: [a, b, c],
+    cpuFound: [],
     setFound: true,
     timeDeclared: Date.now(),
-  }
-}
-
-/** Reveal the next queued CPU card. */
-export function handleCpuAnimationStep(state: SoloGameState): SoloGameState {
-  if (!state.cpuFound || state.cpuFound.length === 0) {
-    return state
-  }
-
-  const cpuCopy = [...state.cpuFound]
-  const newCard = cpuCopy.pop()
-  if (!newCard) return state
-
-  const newSelected = [...state.selected, newCard]
-  return {
-    ...state,
-    cpuFound: cpuCopy,
-    selected: newSelected,
-    setFound: newSelected.length === 3,
   }
 }
 

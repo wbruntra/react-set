@@ -13,7 +13,6 @@ import {
   resetGame,
   processFoundSet,
   handleCpuFoundSet,
-  handleCpuAnimationStep,
   handleDeclarationExpired,
   findCpuSet,
   type GameState,
@@ -140,18 +139,6 @@ export function Solo() {
         game.value = handleCpuFoundSet(g, ...found)
       }
     }, interval)
-    return () => clearInterval(timer)
-  })
-
-  // CPU animation — reveal the CPU's queued cards one at a time.
-  const cpuAnimating = useComputed(
-    () => game.value.declarer === 'cpu' && game.value.cpuFound.length > 0,
-  )
-  useSignalEffect(() => {
-    if (!cpuAnimating.value) return
-    const timer = window.setInterval(() => {
-      game.value = handleCpuAnimationStep(game.value)
-    }, GAME_CONFIG.cpuDelay)
     return () => clearInterval(timer)
   })
 

@@ -22,7 +22,6 @@ export {
   processFoundSet,
   handleDeclarationExpired,
   handleCpuFoundSet,
-  handleCpuAnimationStep,
   findCpuSet,
   updatePlayerScore,
 } from '@react-set/common'

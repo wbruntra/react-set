@@ -36,7 +36,6 @@ export {
   resetGame,
   handleDeclarationExpired,
   handleCpuFoundSet,
-  handleCpuAnimationStep,
   findCpuSet,
   type SoloPlayer,
   type SoloPlayers,
