@@ -17,28 +17,35 @@ async function shutdown(server: ReturnType<typeof Bun.serve>) {
   process.exit(0)
 }
 
-await reloadActiveGames()
+async function main() {
+  await reloadActiveGames()
 
-const server = Bun.serve<undefined>({
-  port,
-  fetch(req, srv) {
-    const url = new URL(req.url)
-    if (url.pathname === '/ws') {
-      if (srv.upgrade(req)) {
-        return undefined
+  const server = Bun.serve<undefined>({
+    port,
+    fetch(req, srv) {
+      const url = new URL(req.url)
+      if (url.pathname === '/ws') {
+        if (srv.upgrade(req)) {
+          return undefined
+        }
+        return new Response('WebSocket upgrade failed', { status: 426 })
       }
-      return new Response('WebSocket upgrade failed', { status: 426 })
-    }
-    return app.fetch(req)
-  },
-  websocket: {
-    message(ws: ServerWebSocket<undefined>, message: string) {
-      handleMessage(ws, message)
+      return app.fetch(req)
     },
-  },
+    websocket: {
+      message(ws: ServerWebSocket<undefined>, message: string) {
+        handleMessage(ws, message)
+      },
+    },
+  })
+
+  console.log(`Listening on http://localhost:${server.port}`)
+
+  process.on('SIGTERM', () => shutdown(server))
+  process.on('SIGINT', () => shutdown(server))
+}
+
+main().catch((err) => {
+  console.error('Failed to start server:', err)
+  process.exit(1)
 })
-
-console.log(`Listening on http://localhost:${server.port}`)
-
-process.on('SIGTERM', () => shutdown(server))
-process.on('SIGINT', () => shutdown(server))
