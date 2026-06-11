@@ -1,1 +1,1 @@
-export { db } from '@react-set/database'
+export { db, sql } from '@react-set/database'

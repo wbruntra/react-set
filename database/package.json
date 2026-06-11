@@ -15,6 +15,7 @@
   "dependencies": {
     "knex": "^3.2.10",
     "knex-bun-sqlite": "^1.4.0",
+    "kysely": "^0.29.2",
     "tarn": "^3.0.2"
   }
 }

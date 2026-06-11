@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { db } from '../db'
+import { db, sql } from '../db'
 import { CreateUserSchema } from '../schemas'
 import { validate } from '../middleware/validate'
 
@@ -7,18 +7,22 @@ const users = new Hono()
 
 users.get('/stats/:uid', async (c) => {
   const uid = c.req.param('uid')
-  const rows = await db('games')
-    .select('difficulty_level')
-    .count('*', { as: 'games_played' })
-    .sum('player_won', { as: 'games_won' })
+  const rows = await db
+    .selectFrom('games')
+    .select([
+      'difficulty_level',
+      sql<number>`count(*)`.as('games_played'),
+      sql<number>`sum(player_won)`.as('games_won'),
+    ])
+    .where('player_uid', '=', uid)
     .groupBy('difficulty_level')
-    .where({ player_uid: uid })
+    .execute()
   return c.json(rows)
 })
 
 users.get('/:uid', async (c) => {
   const uid = c.req.param('uid')
-  const rows = await db('users').select().where({ uid })
+  const rows = await db.selectFrom('users').selectAll().where('uid', '=', uid).execute()
   if (rows.length > 0) {
     return c.json(rows)
   }
@@ -31,11 +35,14 @@ users.post('/', validate('json', CreateUserSchema), async (c) => {
   const email = body.info?.email || ''
   const info = body.info || {}
 
-  const existing = await db('users').select().where({ uid })
+  const existing = await db.selectFrom('users').selectAll().where('uid', '=', uid).execute()
   if (existing.length > 0) {
     return c.json({ msg: 'user exists' })
   }
-  await db('users').insert({ uid, email, info })
+  await db
+    .insertInto('users')
+    .values({ uid, email, info: JSON.stringify(info) })
+    .execute()
   return c.json({ message: 'success' })
 })
 

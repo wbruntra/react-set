@@ -9,14 +9,17 @@ games.post('/', validate('json', CreateGameSchema), async (c) => {
   const body = c.req.valid('json')
   const { uid, total_time, player_won, difficulty_level, winning_score, data } = body
 
-  await db('games').insert({
-    player_uid: uid,
-    total_time,
-    player_won,
-    difficulty_level,
-    winning_score,
-    data: JSON.stringify(data || {}),
-  })
+  await db
+    .insertInto('games')
+    .values({
+      player_uid: uid,
+      total_time,
+      player_won,
+      difficulty_level,
+      winning_score,
+      data: JSON.stringify(data || {}),
+    })
+    .execute()
   return c.text('OK', 200)
 })
 

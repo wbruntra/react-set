@@ -28,18 +28,18 @@ interface ActionRow {
 }
 
 async function insertAction(gameCode: string, seq: number, type: string, data: any) {
-  await db('game_actions').insert({
-    game_code: gameCode,
-    seq,
-    type,
-    data: JSON.stringify(data),
-  })
+  await db
+    .insertInto('game_actions')
+    .values({ game_code: gameCode, seq, type, data: JSON.stringify(data) })
+    .execute()
 }
 
 async function touchGame(gameCode: string) {
-  await db('multiplayer_games').where('code', gameCode).update({
-    updated_at: new Date().toISOString(),
-  })
+  await db
+    .updateTable('multiplayer_games')
+    .set({ updated_at: new Date().toISOString() })
+    .where('code', '=', gameCode)
+    .execute()
 }
 
 function replayState(initial: MultiGameState, actions: ActionRow[]): MultiGameState {
@@ -102,14 +102,17 @@ export async function createGame(gameId: string, state: MultiGameState): Promise
   const stored = makeGame(state)
   games.set(gameId, stored)
 
-  await db('multiplayer_games').insert({
-    code: gameId,
-    game_title: state.gameTitle || gameId,
-    creator_uid: (state as any).creator_uid || null,
-    initial_state: JSON.stringify(state),
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  })
+  await db
+    .insertInto('multiplayer_games')
+    .values({
+      code: gameId,
+      game_title: state.gameTitle || gameId,
+      creator_uid: (state as any).creator_uid || null,
+      initial_state: JSON.stringify(state),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .execute()
 
   return stored
 }
@@ -184,7 +187,11 @@ export async function findResumableGames(ownerUid: string): Promise<
   })
 
   // Also check DB for games not in memory
-  const dbGames = await db('multiplayer_games').where('creator_uid', ownerUid)
+  const dbGames = await db
+    .selectFrom('multiplayer_games')
+    .selectAll()
+    .where('creator_uid', '=', ownerUid)
+    .execute()
   for (const row of dbGames) {
     if (games.has(row.code)) continue
     let playersData: Record<string, { name: string; host: boolean }> = {}
@@ -224,7 +231,11 @@ export async function listJoinableGames(): Promise<
   })
 
   // DB games not in memory and not started
-  const dbGames = await db('multiplayer_games').whereNull('started_at')
+  const dbGames = await db
+    .selectFrom('multiplayer_games')
+    .selectAll()
+    .where('started_at', 'is', null)
+    .execute()
   for (const row of dbGames) {
     if (games.has(row.code)) continue
     let playersData: Record<string, { name: string; host: boolean }> = {}
@@ -242,7 +253,7 @@ export async function listJoinableGames(): Promise<
 
 export async function deleteGame(gameId: string): Promise<boolean> {
   games.delete(gameId)
-  await db('multiplayer_games').where('code', gameId).del()
+  await db.deleteFrom('multiplayer_games').where('code', '=', gameId).execute()
   return true
 }
 
@@ -251,30 +262,38 @@ export async function setGameStarted(gameId: string): Promise<void> {
   if (stored) {
     stored.state = { ...stored.state, gameStarted: true }
   }
-  await db('multiplayer_games').where('code', gameId).update({
-    started_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  })
+  await db
+    .updateTable('multiplayer_games')
+    .set({ started_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .where('code', '=', gameId)
+    .execute()
 }
 
 export async function setGameFinished(gameId: string): Promise<void> {
-  await db('multiplayer_games').where('code', gameId).update({
-    finished_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  })
+  await db
+    .updateTable('multiplayer_games')
+    .set({ finished_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .where('code', '=', gameId)
+    .execute()
   games.delete(gameId)
 }
 
 /** Called on server startup: reload unfinished games into memory by replaying actions. */
 export async function reloadActiveGames(): Promise<void> {
-  const activeGames = await db('multiplayer_games')
-    .whereNotNull('started_at')
-    .whereNull('finished_at')
+  const activeGames = await db
+    .selectFrom('multiplayer_games')
+    .selectAll()
+    .where('started_at', 'is not', null)
+    .where('finished_at', 'is', null)
+    .execute()
 
   for (const row of activeGames) {
-    const actions: ActionRow[] = await db('game_actions')
-      .where('game_code', row.code)
+    const actions = await db
+      .selectFrom('game_actions')
+      .select(['seq', 'type', 'data'])
+      .where('game_code', '=', row.code)
       .orderBy('seq', 'asc')
+      .execute()
 
     let initialState: MultiGameState
     try {
