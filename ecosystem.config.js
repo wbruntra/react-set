@@ -4,8 +4,8 @@ module.exports = {
   apps: [
     {
       name: 'react-set',
-      cwd: `${BASE}/react-set/backend/src`,
-      script: 'index.ts',
+      cwd: `${BASE}/react-set/backend`,
+      script: 'src/index.ts',
       interpreter: 'bun',
       exec_mode: 'fork',
       instances: 1,

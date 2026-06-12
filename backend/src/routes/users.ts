@@ -32,13 +32,46 @@ users.get('/:uid', async (c) => {
 users.post('/', validate('json', CreateUserSchema), async (c) => {
   const body = c.req.valid('json')
   const { uid } = body
-  const email = body.info?.email || ''
+  const email = body.info?.email || null // Store empty or missing emails as NULL to avoid SQLite UNIQUE constraint issues
   const info = body.info || {}
 
   const existing = await db.selectFrom('users').selectAll().where('uid', '=', uid).execute()
   if (existing.length > 0) {
     return c.json({ msg: 'user exists' })
   }
+
+  // If email is provided, check if another user record already has this email registered
+  if (email) {
+    const existingEmail = await db
+      .selectFrom('users')
+      .selectAll()
+      .where('email', '=', email)
+      .execute()
+
+    if (existingEmail.length > 0) {
+      const oldUid = existingEmail[0].uid
+      // Merge/migrate user record to the new UID inside a transaction to preserve history
+      await db.transaction().execute(async (trx) => {
+        await trx
+          .updateTable('users')
+          .set({ uid, info: JSON.stringify(info) })
+          .where('uid', '=', oldUid)
+          .execute()
+        await trx
+          .updateTable('games')
+          .set({ player_uid: uid })
+          .where('player_uid', '=', oldUid)
+          .execute()
+        await trx
+          .updateTable('multiplayer_games')
+          .set({ creator_uid: uid })
+          .where('creator_uid', '=', oldUid)
+          .execute()
+      })
+      return c.json({ message: 'success' })
+    }
+  }
+
   await db
     .insertInto('users')
     .values({ uid, email, info: JSON.stringify(info) })

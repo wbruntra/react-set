@@ -202,6 +202,54 @@ async function main() {
   const postSetState = await waitForMessage(guest, 'stateUpdate')
   console.log(`   Guest sees bob score: ${postSetState.state.players.bob.score}`)
 
+  // --- Guest wins the game ---
+  console.log('\n4b. Guest wins the game...')
+  hostPlayers.bob.score = 6
+  sendAndWait(host, {
+    type: 'updateState',
+    gameId: gameCode,
+    partial: {
+      players: hostPlayers,
+      gameOver: 'bob',
+    },
+  }).catch((err) => {
+    console.log(`   [Expected Error/Success] host send updateState failed: ${err.message}`)
+  })
+
+  try {
+    const gameOverState = await waitForMessage(guest, 'stateUpdate', 2000)
+    console.log(`   Guest received gameOver state: winner=${gameOverState.state.gameOver}`)
+  } catch (err) {
+    console.log(`   Guest failed to receive gameOver state: ${err.message}`)
+  }
+
+  // --- Host restarts the game ---
+  console.log('\n4c. Host restarts the game...')
+  hostPlayers.alice.score = 0
+  hostPlayers.bob.score = 0
+  sendAndWait(host, {
+    type: 'updateState',
+    gameId: gameCode,
+    partial: {
+      gameStarted: true,
+      gameOver: null,
+      declarer: null,
+      setFound: false,
+      players: hostPlayers,
+    },
+  }).catch((err) => {
+    console.log(`   [Expected Error/Success] host restart failed: ${err.message}`)
+  })
+
+  try {
+    const restartedState = await waitForMessage(guest, 'stateUpdate', 2000)
+    console.log(
+      `   Guest received restarted state: gameOver=${restartedState.state.gameOver}, gameStarted=${restartedState.state.gameStarted}`,
+    )
+  } catch (err) {
+    console.log(`   Guest failed to receive restarted state: ${err.message}`)
+  }
+
   // --- List joinable games ---
   console.log('\n5. Listing joinable games...')
   const guest2 = await connect('guest2')

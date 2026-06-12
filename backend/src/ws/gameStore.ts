@@ -264,7 +264,11 @@ export async function setGameStarted(gameId: string): Promise<void> {
   }
   await db
     .updateTable('multiplayer_games')
-    .set({ started_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .set({
+      started_at: new Date().toISOString(),
+      finished_at: null,
+      updated_at: new Date().toISOString(),
+    })
     .where('code', '=', gameId)
     .execute()
 }
@@ -275,7 +279,6 @@ export async function setGameFinished(gameId: string): Promise<void> {
     .set({ finished_at: new Date().toISOString(), updated_at: new Date().toISOString() })
     .where('code', '=', gameId)
     .execute()
-  games.delete(gameId)
 }
 
 /** Called on server startup: reload unfinished games into memory by replaying actions. */
