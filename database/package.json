@@ -7,7 +7,7 @@
     ".": "./db.ts"
   },
   "scripts": {
-    "migrate": "knex migrate:latest --knexfile knexfile.cjs"
+    "migrate": "bun migrate.js"
   },
   "devDependencies": {
     "typescript": "~5.8.3"
