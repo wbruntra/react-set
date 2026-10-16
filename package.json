@@ -27,7 +27,10 @@
     "test:countsets": "bun tests/test-countsets-efficiency.js",
     "predeploy": "cd preact-client && bun run build",
     "deploy": "gh-pages -d preact-client/dist -e client/",
-    "prepare": "husky"
+    "prepare": "husky",
+    "fmt:check": "bun fmt --check",
+    "deploy:nginx": "ansible-playbook -i ansible/inventory.yml ansible/deploy-nginx.yml -e deployment=production",
+    "deploy:ansible": "ansible-playbook -i ansible/inventory.yml ansible/deploy.yml -e deployment=production"
   },
   "keywords": [],
   "author": "",
@@ -41,13 +44,6 @@
   "devDependencies": {
     "@biomejs/biome": "^2.3.0",
     "gh-pages": "^6.3.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.2.6",
-    "prettier": "^3.8.4"
-  },
-  "lint-staged": {
-    "**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
-      "prettier --write"
-    ]
+    "husky": "^9.1.7"
   }
 }

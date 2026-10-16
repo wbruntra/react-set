@@ -1,0 +1,14 @@
+[install]
+# Share package files across projects via a machine-wide store instead of
+# hardlinking a copy into each project's node_modules/.bun/.
+# Requires the isolated linker (bun.lock configVersion = 1 already selects it).
+globalStore = true
+
+[fmt]
+printWidth = 99
+tabWidth = 2
+useTabs = false
+singleQuote = true
+trailingComma = "all"
+semi = false
+arrowParens = "always"

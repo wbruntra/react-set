@@ -26,8 +26,10 @@ app.onError((err, c) => {
   return c.json({ error: err.message }, 500)
 })
 
-// Health check: GET /api
 app.get('/api', (c) => c.json({ msg: 'Ping pong' }))
+
+// Health check, used by the ansible deploy
+app.get('/api/health', (c) => c.json({ status: 'ok' }))
 
 // Parameterized routes mounted as sub-apps
 app.route('/api/user', users)

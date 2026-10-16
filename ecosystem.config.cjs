@@ -15,8 +15,9 @@ module.exports = {
       watch: false,
       max_memory_restart: '128M',
       env: {
-        PORT: '10817',
         NODE_ENV: 'production',
+        // Must match app_port in ansible/host_vars and the waker entry.
+        PORT: '10817',
       },
     },
   ],

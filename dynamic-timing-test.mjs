@@ -1,6 +1,10 @@
 // Test script to demonstrate the new dynamic CPU timing system
 
-import { calculateDynamicCPUInterval, calculateCPUPerformanceTime, getCPUPerformanceForSets } from './vite-client/src/components/Solo/cpuPerformance.ts'
+import {
+  calculateDynamicCPUInterval,
+  calculateCPUPerformanceTime,
+  getCPUPerformanceForSets,
+} from './vite-client/src/components/Solo/cpuPerformance.ts'
 
 console.log('🎮 Dynamic CPU Timing Analysis')
 console.log('==============================')
@@ -14,16 +18,20 @@ for (let sets = 1; sets <= 6; sets++) {
   const staticPerformance = calculateCPUPerformanceTime(difficulty, sets)
   const dynamicInterval = calculateDynamicCPUInterval(difficulty, sets)
   const performanceData = getCPUPerformanceForSets(sets)
-  
+
   const staticTotalTime = staticPerformance.averageTimeSeconds
   const dynamicTotalTime = Math.round((performanceData.averageAttempts * dynamicInterval) / 1000)
-  
+
   const difference = staticTotalTime - dynamicTotalTime
   const improvement = difference > 0 ? 'FASTER' : 'SLOWER'
   const arrow = difference > 0 ? '⬇️' : '⬆️'
-  
-  console.log(`\n${sets} sets: ${staticTotalTime}s → ${dynamicTotalTime}s (${Math.abs(difference)}s ${improvement}) ${arrow}`)
-  console.log(`  Static interval: ${(staticPerformance.cpuTurnInterval / 1000).toFixed(1)}s per attempt`)
+
+  console.log(
+    `\n${sets} sets: ${staticTotalTime}s → ${dynamicTotalTime}s (${Math.abs(difference)}s ${improvement}) ${arrow}`,
+  )
+  console.log(
+    `  Static interval: ${(staticPerformance.cpuTurnInterval / 1000).toFixed(1)}s per attempt`,
+  )
   console.log(`  Dynamic interval: ${(dynamicInterval / 1000).toFixed(1)}s per attempt`)
   console.log(`  Avg attempts needed: ${performanceData.averageAttempts.toFixed(1)}`)
 }
@@ -40,18 +48,20 @@ for (let diff = 1; diff <= 8; diff++) {
   console.log(`\nDifficulty ${diff}:`)
   console.log('Sets | Static | Dynamic | Change')
   console.log('----|-------|--------|-------')
-  
+
   for (let sets = 1; sets <= 6; sets++) {
     const staticPerf = calculateCPUPerformanceTime(diff, sets)
     const dynamicInterval = calculateDynamicCPUInterval(diff, sets)
     const perfData = getCPUPerformanceForSets(sets)
-    
+
     const staticTime = staticPerf.averageTimeSeconds
     const dynamicTime = Math.round((perfData.averageAttempts * dynamicInterval) / 1000)
     const change = staticTime - dynamicTime
     const changeStr = change > 0 ? `-${change}s` : change < 0 ? `+${Math.abs(change)}s` : '0s'
-    
-    console.log(`  ${sets}  |  ${staticTime.toString().padStart(2)}s  |   ${dynamicTime.toString().padStart(2)}s   | ${changeStr}`)
+
+    console.log(
+      `  ${sets}  |  ${staticTime.toString().padStart(2)}s  |   ${dynamicTime.toString().padStart(2)}s   | ${changeStr}`,
+    )
   }
 }
 
