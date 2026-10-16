@@ -67,3 +67,5 @@ venv/
 secrets.js
 
 *.sqlite3
+# Database backups made by the ansible deploy
+backups/
